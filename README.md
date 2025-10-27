@@ -1,10 +1,10 @@
-# 💳 PayManager - Sistema de Gestão de Parceiros e Meios de Pagamento
+# 🚀 Plataforma de Gestão de Parceiros
 
 [![Project Status](https://img.shields.io/badge/status-desenvolvimento-yellow.svg)]()
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
 
-> **PayManager** é uma aplicação web moderna para gestão completa de parceiros, meios de pagamento e análise de performance no ecossistema de pagamentos digital.
+> **Plataforma de Gestão de Parceiros** é uma aplicação web moderna para gestão completa de parceiros logísticos, de pagamento e marketplaces em um único sistema integrado.
 
 ---
 
@@ -28,17 +28,20 @@
 
 ## 🎯 Sobre o Projeto
 
-**PayManager** é uma solução de gestão para empresas que trabalham com múltiplos parceiros e meios de pagamento. O sistema permite:
+**Plataforma de Gestão de Parceiros** é uma solução completa para empresas que trabalham com múltiplos tipos de parceiros. O sistema permite:
 
-- ✅ Cadastro e gestão de parceiros de pagamento
-- ✅ Comparação de taxas e taxas de conversão
-- ✅ Monitoramento de performance
-- ✅ Gestão de lojas e integrações
-- ✅ Análise de GMV, aprovação e transações
+- ✅ Gestão de parceiros logísticos (cobertura, prazos, capacidade)
+- ✅ Gestão de parceiros de pagamento (taxas MDR, liquidação, performance)
+- ✅ Gestão de marketplaces (comissões, categorias, alcance)
+- ✅ **Parceiros multi-categoria** (um mesmo parceiro pode atuar em várias frentes)
+- ✅ **Sistema de Admin** para configurar campos por tipo de parceiro
+- ✅ **Dados compartilhados** entre categorias (nome, status, notas)
+- ✅ Visão consolidada de todos os parceiros
+- ✅ Interface centralizada para administração
 
-**Objetivo:** Fornecer uma visão completa e centralizada de todos os parceiros e meios de pagamento, facilitando a tomada de decisão estratégica.
+**Objetivo:** Fornecer uma visão completa e centralizada de todos os parceiros logísticos, de pagamento e marketplaces, facilitando a tomada de decisão estratégica.
 
-**URL Lovable:** https://lovable.dev/projects/55ca9dd2-05ae-47d1-a86c-6506f6a6825c
+**Desenvolvido por:** Thiago Rotondo
 
 ---
 
@@ -107,31 +110,71 @@
 - [x] Gráficos de distribuição (preparado para dados reais)
 - [ ] **Dados mockados** (arrays vazios)
 
-#### 2. Meios de Pagamento
-- [x] Tabela completa com principais métricas
-- [x] Formulário multi-aba para cadastro
-  - [x] Identificação (nome, tipo, data, status)
-  - [x] Estrutura de Taxas (MDR Crédito, Débito, PIX, Antecipação, Chargeback)
-  - [x] Prazos de Liquidação
-  - [x] Take Rate
-  - [x] Indicadores de Performance (3 meses)
-  - [x] Meios de Pagamento Aceitos (Cartão, PIX, Boleto, Carteira Digital, BNPL)
-  - [x] Configuração de Antifraude (opcional)
-  - [x] Observações
-- [x] Gestão de tipos de parceiro
-- [x] Validação com Zod
+#### 2. Gestão de Parceiros
+- [x] Visão geral de todos os parceiros
+- [x] Categorização em Logísticos, Pagamento e Marketplaces
+- [x] **Parceiros multi-categoria** (um parceiro pode atuar em múltiplas frentes)
+- [x] **Dados compartilhados** entre categorias (nome, status, data de início, notas)
+- [x] Navegação com submenu expandível
+- [x] Formulários específicos com sistema de abas para cada tipo de parceiro
+
+##### 2.1 Parceiros Logísticos
+- [x] Cadastro de parceiros logísticos
+- [x] Gestão de cobertura por estado
+- [x] Informações de prazo de entrega e capacidade
+- [x] Modelos de preço (fixo/variável)
+- [x] Tipo de integração (API/Manual)
+- [x] Status e observações
+
+##### 2.2 Parceiros de Pagamento
+- [x] Cadastro completo de parceiros de pagamento
+- [x] **Formulário com 8 abas** (Identificação, Taxas, Prazos, Take Rate, Performance, Meios, Antifraude, Observações)
+- [x] Gestão de taxas MDR (Crédito, Débito, PIX)
+- [x] Configuração de prazos de liquidação
+- [x] Take Rate e performance (3 meses)
+- [x] Meios de pagamento aceitos (Cartão, PIX, Boleto, Carteiras, BNPL)
+- [x] Sistema de antifraude opcional
+- [x] Observações personalizadas
+
+##### 2.3 Parceiros de Marketplace
+- [x] Cadastro de marketplaces
+- [x] Gestão de comissões
+- [x] Seleção de categorias suportadas
+- [x] Alcance mensal de usuários
+- [x] Taxa de conversão e tipo de integração
+
+#### 3. Sistema de Administração de Campos
+- [x] **Gestão de campos por tipo de parceiro** (Logístico, Pagamento, Marketplace)
+- [x] Interface admin para habilitar/desabilitar campos
+- [x] Controle de campos obrigatórios
+- [x] Configuração independente para cada tipo
+- [x] **Adicionar novos campos customizados**
+- [x] **Editar campos existentes**
+- [x] **Remover campos**
+- [x] Persistência de configurações no localStorage
+- [x] Estatísticas de campos ativos/desabilitados
+- [x] Reset para configuração padrão
+
+#### 4. Sistema de Proteção de Dados (Blur)
+- [x] **Botão toggle global** para ocultar/mostrar dados sensíveis
+- [x] Blur automático em valores monetários, taxas e dados pessoais
+- [x] Proteção por linha ou célula específica
+- [x] Estado persistido no localStorage
+- [x] Útil para apresentações e demos sem expor dados reais
+- [x] Interface visual clara com ícone Eye/EyeOff
+
 - [ ] **Persistência:** Estado apenas em memória (React state)
 
-#### 3. Gestão de Lojas
+#### 5. Gestão de Lojas
 - [x] Interface preparada
 - [ ] **Funcionalidade não implementada**
 - [ ] **Dados:** Array vazio
 
-#### 4. Projeções
+#### 6. Projeções
 - [ ] **Em desenvolvimento**
 - [ ] Placeholder visual
 
-#### 5. Relatórios
+#### 7. Relatórios
 - [ ] **Em desenvolvimento**
 - [ ] Placeholder visual
 
@@ -157,6 +200,13 @@
 ---
 
 ## ❌ O Que Não Tem
+
+#### Observações de Desenvolvimento
+
+Este é um **sistema privado** desenvolvido por **Thiago Rotondo**:
+- 🔒 Não indexado por buscadores (robots.txt e meta tags configurados)
+- 🛡️ Protegido contra crawlers
+- 🔐 Acesso privado restrito
 
 ### Funcionalidades Faltantes
 
@@ -555,16 +605,37 @@ npm run lint
 partners-li/
 ├── public/              # Arquivos estáticos
 ├── src/
-│   ├── components/      # Componentes React
-│   │   ├── dashboard/   # Componentes do dashboard
-│   │   ├── layout/      # Layout (Sidebar, etc)
-│   │   ├── payment-methods/  # Meios de pagamento
+│   ├── components/
+│   │   ├── admin/       # Administração
+│   │   │   └── FieldManager.tsx  # Gestão de campos
+│   │   ├── dashboard/   # Dashboard
+│   │   ├── layout/      # Layout
+│   │   │   ├── Sidebar.tsx
+│   │   │   └── BlurToggle.tsx  # Botão de proteção de dados
+│   │   ├── partners/    # Gestão de parceiros
+│   │   │   ├── AddPartnerDialog.tsx  # Diálogo de cadastro com abas
+│   │   │   ├── LogisticPartnersTable.tsx
+│   │   │   ├── PaymentPartnersTable.tsx
+│   │   │   ├── MarketplacePartnersTable.tsx
+│   │   │   ├── PartnersOverview.tsx
+│   │   │   └── PartnerForm/  # Componentes de formulário (8 abas)
+│   │   ├── payment-methods/  # (Legado)
 │   │   ├── stores/      # Lojas
 │   │   └── ui/          # Componentes shadcn/ui
-│   ├── hooks/           # Custom hooks
-│   ├── lib/             # Utilitários e schemas
-│   ├── pages/           # Páginas/páginas
+│   ├── contexts/
+│   │   └── BlurContext.tsx  # Contexto para controle de blur
+│   ├── hooks/
+│   │   ├── use-blur-sensitive.ts  # Hook para aplicar blur
+│   │   ├── use-field-config.ts
+│   │   └── use-toast.ts
+│   ├── lib/
+│   │   ├── partner-schema.ts  # Schema Zod para parceiros
+│   │   └── utils.ts
+│   ├── pages/           # Páginas
 │   ├── types/           # TypeScript types
+│   │   ├── partner.ts   # Tipos de parceiros (multi-categoria)
+│   │   ├── field-config.ts  # Configuração de campos
+│   │   └── payment-method.ts  # (Legado)
 │   ├── App.tsx          # Componente raiz
 │   └── main.tsx         # Entry point
 ├── package.json
@@ -645,7 +716,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 ## 📞 Contato
 
-**Projeto Lovable:** https://lovable.dev/projects/55ca9dd2-05ae-47d1-a86c-6506f6a6825c
+**Desenvolvido por:** Thiago Rotondo
 
 ---
 
@@ -685,5 +756,32 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 ---
 
 **Última atualização:** Janeiro 2025
-**Versão:** 0.1.0
+**Versão:** 0.4.0
+**Desenvolvido por:** Thiago Rotondo
 **Status:** Em Desenvolvimento Ativo 🚧
+
+---
+
+## 🎯 Destaques da Versão 0.4.0
+
+### ✅ Sistema de Proteção de Dados
+- **Botão toggle global** (canto superior direito) para ocultar dados sensíveis
+- Blur automático em valores monetários, taxas e informações críticas
+- Perfeito para apresentações e demos sem expor dados reais
+
+### ✅ Gestão Avançada de Campos
+- **Criar, editar e remover campos** customizados
+- Controle granular por tipo de parceiro (Logístico, Pagamento, Marketplace)
+- Interface admin completa
+
+### ✅ Sistema Multi-Categoria
+- Parceiros podem atuar em múltiplas categorias simultaneamente
+- Dados compartilhados (nome, status, notas)
+- Formulários completos com 8 abas
+
+### ✅ Privacidade e Segurança
+- Proteção contra indexação (robots.txt + meta tags)
+- Autor identificado: Thiago Rotondo
+- Sistema privado e não indexável
+
+---

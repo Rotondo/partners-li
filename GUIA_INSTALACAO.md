@@ -172,13 +172,11 @@ server: {
 
 ---
 
-## 📱 Alternativa: Usar Online
+## 📱 Informações do Projeto
 
-Se não quiser instalar localmente agora:
-
-1. Acesse: https://lovable.dev/projects/55ca9dd2-05ae-47d1-a86c-6506f6a6825c
-2. Use o editor online do Lovable
-3. Publique direto pela plataforma
+**Desenvolvido por:** Thiago Rotondo  
+**Versão:** 0.3.0  
+**Sistema:** Privado - Não indexado por buscadores
 
 ---
 

@@ -1,8 +1,12 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Dashboard } from "@/components/dashboard/Dashboard";
-import { PaymentMethodsTable } from "@/components/payment-methods/PaymentMethodsTable";
+import { PartnersOverview } from "@/components/partners/PartnersOverview";
+import { LogisticPartnersTable } from "@/components/partners/LogisticPartnersTable";
+import { PaymentPartnersTable } from "@/components/partners/PaymentPartnersTable";
+import { MarketplacePartnersTable } from "@/components/partners/MarketplacePartnersTable";
 import { StoresOverview } from "@/components/stores/StoresOverview";
+import { FieldManager } from "@/components/admin/FieldManager";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -11,8 +15,14 @@ const Index = () => {
     switch (activeTab) {
       case "dashboard":
         return <Dashboard />;
-      case "payment-methods":
-        return <PaymentMethodsTable />;
+      case "partners":
+        return <PartnersOverview />;
+      case "partners-logistics":
+        return <LogisticPartnersTable />;
+      case "partners-payment":
+        return <PaymentPartnersTable />;
+      case "partners-marketplace":
+        return <MarketplacePartnersTable />;
       case "stores":
         return <StoresOverview />;
       case "projections":
@@ -29,6 +39,8 @@ const Index = () => {
             <p className="text-muted-foreground mt-2">Em desenvolvimento</p>
           </div>
         );
+      case "admin":
+        return <FieldManager />;
       default:
         return <Dashboard />;
     }

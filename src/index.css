@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Blur para dados sensíveis */
+.blur-sensitivity-active {
+  filter: blur(6px);
+  user-select: none;
+  pointer-events: none;
+  transition: filter 0.3s ease-in-out;
+}
+
+/* Aplicar blur em células de tabela com dados sensíveis */
+.blur-sensitivity-active .sensitive-data {
+  filter: blur(8px);
+  transition: filter 0.3s ease-in-out;
+}
+
+/* Linha completa com blur */
+.blur-sensitivity-active .blur-table-row {
+  filter: blur(4px);
+  transition: filter 0.3s ease-in-out;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
