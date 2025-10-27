@@ -1,20 +1,56 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Plus } from "lucide-react";
+import { AddPaymentMethodDialog } from "./AddPaymentMethodDialog";
+import { PaymentMethod, DEFAULT_PAYMENT_TYPES, PaymentType } from "@/types/payment-method";
 
-const paymentMethods: any[] = [];
+const STATUS_VARIANTS = {
+  "Ativo": "default",
+  "Inativo": "secondary",
+  "Em Homologação": "outline",
+  "Pausado": "secondary",
+  "Cancelado": "destructive",
+} as const;
 
 export const PaymentMethodsTable = () => {
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>(DEFAULT_PAYMENT_TYPES);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleAddPaymentMethod = (paymentMethod: PaymentMethod) => {
+    setPaymentMethods([...paymentMethods, paymentMethod]);
+  };
+
+  const getAverageApproval = (method: PaymentMethod) => {
+    const avg = (
+      method.performance.month1.approval +
+      method.performance.month2.approval +
+      method.performance.month3.approval
+    ) / 3;
+    return avg.toFixed(1);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-foreground">Meios de Pagamento</h2>
-          <p className="text-muted-foreground mt-1">Gerencie seus parceiros de pagamento</p>
+          <h1 className="text-3xl font-bold">Meios de Pagamento</h1>
+          <p className="text-muted-foreground mt-1">
+            Gerencie os parceiros e soluções de pagamento integradas
+          </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
+        <Button onClick={() => setDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
           Adicionar Meio
         </Button>
       </div>
@@ -24,55 +60,61 @@ export const PaymentMethodsTable = () => {
           <CardTitle>Parceiros Cadastrados</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            {paymentMethods.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">Nenhum meio de pagamento cadastrado.</p>
-                <p className="text-sm text-muted-foreground mt-2">Clique em "Adicionar Meio" para começar.</p>
-              </div>
-            ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Parceiro</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Tipo</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">MDR Crédito</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">MDR Débito</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">MDR Pix</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Prazo</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Take Rate</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Aprovação</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paymentMethods.map((method, index) => (
-                    <tr key={index} className="border-b border-border hover:bg-muted/50 transition-colors">
-                      <td className="py-4 px-4">
-                        <div className="font-medium text-foreground">{method.name}</div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Badge variant="secondary">{method.type}</Badge>
-                      </td>
-                      <td className="py-4 px-4 text-sm text-foreground">{method.mdrCredit}</td>
-                      <td className="py-4 px-4 text-sm text-foreground">{method.mdrDebit}</td>
-                      <td className="py-4 px-4 text-sm text-foreground">{method.mdrPix}</td>
-                      <td className="py-4 px-4 text-sm text-foreground">{method.settlement}</td>
-                      <td className="py-4 px-4 text-sm font-medium text-accent">{method.takeRate}</td>
-                      <td className="py-4 px-4 text-sm font-medium text-success">{method.approvalRate}</td>
-                      <td className="py-4 px-4">
-                        <Badge variant={method.status === "Ativo" ? "default" : "outline"}>
-                          {method.status}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+          {paymentMethods.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                Nenhum meio de pagamento cadastrado ainda.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Clique em "Adicionar Meio" para começar.
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Parceiro</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>MDR Créd.</TableHead>
+                  <TableHead>MDR Déb.</TableHead>
+                  <TableHead>MDR Pix</TableHead>
+                  <TableHead>Liquidação</TableHead>
+                  <TableHead>Take Rate</TableHead>
+                  <TableHead>Aprovação Média</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentMethods.map((method) => (
+                  <TableRow key={method.id}>
+                    <TableCell className="font-medium">{method.name}</TableCell>
+                    <TableCell>{method.type}</TableCell>
+                    <TableCell>{method.fees.mdrCreditVista}%</TableCell>
+                    <TableCell>{method.fees.mdrDebit}%</TableCell>
+                    <TableCell>{method.fees.mdrPix}%</TableCell>
+                    <TableCell>D+{method.settlement.credit}</TableCell>
+                    <TableCell>{method.takeRate}%</TableCell>
+                    <TableCell>{getAverageApproval(method)}%</TableCell>
+                    <TableCell>
+                      <Badge variant={STATUS_VARIANTS[method.status]}>
+                        {method.status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      <AddPaymentMethodDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        paymentTypes={paymentTypes}
+        onUpdateTypes={setPaymentTypes}
+        onAdd={handleAddPaymentMethod}
+      />
     </div>
   );
 };
