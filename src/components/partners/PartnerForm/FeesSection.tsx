@@ -2,12 +2,20 @@ import { UseFormReturn } from "react-hook-form";
 import { PartnerFormData } from "@/lib/partner-schema";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { DynamicField } from "../DynamicField";
+import { getFieldConfigsByPartnerType } from "@/lib/db";
+import { useState } from "react";
 
 interface FeesSectionProps {
   form: UseFormReturn<PartnerFormData>;
 }
 
 export function FeesSection({ form }: FeesSectionProps) {
+  const [customFields, setCustomFields] = useState<Record<string, any>>({});
+  const feeFields = getFieldConfigsByPartnerType('payment')
+    .filter(f => f.category === 'fees')
+    .sort((a, b) => a.order - b.order);
+
   return (
     <div className="space-y-4">
       <div>
@@ -118,6 +126,18 @@ export function FeesSection({ form }: FeesSectionProps) {
             </FormItem>
           )}
         />
+      </div>
+
+      {/* Campos dinâmicos de taxas (MDR PIX parcelado, etc) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {feeFields.map((field) => (
+          <DynamicField
+            key={field.id}
+            field={field}
+            value={customFields[field.id] || ''}
+            onChange={(value) => setCustomFields({ ...customFields, [field.id]: value })}
+          />
+        ))}
       </div>
     </div>
   );

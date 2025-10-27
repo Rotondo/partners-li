@@ -15,6 +15,7 @@ import { PerformanceSection } from "./PartnerForm/PerformanceSection";
 import { PaymentTypesSection } from "./PartnerForm/PaymentTypesSection";
 import { AntiFraudSection } from "./PartnerForm/AntiFraudSection";
 import { ObservationsSection } from "./PartnerForm/ObservationsSection";
+import { DynamicFieldsSection } from "./DynamicFieldsSection";
 import { useToast } from "@/hooks/use-toast";
 
 interface AddPartnerDialogProps {
@@ -29,6 +30,7 @@ export function AddPartnerDialog({
   onAdd,
 }: AddPartnerDialogProps) {
   const { toast } = useToast();
+  const [customFields, setCustomFields] = useState<Record<string, any>>({});
 
   const form = useForm<PartnerFormData>({
     resolver: zodResolver(partnerSchema),
@@ -72,6 +74,7 @@ export function AddPartnerDialog({
       category: 'payment',
       status: data.status,
       startDate: data.startDate,
+      categories: ['payment'], // Adicionar campo obrigatório
       fees: {
         mdrCreditVista: data.fees.mdrCreditVista,
         mdrDebit: data.fees.mdrDebit,
@@ -85,7 +88,7 @@ export function AddPartnerDialog({
         pix: data.settlement.pix,
       },
       takeRate: data.takeRate,
-      performance: {
+      performance: data.performance ? {
         month1: {
           approval: data.performance.month1.approval,
           gmv: data.performance.month1.gmv,
@@ -101,7 +104,7 @@ export function AddPartnerDialog({
           gmv: data.performance.month3.gmv,
           transactions: data.performance.month3.transactions,
         },
-      },
+      } : undefined,
       notes: data.notes,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -128,14 +131,16 @@ export function AddPartnerDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="identification" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
                 <TabsTrigger value="identification">Identificação</TabsTrigger>
+                <TabsTrigger value="contact">Contato</TabsTrigger>
                 <TabsTrigger value="fees">Taxas</TabsTrigger>
                 <TabsTrigger value="settlement">Prazos</TabsTrigger>
                 <TabsTrigger value="takerate">Take Rate</TabsTrigger>
                 <TabsTrigger value="performance">Performance</TabsTrigger>
                 <TabsTrigger value="payment-types">Meios</TabsTrigger>
                 <TabsTrigger value="antifraud">Antifraude</TabsTrigger>
+                <TabsTrigger value="custom">Custom</TabsTrigger>
                 <TabsTrigger value="observations">Obs.</TabsTrigger>
               </TabsList>
 
@@ -169,6 +174,26 @@ export function AddPartnerDialog({
 
               <TabsContent value="observations" className="mt-6">
                 <ObservationsSection form={form} />
+              </TabsContent>
+
+              {/* Campo customizado */}
+              <TabsContent value="custom" className="mt-6">
+                <DynamicFieldsSection
+                  partnerType="payment"
+                  category="custom"
+                  values={customFields}
+                  onChange={(fieldId, value) => setCustomFields({ ...customFields, [fieldId]: value })}
+                />
+              </TabsContent>
+
+              {/* Campo de contato/URL */}
+              <TabsContent value="contact" className="mt-6">
+                <DynamicFieldsSection
+                  partnerType="payment"
+                  category="contact"
+                  values={customFields}
+                  onChange={(fieldId, value) => setCustomFields({ ...customFields, [fieldId]: value })}
+                />
               </TabsContent>
             </Tabs>
 

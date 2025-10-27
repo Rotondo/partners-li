@@ -4,7 +4,8 @@ export interface FieldConfig {
   id: string;
   label: string;
   category: string;
-  partnerType: PartnerType; // Para qual tipo de parceiro esse campo é
+  partnerType: PartnerType; // Tipo principal
+  partnerTypes?: PartnerType[]; // Tipos adicionais (para campos compartilhados)
   enabled: boolean;
   required: boolean;
   order: number;

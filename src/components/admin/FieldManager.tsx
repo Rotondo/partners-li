@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Settings, Save, Plus, Pencil, X } from "lucide-react";
-import { FieldConfig, DEFAULT_FIELD_CONFIGS } from "@/types/field-config";
+import { Settings, Save, Plus, Pencil, X, Copy } from "lucide-react";
+import { FieldConfig, DEFAULT_FIELD_CONFIGS, PartnerType } from "@/types/field-config";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { saveFieldConfigs } from "@/lib/db";
 
 const PARTNER_TYPES = [
   { value: 'logistic', label: 'Logístico', icon: '🚚' },
@@ -27,10 +28,15 @@ export function FieldManager() {
 
   const [editingField, setEditingField] = useState<FieldConfig | null>(null);
   const [isNewFieldDialogOpen, setIsNewFieldDialogOpen] = useState(false);
-  const [newField, setNewField] = useState<Partial<FieldConfig>>({
+  interface ExtendedFieldConfig extends Partial<FieldConfig> {
+    partnerTypes?: PartnerType[];
+  }
+
+  const [newField, setNewField] = useState<ExtendedFieldConfig>({
     label: '',
     category: 'custom',
     partnerType: 'payment',
+    partnerTypes: [], // Múltiplos tipos
     enabled: true,
     required: false,
     order: 999,
@@ -55,7 +61,7 @@ export function FieldManager() {
   };
 
   const handleSave = () => {
-    localStorage.setItem('fieldConfigs', JSON.stringify(fieldConfigs));
+    saveFieldConfigs(fieldConfigs);
     toast({
       title: "Configurações salvas",
       description: "As configurações de campos foram salvas com sucesso.",
@@ -90,31 +96,37 @@ export function FieldManager() {
       return;
     }
 
-    const newFieldComplete: FieldConfig = {
-      id: newField.id!,
+    // Criar um campo para cada tipo de parceiro selecionado
+    const selectedTypes = newField.partnerTypes && newField.partnerTypes.length > 0
+      ? newField.partnerTypes
+      : [newField.partnerType];
+
+    const newFields: FieldConfig[] = selectedTypes.map(type => ({
+      id: selectedTypes.length > 1 ? `${newField.id}_${type}` : newField.id!,
       label: newField.label!,
       category: newField.category || 'custom',
-      partnerType: newField.partnerType as 'logistic' | 'payment' | 'marketplace',
+      partnerType: type as 'logistic' | 'payment' | 'marketplace',
       enabled: newField.enabled ?? true,
       required: newField.required ?? false,
       order: newField.order || 999,
-    };
+    }));
 
-    setFieldConfigs([...fieldConfigs, newFieldComplete]);
+    setFieldConfigs([...fieldConfigs, ...newFields]);
     setIsNewFieldDialogOpen(false);
     setNewField({
       label: '',
       id: '',
       category: 'custom',
       partnerType: 'payment',
+      partnerTypes: [],
       enabled: true,
       required: false,
       order: 999,
     });
 
     toast({
-      title: "Campo adicionado",
-      description: `${newFieldComplete.label} foi adicionado com sucesso.`,
+      title: "Campo(s) adicionado(s)",
+      description: `${newFields.length} campo(s) adicionado(s) com sucesso.`,
     });
   };
 
@@ -155,6 +167,20 @@ export function FieldManager() {
     toast({
       title: "Campo removido",
       description: `${field?.label} foi removido com sucesso.`,
+    });
+  };
+
+  const handleDuplicateField = (field: FieldConfig) => {
+    const newId = `${field.id}_copy_${Date.now()}`;
+    const duplicatedField: FieldConfig = {
+      ...field,
+      id: newId,
+      label: `${field.label} (Cópia)`,
+    };
+    setFieldConfigs([...fieldConfigs, duplicatedField]);
+    toast({
+      title: "Campo duplicado",
+      description: `${field.label} foi duplicado com sucesso.`,
     });
   };
 
@@ -266,8 +292,18 @@ export function FieldManager() {
                           <Button 
                             variant="ghost" 
                             size="icon"
+                            onClick={() => handleDuplicateField(field)}
+                            className="h-8 w-8"
+                            title="Duplicar campo"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
                             onClick={() => handleEditField(field)}
                             className="h-8 w-8"
+                            title="Editar campo"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -276,6 +312,7 @@ export function FieldManager() {
                             size="icon"
                             onClick={() => handleDeleteField(field.id)}
                             className="h-8 w-8 text-destructive hover:text-destructive"
+                            title="Remover campo"
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -354,26 +391,89 @@ export function FieldManager() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="field-category">Categoria</Label>
-                <Input
-                  id="field-category"
-                  value={newField.category || ''}
-                  onChange={(e) => setNewField({ ...newField, category: e.target.value })}
-                  placeholder="Ex: custom"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label>Tipo de Campo (Categoria)</Label>
+              <Select
+                value={newField.category || 'custom'}
+                onValueChange={(value) => setNewField({ ...newField, category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="identification">Identificação</SelectItem>
+                  <SelectItem value="fees">Taxas</SelectItem>
+                  <SelectItem value="settlement">Prazos/Liquidação</SelectItem>
+                  <SelectItem value="custom">Customizado</SelectItem>
+                  <SelectItem value="contact">Contato/URL</SelectItem>
+                  <SelectItem value="performance">Performance</SelectItem>
+                  <SelectItem value="notes">Observações</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Determina onde o campo aparecerá no formulário
+              </p>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="field-order">Ordem</Label>
-                <Input
-                  id="field-order"
-                  type="number"
-                  value={newField.order || 999}
-                  onChange={(e) => setNewField({ ...newField, order: parseInt(e.target.value) || 999 })}
-                />
+            <div className="space-y-2">
+              <Label>Tipo(s) de Parceiro onde será usado</Label>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="type-logistic"
+                    checked={newField.partnerTypes?.includes('logistic') || newField.partnerType === 'logistic'}
+                    onCheckedChange={(checked) => {
+                      const types = newField.partnerTypes || [];
+                      const newTypes = checked 
+                        ? [...types, 'logistic' as PartnerType]
+                        : types.filter(t => t !== 'logistic');
+                      setNewField({ ...newField, partnerTypes: newTypes });
+                    }}
+                  />
+                  <Label htmlFor="type-logistic" className="text-sm cursor-pointer">🚚 Logístico</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="type-payment"
+                    checked={newField.partnerTypes?.includes('payment') || newField.partnerType === 'payment'}
+                    onCheckedChange={(checked) => {
+                      const types = newField.partnerTypes || [];
+                      const newTypes = checked 
+                        ? [...types, 'payment' as PartnerType]
+                        : types.filter(t => t !== 'payment');
+                      setNewField({ ...newField, partnerTypes: newTypes });
+                    }}
+                  />
+                  <Label htmlFor="type-payment" className="text-sm cursor-pointer">💳 Pagamento</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="type-marketplace"
+                    checked={newField.partnerTypes?.includes('marketplace') || newField.partnerType === 'marketplace'}
+                    onCheckedChange={(checked) => {
+                      const types = newField.partnerTypes || [];
+                      const newTypes = checked 
+                        ? [...types, 'marketplace' as PartnerType]
+                        : types.filter(t => t !== 'marketplace');
+                      setNewField({ ...newField, partnerTypes: newTypes as PartnerType[] });
+                    }}
+                  />
+                  <Label htmlFor="type-marketplace" className="text-sm cursor-pointer">🛒 Marketplace</Label>
+                </div>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="field-order">Ordem de Exibição</Label>
+              <Input
+                id="field-order"
+                type="number"
+                value={newField.order || 999}
+                onChange={(e) => setNewField({ ...newField, order: parseInt(e.target.value) || 999 })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Menor número = aparece primeiro
+              </p>
             </div>
 
             <div className="space-y-2">

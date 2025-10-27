@@ -41,9 +41,21 @@ export interface PaymentPartnerData {
   };
   takeRate: number;
   performance?: {
-    approval: number;
-    gmv: number;
-    transactions: number;
+    month1: {
+      approval: number;
+      gmv: number;
+      transactions: number;
+    };
+    month2: {
+      approval: number;
+      gmv: number;
+      transactions: number;
+    };
+    month3: {
+      approval: number;
+      gmv: number;
+      transactions: number;
+    };
   };
 }
 
