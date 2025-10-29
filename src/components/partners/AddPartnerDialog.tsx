@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,24 +17,56 @@ import { AntiFraudSection } from "./PartnerForm/AntiFraudSection";
 import { ObservationsSection } from "./PartnerForm/ObservationsSection";
 import { DynamicFieldsSection } from "./DynamicFieldsSection";
 import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 
 interface AddPartnerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdd: (partner: PaymentPartner) => void;
+  onEdit?: (partner: PaymentPartner) => void;
+  initialPartner?: PaymentPartner | null; // Partner para edição
 }
 
 export function AddPartnerDialog({
   open,
   onOpenChange,
   onAdd,
+  onEdit,
+  initialPartner,
 }: AddPartnerDialogProps) {
   const { toast } = useToast();
   const [customFields, setCustomFields] = useState<Record<string, any>>({});
+  const [savedPartnerId, setSavedPartnerId] = useState<string | null>(null);
+  
+  const isEditing = !!initialPartner;
 
-  const form = useForm<PartnerFormData>({
-    resolver: zodResolver(partnerSchema),
-    defaultValues: {
+  const getDefaultValues = (): PartnerFormData => {
+    if (initialPartner) {
+      return {
+        name: initialPartner.name,
+        status: initialPartner.status,
+        startDate: initialPartner.startDate,
+        fees: initialPartner.fees,
+        settlement: initialPartner.settlement,
+        takeRate: initialPartner.takeRate,
+        performance: initialPartner.performance || {
+          month1: { approval: 0, gmv: 0, transactions: 0 },
+          month2: { approval: 0, gmv: 0, transactions: 0 },
+          month3: { approval: 0, gmv: 0, transactions: 0 },
+        },
+        acceptedPaymentMethods: {
+          creditCard: { enabled: false, brands: [] },
+          debitCard: { enabled: false, brands: [] },
+          pix: { enabled: false, normal: false, installment: false },
+          boleto: false,
+          digitalWallet: { enabled: false, wallets: [] },
+          bnpl: false,
+        },
+        notes: initialPartner.notes,
+      };
+    }
+    
+    return {
       name: "",
       status: "active",
       startDate: new Date(),
@@ -64,12 +96,26 @@ export function AddPartnerDialog({
         digitalWallet: { enabled: false, wallets: [] },
         bnpl: false,
       },
-    },
+    };
+  };
+
+  const form = useForm<PartnerFormData>({
+    resolver: zodResolver(partnerSchema),
+    defaultValues: getDefaultValues(),
   });
+
+  // Resetar formulário quando initialPartner mudar
+  useEffect(() => {
+    if (initialPartner) {
+      form.reset(getDefaultValues());
+    } else {
+      form.reset();
+    }
+  }, [initialPartner, open]);
 
   const onSubmit = (data: PartnerFormData) => {
     const newPartner: PaymentPartner = {
-      id: Date.now().toString(),
+      id: initialPartner?.id || Date.now().toString(),
       name: data.name,
       category: 'payment',
       status: data.status,
@@ -111,12 +157,18 @@ export function AddPartnerDialog({
     };
 
     onAdd(newPartner);
+    setSavedPartnerId(newPartner.id);
     
-    toast({
-      title: "Parceiro cadastrado",
-      description: `${data.name} foi adicionado com sucesso.`,
+    // Mostrar toast
+    const message = isEditing 
+      ? `${data.name} foi atualizado com sucesso!` 
+      : `${data.name} foi adicionado com sucesso!`;
+    
+    sonnerToast.success(message, {
+      duration: 3000,
     });
 
+    // Fechar o dialog após salvar
     form.reset();
     onOpenChange(false);
   };
@@ -125,7 +177,9 @@ export function AddPartnerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Adicionar Novo Parceiro de Pagamento</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Editar Parceiro de Pagamento" : "Adicionar Novo Parceiro de Pagamento"}
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -201,7 +255,21 @@ export function AddPartnerDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit">Salvar Parceiro</Button>
+              {savedPartnerId && (
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => {
+                    form.reset();
+                    setSavedPartnerId(null);
+                  }}
+                >
+                  Cadastrar Novo
+                </Button>
+              )}
+              <Button type="submit">
+                {savedPartnerId ? "Atualizar Parceiro" : "Salvar Parceiro"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

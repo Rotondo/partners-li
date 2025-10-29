@@ -55,7 +55,12 @@ export function getFieldConfigs(): FieldConfig[] {
 
 export function getFieldConfigsByPartnerType(type: 'logistic' | 'payment' | 'marketplace'): FieldConfig[] {
   const configs = getFieldConfigs();
-  return configs.filter(f => f.partnerType === type && f.enabled);
+  return configs.filter(f => {
+    // Retorna se o campo é específico desse tipo OU se está nos partnerTypes
+    const isMainType = f.partnerType === type;
+    const isInPartnerTypes = f.partnerTypes?.includes(type);
+    return (isMainType || isInPartnerTypes) && f.enabled;
+  });
 }
 
 // ==================== EXPORT/IMPORT ====================

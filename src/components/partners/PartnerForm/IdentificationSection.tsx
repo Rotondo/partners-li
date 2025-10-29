@@ -62,7 +62,7 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
         name="startDate"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Data de Início da Parceria *</FormLabel>
+            <FormLabel>Data de Início *</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
