@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import {
 import { Plus } from "lucide-react";
 import { AddPaymentMethodDialog } from "./AddPaymentMethodDialog";
 import { PaymentMethod } from "@/types/payment-method";
+import { getAllPaymentMethods, savePaymentMethod } from "@/lib/db";
+import { useToast } from "@/hooks/use-toast";
 
 const STATUS_VARIANTS = {
   "Ativo": "default",
@@ -25,9 +27,43 @@ const STATUS_VARIANTS = {
 export const PaymentMethodsTable = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  const handleAddPaymentMethod = (paymentMethod: PaymentMethod) => {
-    setPaymentMethods([...paymentMethods, paymentMethod]);
+  useEffect(() => {
+    getAllPaymentMethods()
+      .then(methods => {
+        setPaymentMethods(methods);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error loading payment methods:', error);
+        toast({
+          title: "Erro ao carregar métodos de pagamento",
+          description: "Não foi possível carregar os dados.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+      });
+  }, []);
+
+  const handleAddPaymentMethod = async (paymentMethod: PaymentMethod) => {
+    try {
+      await savePaymentMethod(paymentMethod);
+      const updated = await getAllPaymentMethods();
+      setPaymentMethods(updated);
+      toast({
+        title: "Método adicionado com sucesso",
+        description: "O método de pagamento foi salvo.",
+      });
+    } catch (error) {
+      console.error('Error saving payment method:', error);
+      toast({
+        title: "Erro ao salvar método",
+        description: "Não foi possível salvar o método de pagamento.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -50,7 +86,13 @@ export const PaymentMethodsTable = () => {
           <CardTitle>Parceiros Cadastrados</CardTitle>
         </CardHeader>
         <CardContent>
-          {paymentMethods.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">
+                Carregando métodos de pagamento...
+              </p>
+            </div>
+          ) : paymentMethods.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">
                 Nenhum meio de pagamento cadastrado ainda.
