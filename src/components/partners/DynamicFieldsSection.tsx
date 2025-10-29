@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { FieldConfig } from "@/types/field-config";
 import { DynamicField } from "./DynamicField";
 import { getFieldConfigsByPartnerType } from "@/lib/db";
@@ -10,12 +11,16 @@ interface DynamicFieldsSectionProps {
 }
 
 export function DynamicFieldsSection({ partnerType, category, values, onChange }: DynamicFieldsSectionProps) {
-  const allConfigs = getFieldConfigsByPartnerType(partnerType);
-  
-  // Filtrar campos da categoria desejada
-  const categoryFields = allConfigs
-    .filter(field => field.category === category)
-    .sort((a, b) => a.order - b.order);
+  const [categoryFields, setCategoryFields] = useState<FieldConfig[]>([]);
+
+  useEffect(() => {
+    getFieldConfigsByPartnerType(partnerType).then(configs => {
+      const filtered = configs
+        .filter(field => field.category === category)
+        .sort((a, b) => a.order - b.order);
+      setCategoryFields(filtered);
+    });
+  }, [partnerType, category]);
 
   if (categoryFields.length === 0) {
     return null;

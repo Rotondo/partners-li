@@ -11,7 +11,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { DynamicField } from "../DynamicField";
 import { getFieldConfigsByPartnerType } from "@/lib/db";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { FieldConfig } from "@/types/field-config";
 
 interface IdentificationSectionProps {
   form: UseFormReturn<PartnerFormData>;
@@ -19,9 +20,16 @@ interface IdentificationSectionProps {
 
 export function IdentificationSection({ form }: IdentificationSectionProps) {
   const [customFields, setCustomFields] = useState<Record<string, any>>({});
-  const identificationFields = getFieldConfigsByPartnerType('payment')
-    .filter(f => f.category === 'identification' && f.id !== 'name')
-    .sort((a, b) => a.order - b.order);
+  const [identificationFields, setIdentificationFields] = useState<FieldConfig[]>([]);
+
+  useEffect(() => {
+    getFieldConfigsByPartnerType('payment').then(configs => {
+      const filtered = configs
+        .filter(f => f.category === 'identification' && f.id !== 'name')
+        .sort((a, b) => a.order - b.order);
+      setIdentificationFields(filtered);
+    });
+  }, []);
 
   return (
     <div className="space-y-4">

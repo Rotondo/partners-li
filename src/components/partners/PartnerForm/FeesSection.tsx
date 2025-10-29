@@ -4,7 +4,8 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Input } from "@/components/ui/input";
 import { DynamicField } from "../DynamicField";
 import { getFieldConfigsByPartnerType } from "@/lib/db";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { FieldConfig } from "@/types/field-config";
 
 interface FeesSectionProps {
   form: UseFormReturn<PartnerFormData>;
@@ -12,9 +13,16 @@ interface FeesSectionProps {
 
 export function FeesSection({ form }: FeesSectionProps) {
   const [customFields, setCustomFields] = useState<Record<string, any>>({});
-  const feeFields = getFieldConfigsByPartnerType('payment')
-    .filter(f => f.category === 'fees')
-    .sort((a, b) => a.order - b.order);
+  const [feeFields, setFeeFields] = useState<FieldConfig[]>([]);
+
+  useEffect(() => {
+    getFieldConfigsByPartnerType('payment').then(configs => {
+      const filtered = configs
+        .filter(f => f.category === 'fees')
+        .sort((a, b) => a.order - b.order);
+      setFeeFields(filtered);
+    });
+  }, []);
 
   return (
     <div className="space-y-4">

@@ -1,6 +1,8 @@
-import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings } from "lucide-react";
+import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
 interface SidebarProps {
   activeTab: string;
@@ -23,6 +25,7 @@ const partnersSubmenu = [
 ];
 
 export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
+  const { user, signOut } = useAuth();
   const [showPartners, setShowPartners] = useState(
     activeTab.startsWith('partners-')
   );
@@ -103,6 +106,20 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
           );
         })}
       </nav>
+
+      <div className="p-4 border-t border-sidebar-border">
+        <div className="mb-3 text-xs text-sidebar-foreground/50">
+          {user?.email}
+        </div>
+        <Button
+          variant="outline"
+          className="w-full justify-start gap-2"
+          onClick={signOut}
+        >
+          <LogOut className="h-4 w-4" />
+          Sair
+        </Button>
+      </div>
     </aside>
   );
 };
