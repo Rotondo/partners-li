@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings, Save, Plus, Pencil, X, Copy } from "lucide-react";
 import { FieldConfig, DEFAULT_FIELD_CONFIGS, PartnerType } from "@/types/field-config";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { saveFieldConfigs } from "@/lib/db";
+import { saveFieldConfigs, getFieldConfigs } from "@/lib/db";
 
 const PARTNER_TYPES = [
   { value: 'logistic', label: 'Logístico', icon: '🚚' },
@@ -20,11 +20,22 @@ const PARTNER_TYPES = [
 ] as const;
 
 export function FieldManager() {
-  const [fieldConfigs, setFieldConfigs] = useState<FieldConfig[]>(() => {
-    // Carregar do localStorage ou usar default
-    const saved = localStorage.getItem('fieldConfigs');
-    return saved ? JSON.parse(saved) : DEFAULT_FIELD_CONFIGS;
-  });
+  const [fieldConfigs, setFieldConfigs] = useState<FieldConfig[]>(DEFAULT_FIELD_CONFIGS);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load field configs from database on mount
+  useEffect(() => {
+    getFieldConfigs()
+      .then(configs => {
+        setFieldConfigs(configs);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error loading field configs:', error);
+        setFieldConfigs(DEFAULT_FIELD_CONFIGS);
+        setIsLoading(false);
+      });
+  }, []);
 
   const [editingField, setEditingField] = useState<FieldConfig | null>(null);
   const [isNewFieldDialogOpen, setIsNewFieldDialogOpen] = useState(false);
@@ -60,20 +71,39 @@ export function FieldManager() {
     ));
   };
 
-  const handleSave = () => {
-    saveFieldConfigs(fieldConfigs);
-    toast({
-      title: "Configurações salvas",
-      description: "As configurações de campos foram salvas com sucesso.",
-    });
+  const handleSave = async () => {
+    try {
+      await saveFieldConfigs(fieldConfigs);
+      toast({
+        title: "Configurações salvas",
+        description: "As configurações de campos foram salvas com sucesso.",
+      });
+    } catch (error) {
+      toast({ 
+        title: "Erro ao salvar",
+        description: error instanceof Error ? error.message : "Erro desconhecido",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleReset = () => {
-    setFieldConfigs(DEFAULT_FIELD_CONFIGS);
-    toast({
-      title: "Configurações resetadas",
-      description: "As configurações foram restauradas para o padrão.",
-    });
+  const handleReset = async () => {
+    if (confirm("Tem certeza que deseja resetar todas as configurações para o padrão?")) {
+      try {
+        await saveFieldConfigs(DEFAULT_FIELD_CONFIGS);
+        setFieldConfigs(DEFAULT_FIELD_CONFIGS);
+        toast({
+          title: "Configurações resetadas",
+          description: "As configurações foram restauradas para o padrão.",
+        });
+      } catch (error) {
+        toast({ 
+          title: "Erro ao resetar",
+          description: error instanceof Error ? error.message : "Erro desconhecido",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
   const handleAddNewField = () => {

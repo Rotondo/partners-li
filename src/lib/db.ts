@@ -175,6 +175,72 @@ export async function importDatabase(jsonData: string): Promise<void> {
   }
 }
 
+// ==================== PAYMENT METHODS ====================
+
+export async function savePaymentMethod(paymentMethod: any): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
+  const { error } = await supabase
+    .from('payment_methods')
+    .upsert({
+      id: paymentMethod.id,
+      user_id: user.id,
+      data: paymentMethod as any,
+    }, { onConflict: 'id' });
+
+  if (error) {
+    toast.error("Erro ao salvar método de pagamento");
+    throw error;
+  }
+}
+
+export async function getAllPaymentMethods(): Promise<any[]> {
+  const { data, error } = await supabase
+    .from('payment_methods')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    toast.error("Erro ao carregar métodos de pagamento");
+    throw error;
+  }
+
+  return (data || []).map(row => row.data as any);
+}
+
+export async function getPaymentMethodById(id: string): Promise<any | undefined> {
+  const { data, error } = await supabase
+    .from('payment_methods')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    if (error.code !== 'PGRST116') { // Not found is ok
+      toast.error("Erro ao carregar método de pagamento");
+    }
+    return undefined;
+  }
+
+  return data?.data as any;
+}
+
+export async function deletePaymentMethod(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('payment_methods')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    toast.error("Erro ao excluir método de pagamento");
+    throw error;
+  }
+}
+
 export async function clearDatabase(): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
