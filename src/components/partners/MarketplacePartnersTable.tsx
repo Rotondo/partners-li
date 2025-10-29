@@ -57,6 +57,7 @@ export const MarketplacePartnersTable = () => {
     const partner: MarketplacePartner = {
       id: Date.now().toString(),
       name: newPartner.name,
+      categories: ['marketplace'],
       category: 'marketplace',
       status: newPartner.status || 'active',
       startDate: newPartner.startDate,

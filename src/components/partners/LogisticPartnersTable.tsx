@@ -55,6 +55,7 @@ export const LogisticPartnersTable = () => {
     const partner: LogisticPartner = {
       id: Date.now().toString(),
       name: newPartner.name,
+      categories: ['logistic'],
       category: 'logistic',
       status: newPartner.status || 'active',
       startDate: newPartner.startDate,
