@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Trash2 } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
 
 export interface FeeTableRow {
   id: string;
@@ -17,14 +18,19 @@ interface Column {
 }
 
 interface DynamicFeeTableProps {
+  form: UseFormReturn<any>;
+  name: string;
   columns: Column[];
-  data: FeeTableRow[];
-  onChange: (data: FeeTableRow[]) => void;
   addButtonLabel?: string;
 }
 
-export function DynamicFeeTable({ columns, data, onChange, addButtonLabel = "Adicionar Linha" }: DynamicFeeTableProps) {
-  const [rows, setRows] = useState<FeeTableRow[]>(data);
+export function DynamicFeeTable({ form, name, columns, addButtonLabel = "Adicionar Linha" }: DynamicFeeTableProps) {
+  const fieldValue = form.watch(name as any) || [];
+  const [rows, setRows] = useState<FeeTableRow[]>(fieldValue);
+
+  useEffect(() => {
+    setRows(fieldValue);
+  }, [fieldValue]);
 
   const addRow = () => {
     const newRow: FeeTableRow = {
@@ -33,13 +39,13 @@ export function DynamicFeeTable({ columns, data, onChange, addButtonLabel = "Adi
     };
     const updated = [...rows, newRow];
     setRows(updated);
-    onChange(updated);
+    form.setValue(name as any, updated);
   };
 
   const removeRow = (id: string) => {
     const updated = rows.filter((row) => row.id !== id);
     setRows(updated);
-    onChange(updated);
+    form.setValue(name as any, updated);
   };
 
   const updateRow = (id: string, key: string, value: any) => {
@@ -47,7 +53,7 @@ export function DynamicFeeTable({ columns, data, onChange, addButtonLabel = "Adi
       row.id === id ? { ...row, [key]: value } : row
     );
     setRows(updated);
-    onChange(updated);
+    form.setValue(name as any, updated);
   };
 
   return (

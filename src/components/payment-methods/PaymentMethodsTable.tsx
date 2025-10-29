@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Plus } from "lucide-react";
 import { AddPaymentMethodDialog } from "./AddPaymentMethodDialog";
-import { PaymentMethod, DEFAULT_PAYMENT_TYPES, PaymentType } from "@/types/payment-method";
+import { PaymentMethod } from "@/types/payment-method";
 
 const STATUS_VARIANTS = {
   "Ativo": "default",
@@ -24,20 +24,10 @@ const STATUS_VARIANTS = {
 
 export const PaymentMethodsTable = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [paymentTypes, setPaymentTypes] = useState<PaymentType[]>(DEFAULT_PAYMENT_TYPES);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleAddPaymentMethod = (paymentMethod: PaymentMethod) => {
     setPaymentMethods([...paymentMethods, paymentMethod]);
-  };
-
-  const getAverageApproval = (method: PaymentMethod) => {
-    const avg = (
-      method.performance.month1.approval +
-      method.performance.month2.approval +
-      method.performance.month3.approval
-    ) / 3;
-    return avg.toFixed(1);
   };
 
   return (
@@ -87,16 +77,16 @@ export const PaymentMethodsTable = () => {
               <TableBody>
                 {paymentMethods.map((method) => (
                   <TableRow key={method.id}>
-                    <TableCell className="font-medium">{method.name}</TableCell>
-                    <TableCell>{method.type}</TableCell>
-                    <TableCell>{method.fees.mdrCreditVista}%</TableCell>
-                    <TableCell>{method.fees.mdrDebit}%</TableCell>
-                    <TableCell>{method.fees.mdrPix}%</TableCell>
-                    <TableCell>D+{method.settlement.credit}</TableCell>
-                    <TableCell>{method.takeRate}%</TableCell>
-                    <TableCell>{getAverageApproval(method)}%</TableCell>
+                    <TableCell className="font-medium">{method.company.tradeName}</TableCell>
+                    <TableCell>{method.company.solutionType}</TableCell>
+                    <TableCell>{method.creditCard.feesByRevenue[0]?.baseRate || 0}%</TableCell>
+                    <TableCell>{method.debitCard.baseRate}%</TableCell>
+                    <TableCell>{method.pix.baseRate}%</TableCell>
+                    <TableCell>D+{method.settlement.creditCardDefault}</TableCell>
+                    <TableCell>{method.platformSplit.takeRatePercentage || 0}%</TableCell>
+                    <TableCell>{method.performance?.approvalRates[0]?.averageRate || 0}%</TableCell>
                     <TableCell>
-                      <Badge variant={STATUS_VARIANTS[method.status]}>
+                      <Badge variant={STATUS_VARIANTS[method.status] || "default"}>
                         {method.status}
                       </Badge>
                     </TableCell>
@@ -111,8 +101,6 @@ export const PaymentMethodsTable = () => {
       <AddPaymentMethodDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        paymentTypes={paymentTypes}
-        onUpdateTypes={setPaymentTypes}
         onAdd={handleAddPaymentMethod}
       />
     </div>
