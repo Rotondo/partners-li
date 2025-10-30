@@ -30,6 +30,7 @@ export function AddPartnerDialog({
   onAdd,
 }: AddPartnerDialogProps) {
   const { toast } = useToast();
+  const [contactFields, setContactFields] = useState<Record<string, any>>({});
   const [customFields, setCustomFields] = useState<Record<string, any>>({});
 
   const form = useForm<PartnerFormData>({
@@ -69,12 +70,12 @@ export function AddPartnerDialog({
 
   const onSubmit = (data: PartnerFormData) => {
     const newPartner: PaymentPartner = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: data.name,
       category: 'payment',
       status: data.status,
       startDate: data.startDate,
-      categories: ['payment'], // Adicionar campo obrigatório
+      categories: ['payment'],
       fees: {
         mdrCreditVista: data.fees.mdrCreditVista,
         mdrDebit: data.fees.mdrDebit,
@@ -110,6 +111,8 @@ export function AddPartnerDialog({
       updatedAt: new Date(),
     };
 
+    // TODO: Salvar customFields e contactFields separadamente no banco se necessário
+
     onAdd(newPartner);
     
     toast({
@@ -131,16 +134,15 @@ export function AddPartnerDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="identification" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
+              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
                 <TabsTrigger value="identification">Identificação</TabsTrigger>
-                <TabsTrigger value="contact">Contato</TabsTrigger>
                 <TabsTrigger value="fees">Taxas</TabsTrigger>
                 <TabsTrigger value="settlement">Prazos</TabsTrigger>
                 <TabsTrigger value="takerate">Take Rate</TabsTrigger>
                 <TabsTrigger value="performance">Performance</TabsTrigger>
                 <TabsTrigger value="payment-types">Meios</TabsTrigger>
                 <TabsTrigger value="antifraud">Antifraude</TabsTrigger>
-                <TabsTrigger value="custom">Custom</TabsTrigger>
+                <TabsTrigger value="personalizado">Personalizado</TabsTrigger>
                 <TabsTrigger value="observations">Obs.</TabsTrigger>
               </TabsList>
 
@@ -176,24 +178,29 @@ export function AddPartnerDialog({
                 <ObservationsSection form={form} />
               </TabsContent>
 
-              {/* Campo customizado */}
-              <TabsContent value="custom" className="mt-6">
-                <DynamicFieldsSection
-                  partnerType="payment"
-                  category="custom"
-                  values={customFields}
-                  onChange={(fieldId, value) => setCustomFields({ ...customFields, [fieldId]: value })}
-                />
-              </TabsContent>
-
-              {/* Campo de contato/URL */}
-              <TabsContent value="contact" className="mt-6">
-                <DynamicFieldsSection
-                  partnerType="payment"
-                  category="contact"
-                  values={customFields}
-                  onChange={(fieldId, value) => setCustomFields({ ...customFields, [fieldId]: value })}
-                />
+              {/* Campos Personalizados - Unificados */}
+              <TabsContent value="personalizado" className="mt-6">
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-4">Campos de Contato</h3>
+                    <DynamicFieldsSection
+                      partnerType="payment"
+                      category="contact"
+                      values={contactFields}
+                      onChange={(fieldId, value) => setContactFields({ ...contactFields, [fieldId]: value })}
+                    />
+                  </div>
+                  
+                  <div className="border-t pt-6">
+                    <h3 className="text-lg font-semibold mb-4">Campos Customizados</h3>
+                    <DynamicFieldsSection
+                      partnerType="payment"
+                      category="custom"
+                      values={customFields}
+                      onChange={(fieldId, value) => setCustomFields({ ...customFields, [fieldId]: value })}
+                    />
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
 

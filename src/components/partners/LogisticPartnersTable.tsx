@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, Truck } from "lucide-react";
 import { LogisticPartner } from "@/types/partner";
+import { getAllPartners, savePartner } from "@/lib/db";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +37,7 @@ export const LogisticPartnersTable = () => {
   const [partners, setPartners] = useState<LogisticPartner[]>([]);
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [newPartner, setNewPartner] = useState<Partial<LogisticPartner>>({
     category: 'logistic',
     status: 'active',
@@ -45,15 +48,32 @@ export const LogisticPartnersTable = () => {
     integrationType: 'api',
   });
 
+  useEffect(() => {
+    setIsLoading(true);
+    getAllPartners()
+      .then(allPartners => {
+        const logisticPartners = allPartners.filter(p => 
+          p.categories.includes('logistic') || (p as any).category === 'logistic'
+        );
+        setPartners(logisticPartners as LogisticPartner[]);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Erro ao carregar parceiros:', error);
+        toast.error("Erro ao carregar parceiros logísticos");
+        setIsLoading(false);
+      });
+  }, []);
+
   const filteredPartners = partners.filter((partner) =>
     partner.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAddPartner = () => {
+  const handleAddPartner = async () => {
     if (!newPartner.name || !newPartner.startDate) return;
 
     const partner: LogisticPartner = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: newPartner.name,
       categories: ['logistic'],
       category: 'logistic',
@@ -69,17 +89,30 @@ export const LogisticPartnersTable = () => {
       updatedAt: new Date(),
     };
 
-    setPartners([...partners, partner]);
-    setIsDialogOpen(false);
-    setNewPartner({
-      category: 'logistic',
-      status: 'active',
-      coverage: [],
-      deliveryTime: 0,
-      capacity: 0,
-      pricingModel: 'fixed',
-      integrationType: 'api',
-    });
+    try {
+      await savePartner(partner);
+      const allPartners = await getAllPartners();
+      const logisticPartners = allPartners.filter(p => 
+        p.categories.includes('logistic') || (p as any).category === 'logistic'
+      );
+      setPartners(logisticPartners as LogisticPartner[]);
+      
+      setIsDialogOpen(false);
+      setNewPartner({
+        category: 'logistic',
+        status: 'active',
+        coverage: [],
+        deliveryTime: 0,
+        capacity: 0,
+        pricingModel: 'fixed',
+        integrationType: 'api',
+      });
+      
+      toast.success("Parceiro logístico adicionado com sucesso!");
+    } catch (error) {
+      console.error('Erro ao salvar parceiro:', error);
+      toast.error("Erro ao salvar parceiro logístico");
+    }
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -255,7 +288,12 @@ export const LogisticPartnersTable = () => {
         />
       </div>
 
-      {filteredPartners.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-12 border rounded-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando parceiros...</p>
+        </div>
+      ) : filteredPartners.length === 0 ? (
         <div className="text-center py-12 border rounded-lg">
           <Truck className="mx-auto h-12 w-12 text-muted-foreground" />
           <h3 className="mt-4 text-lg font-semibold">Nenhum parceiro logístico</h3>

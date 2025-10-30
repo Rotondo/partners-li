@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search, CreditCard } from "lucide-react";
 import { PaymentPartner } from "@/types/partner";
 import { Button } from "@/components/ui/button";
@@ -14,19 +14,50 @@ import {
 } from "@/components/ui/table";
 import { AddPartnerDialog } from "./AddPartnerDialog";
 import { useBlurSensitiveData } from "@/hooks/use-blur-sensitive";
+import { getAllPartners, savePartner } from "@/lib/db";
+import { toast } from "sonner";
 
 export const PaymentPartnersTable = () => {
   const [partners, setPartners] = useState<PaymentPartner[]>([]);
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { blurClass, isBlurActive } = useBlurSensitiveData();
+
+  useEffect(() => {
+    setIsLoading(true);
+    getAllPartners()
+      .then(allPartners => {
+        const paymentPartners = allPartners.filter(p => 
+          p.categories.includes('payment') || (p as any).category === 'payment'
+        );
+        setPartners(paymentPartners as PaymentPartner[]);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Erro ao carregar parceiros:', error);
+        toast.error("Erro ao carregar parceiros de pagamento");
+        setIsLoading(false);
+      });
+  }, []);
 
   const filteredPartners = partners.filter((partner) =>
     partner.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAddPartner = (partner: PaymentPartner) => {
-    setPartners([...partners, partner]);
+  const handleAddPartner = async (partner: PaymentPartner) => {
+    try {
+      await savePartner(partner);
+      const allPartners = await getAllPartners();
+      const paymentPartners = allPartners.filter(p => 
+        p.categories.includes('payment') || (p as any).category === 'payment'
+      );
+      setPartners(paymentPartners as PaymentPartner[]);
+      toast.success("Parceiro adicionado com sucesso!");
+    } catch (error) {
+      console.error('Erro ao salvar parceiro:', error);
+      toast.error("Erro ao salvar parceiro");
+    }
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -75,7 +106,12 @@ export const PaymentPartnersTable = () => {
         />
       </div>
 
-      {filteredPartners.length === 0 ? (
+      {isLoading ? (
+        <div className="text-center py-12 border rounded-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando parceiros...</p>
+        </div>
+      ) : filteredPartners.length === 0 ? (
         <div className="text-center py-12 border rounded-lg">
           <CreditCard className="mx-auto h-12 w-12 text-muted-foreground" />
           <h3 className="mt-4 text-lg font-semibold">Nenhum parceiro de pagamento</h3>
