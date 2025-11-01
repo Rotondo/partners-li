@@ -2,6 +2,8 @@
 
 Sistema completo de gestão de relacionamento com parceiros (PRM/CRM) desenvolvido com React, TypeScript, Tailwind CSS e Supabase.
 
+> 📊 **[Documentação Técnica Completa do Supabase](./SUPABASE.md)**
+
 ## 🚀 Funcionalidades
 
 ### ✅ Sprint 1: Foundation (Completo)
@@ -21,9 +23,12 @@ Sistema completo de gestão de relacionamento com parceiros (PRM/CRM) desenvolvi
   - Múltiplos contatos por parceiro
   - Contato principal
   - Informações completas (nome, cargo, email, telefone, notas)
+  - **Vinculação de contatos a atividades**
 
 - **Timeline de Atividades**
   - Registro de reuniões, ligações, emails
+  - **Seleção de parceiro e contato específico**
+  - Anotação de participantes nas atividades
   - Notas detalhadas
   - Próximos passos e oportunidades
 
@@ -41,6 +46,7 @@ Sistema completo de gestão de relacionamento com parceiros (PRM/CRM) desenvolvi
   - Visualização em colunas por status
   - Drag & drop com @dnd-kit
   - Filtros avançados
+  - **Exibição de participantes/contatos nas atividades**
   
 - **Lista Global de Tarefas**
   - Visualização de todas as tarefas
@@ -51,11 +57,13 @@ Sistema completo de gestão de relacionamento com parceiros (PRM/CRM) desenvolvi
   - Visualização mensal
   - Indicadores visuais por tipo
   - Navegação entre meses
+  - **Informações de contatos nos eventos**
 
 - **Página Pipeline**
   - Rota dedicada `/pipeline`
   - Interface responsiva
   - Filtros por parceiro, status, prioridade
+  - **Criação de atividades com seleção de parceiro e contato**
 
 ### ✅ Sprint 4: Health & Intelligence (Completo)
 - **Sistema de Health Scores**
@@ -73,11 +81,17 @@ Sistema completo de gestão de relacionamento com parceiros (PRM/CRM) desenvolvi
   - Métricas consolidadas
   - Alertas ativos em destaque
 
-### ✅ Sprint 5: Polish (Completo)
+### ✅ Sprint 5: Polish & Documentation (Completo)
 - **Documentação Completa**
   - README atualizado
+  - **Documentação técnica do Supabase (SUPABASE.md)**
   - Guia de instalação
   - Sprint checklist
+  
+- **UX Improvements**
+  - Layout responsivo dos formulários
+  - Melhor espaçamento e legibilidade
+  - Tabs adaptáveis para mobile/tablet
 
 ## 🛠️ Tecnologias
 
@@ -141,74 +155,53 @@ bun dev
 
 ## 🗄️ Estrutura do Banco de Dados
 
-### Tabelas Principais
+> **📊 Para documentação técnica completa, veja [SUPABASE.md](./SUPABASE.md)**
 
-#### partners
-- `id`: UUID (PK)
-- `name`: TEXT
-- `type`: TEXT (payment, marketplace, logistic)
-- `data`: JSONB (campos dinâmicos por tipo)
-- `user_id`: UUID
-- `created_at`, `updated_at`: TIMESTAMP
+### Resumo das Tabelas
 
-#### partner_contacts
-- `id`: UUID (PK)
-- `partner_id`: UUID (FK)
-- `name`: TEXT
-- `role`: TEXT
-- `email`: TEXT
-- `phone`: TEXT
-- `is_primary`: BOOLEAN
-- `notes`: TEXT
+- **partners** - Dados principais dos parceiros
+- **partner_contacts** - Contatos relacionados aos parceiros
+- **partner_activities** - Atividades/interações (reuniões, calls, emails)
+- **partner_tasks** - Tarefas vinculadas a parceiros
+- **partner_documents** - Documentos/arquivos dos parceiros
+- **partner_health_metrics** - Métricas de saúde calculadas automaticamente
+- **partner_alerts** - Alertas automáticos baseados em métricas
+- **field_configs** - Configurações de campos customizados
+- **user_roles** - Gestão de permissões
 
-#### partner_activities
-- `id`: UUID (PK)
-- `partner_id`: UUID (FK)
-- `title`: TEXT
-- `activity_type`: ENUM (meeting, call, email, video_call, other)
-- `status`: ENUM (pending, completed, cancelled)
-- `scheduled_date`: DATE
-- `completed_date`: DATE
-- `what_discussed`: TEXT
-- `next_steps`: TEXT
-- `opportunities`: TEXT
-- `participants`: JSONB
+### Relacionamentos
 
-#### partner_tasks
-- `id`: UUID (PK)
-- `partner_id`: UUID (FK)
-- `activity_id`: UUID (FK, nullable)
-- `title`: TEXT
-- `description`: TEXT
-- `status`: ENUM (todo, in_progress, done, cancelled)
-- `priority`: ENUM (low, medium, high)
-- `due_date`: DATE
-- `assigned_to`: UUID
+```
+auth.users
+    │
+    ├─── user_roles (roles/permissões)
+    │
+    └─── partners
+            │
+            ├─── partner_contacts (nome, cargo, email, telefone)
+            ├─── partner_activities (com referência a contatos via participants)
+            ├─── partner_tasks
+            ├─── partner_documents
+            ├─── partner_health_metrics (1:1)
+            └─── partner_alerts
+```
 
-#### partner_health_metrics
-- `id`: UUID (PK)
-- `partner_id`: UUID (FK)
-- `overall_score`: INTEGER (0-100)
-- `performance_score`: INTEGER (0-100)
-- `engagement_score`: INTEGER (0-100)
-- `commercial_score`: INTEGER (0-100)
-- `health_status`: ENUM (excellent, good, warning, critical)
-- `days_since_last_contact`: INTEGER
-- `meetings_this_month`: INTEGER
-- `open_issues_count`: INTEGER
-- `calculated_at`: TIMESTAMP
+### Estrutura CRM Completa
 
-#### partner_alerts
-- `id`: UUID (PK)
-- `partner_id`: UUID (FK)
-- `user_id`: UUID
-- `alert_type`: TEXT
-- `severity`: TEXT (low, medium, high, critical)
-- `title`: TEXT
-- `message`: TEXT
-- `is_read`: BOOLEAN
-- `is_resolved`: BOOLEAN
-- `metadata`: JSONB
+**Hierarquia:**
+```
+Parceiro (Company)
+  └─ Contatos (People)
+      └─ Atividades (Activities)
+          ├─ Participantes (referência aos contatos)
+          └─ Tarefas (Tasks)
+```
+
+**Exemplo de Fluxo:**
+1. Cadastrar parceiro "Empresa X"
+2. Adicionar contatos: "João Silva (CEO)", "Maria Santos (CFO)"
+3. Criar atividade "Reunião Q1" e selecionar "João Silva" como participante
+4. Visualizar no Pipeline qual contato participou de cada atividade
 
 ### Security (RLS)
 

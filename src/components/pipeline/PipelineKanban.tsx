@@ -245,7 +245,10 @@ export const PipelineKanban = () => {
           {activity.participants && activity.participants.length > 0 && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Users className="h-3 w-3" />
-              {activity.participants[0].name}
+              <span className="truncate">
+                {activity.participants[0].name}
+                {activity.participants[0].role && ` (${activity.participants[0].role})`}
+              </span>
             </div>
           )}
         </CardContent>
