@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Plus, Search, CreditCard } from "lucide-react";
 import { PaymentPartner, Partner } from "@/types/partner";
 import { PartnerDetailView } from "./PartnerDetailView";
+import { PaymentPartnersComparison } from "./PaymentPartnersComparison";
+import { ErrorState } from "@/components/ui/error-alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -159,11 +161,21 @@ export const PaymentPartnersTable = () => {
                   onClick={() => handleRowClick(partner)}
                 >
                   <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{partner.fees.mdrCreditVista}%</TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{partner.fees.mdrDebit}%</TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{partner.fees.mdrPix}%</TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>D+{partner.settlement.credit}</TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{partner.takeRate}%</TableCell>
+                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
+                    {partner.payment?.fees.creditCard?.vista?.mdr ? `${partner.payment.fees.creditCard.vista.mdr}%` : 'N/A'}
+                  </TableCell>
+                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
+                    {partner.payment?.fees.debitCard?.mdr ? `${partner.payment.fees.debitCard.mdr}%` : 'N/A'}
+                  </TableCell>
+                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
+                    {partner.payment?.fees.pix?.mdr ? `${partner.payment.fees.pix.mdr}%` : 'N/A'}
+                  </TableCell>
+                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
+                    D+{partner.payment?.settlement.credit || '-'}
+                  </TableCell>
+                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
+                    {partner.payment?.takeRate ? `${partner.payment.takeRate}%` : 'N/A'}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(partner.status)}>
                       {partner.status}
@@ -173,6 +185,13 @@ export const PaymentPartnersTable = () => {
               ))}
             </TableBody>
           </Table>
+        </div>
+      )}
+
+      {/* Comparação Detalhada - aparece quando há 2+ parceiros */}
+      {partners.length >= 2 && (
+        <div className="mt-8">
+          <PaymentPartnersComparison partners={partners} />
         </div>
       )}
 
