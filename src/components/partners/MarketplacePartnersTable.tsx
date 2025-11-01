@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus, Search, ShoppingBag } from "lucide-react";
-import { MarketplacePartner, MARKETPLACE_CATEGORIES } from "@/types/partner";
+import { MarketplacePartner, Partner, MARKETPLACE_CATEGORIES } from "@/types/partner";
+import { PartnerDetailView } from "./PartnerDetailView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,8 @@ export const MarketplacePartnersTable = () => {
   const [partners, setPartners] = useState<MarketplacePartner[]>([]);
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
   const [newPartner, setNewPartner] = useState<Partial<MarketplacePartner>>({
     category: 'marketplace',
     status: 'active',
@@ -57,6 +60,7 @@ export const MarketplacePartnersTable = () => {
     const partner: MarketplacePartner = {
       id: Date.now().toString(),
       name: newPartner.name,
+      categories: ['marketplace'],
       category: 'marketplace',
       status: newPartner.status || 'active',
       startDate: newPartner.startDate,
@@ -89,6 +93,11 @@ export const MarketplacePartnersTable = () => {
         ? prev.filter((c) => c !== category)
         : [...prev, category]
     );
+  };
+
+  const handleRowClick = (partner: MarketplacePartner) => {
+    setSelectedPartner(partner as Partner);
+    setDetailViewOpen(true);
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -296,7 +305,11 @@ export const MarketplacePartnersTable = () => {
             </TableHeader>
             <TableBody>
               {filteredPartners.map((partner) => (
-                <TableRow key={partner.id}>
+                <TableRow 
+                  key={partner.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleRowClick(partner)}
+                >
                   <TableCell className="font-medium">{partner.name}</TableCell>
                   <TableCell>{partner.commission}%</TableCell>
                   <TableCell>
@@ -324,6 +337,13 @@ export const MarketplacePartnersTable = () => {
           </Table>
         </div>
       )}
+
+      <PartnerDetailView
+        partner={selectedPartner}
+        open={detailViewOpen}
+        onOpenChange={setDetailViewOpen}
+        onUpdate={() => {}}
+      />
     </div>
   );
 };

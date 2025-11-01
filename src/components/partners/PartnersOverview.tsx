@@ -1,7 +1,38 @@
+import { useEffect, useState } from "react";
 import { Truck, CreditCard, ShoppingBag, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAllPartners } from "@/lib/db";
 
 export const PartnersOverview = () => {
+  const [counts, setCounts] = useState({
+    logistic: 0,
+    payment: 0,
+    marketplace: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    getAllPartners()
+      .then(partners => {
+        const logistic = partners.filter(p => 
+          p.categories.includes('logistic') || (p as any).category === 'logistic'
+        ).length;
+        const payment = partners.filter(p => 
+          p.categories.includes('payment') || (p as any).category === 'payment'
+        ).length;
+        const marketplace = partners.filter(p => 
+          p.categories.includes('marketplace') || (p as any).category === 'marketplace'
+        ).length;
+        
+        setCounts({ logistic, payment, marketplace });
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Erro ao carregar overview:', error);
+        setIsLoading(false);
+      });
+  }, []);
+
   return (
     <div className="space-y-6">
       <div>
@@ -20,9 +51,11 @@ export const PartnersOverview = () => {
             <Truck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {isLoading ? "..." : counts.logistic}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Nenhum parceiro cadastrado
+              {counts.logistic === 0 ? "Nenhum parceiro cadastrado" : `${counts.logistic} parceiro(s) ativo(s)`}
             </p>
           </CardContent>
         </Card>
@@ -35,9 +68,11 @@ export const PartnersOverview = () => {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {isLoading ? "..." : counts.payment}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Nenhum parceiro cadastrado
+              {counts.payment === 0 ? "Nenhum parceiro cadastrado" : `${counts.payment} parceiro(s) ativo(s)`}
             </p>
           </CardContent>
         </Card>
@@ -50,9 +85,11 @@ export const PartnersOverview = () => {
             <ShoppingBag className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {isLoading ? "..." : counts.marketplace}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Nenhum parceiro cadastrado
+              {counts.marketplace === 0 ? "Nenhum parceiro cadastrado" : `${counts.marketplace} parceiro(s) ativo(s)`}
             </p>
           </CardContent>
         </Card>
