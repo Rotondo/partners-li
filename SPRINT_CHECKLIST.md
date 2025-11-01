@@ -116,7 +116,105 @@
 
 ---
 
-## 🔄 Sprint 3: Pipeline - Gestão Visual (PRÓXIMO)
+## ✅ Sprint 3: Pipeline - Gestão Visual (CONCLUÍDO)
+
+### Componente PipelineKanban
+- [x] Criar componente `PipelineKanban.tsx`
+- [x] Layout Kanban com 4 colunas dinâmicas
+  - [x] **Esta Semana**: Atividades agendadas para próximos 7 dias (scheduled_date)
+  - [x] **Em Andamento**: Status = 'pending' ou 'scheduled' (hoje ou passado)
+  - [x] **Concluídas**: Status = 'completed' (últimos 30 dias)
+  - [x] **Atrasadas**: Status != 'completed' && scheduled_date < hoje
+- [x] Cards de atividade arrastáveis (biblioteca: @dnd-kit)
+- [x] Drag and drop entre colunas
+- [x] Atualização automática de status ao mover card
+  - [x] Mover para "Concluídas" → status = 'completed', completed_date = hoje
+  - [x] Mover para "Em Andamento" → status = 'pending'
+- [x] Contador de cards por coluna
+- [x] Badge visual por tipo de atividade (meeting, call, email, task, note)
+- [x] Exibição de parceiro e data
+
+### Sistema de Tarefas Global
+- [x] Criar componente `TasksListView.tsx` (página completa)
+- [x] Lista de todas as tarefas (não apenas de um parceiro)
+- [x] Checkbox para marcar como concluída (atualiza status)
+- [x] Indicador de prioridade com cores
+  - [x] 🔴 Urgent (vermelho)
+  - [x] 🟠 High (laranja)
+  - [x] 🟡 Medium (amarelo)
+  - [x] 🟢 Low (verde)
+- [x] Indicador de prazo
+  - [x] ⚠️ Vencendo em 24h (amarelo)
+  - [x] 🔴 Vencida (vermelho)
+  - [x] ✅ No prazo (verde)
+- [x] Agrupamento por parceiro (collapsible)
+- [x] Filtros implementados via estado
+- [x] Ordenação automática
+  - [x] Por status (pendentes primeiro)
+  - [x] Por prazo (crescente)
+  - [x] Por prioridade (maior → menor)
+
+### Calendário de Atividades
+- [x] Criar componente `ActivityCalendar.tsx`
+- [x] Visualização mensal (shadcn/ui Calendar)
+- [x] Integração com atividades (getPartnerActivities para todos)
+- [x] Atividades agrupadas por dia
+- [x] Click em dia abre popover com lista de atividades
+- [x] Navegação entre meses
+- [x] Indicadores visuais
+  - [x] Dot colorido por tipo de atividade
+  - [x] Exibição de preview no popover
+- [x] Highlight do dia selecionado
+- [x] Painel lateral com atividades do dia
+
+### Nova Página: Pipeline
+- [x] Criar `src/pages/Pipeline.tsx`
+- [x] Adicionar rota `/pipeline` no App.tsx
+- [x] Adicionar item "Pipeline" no Sidebar
+- [x] Layout com tabs:
+  - [x] Tab: Kanban (PipelineKanban)
+  - [x] Tab: Calendário (ActivityCalendar)
+  - [x] Tab: Minhas Tarefas (TasksListView)
+- [x] Header com estatísticas rápidas
+  - [x] Total de atividades esta semana
+  - [x] Tarefas pendentes (count)
+  - [x] Atividades atrasadas (count)
+  - [x] Reuniões agendadas hoje (count)
+- [x] Botão "Nova Atividade" no header
+- [x] Integração com AddActivityDialog
+
+### Filtros e Busca Avançada
+- [x] Criar componente `ActivityFilters.tsx` (reutilizável)
+- [x] Busca por texto (título da atividade)
+- [x] Filtro por parceiro (select com busca)
+- [x] Filtro por tipo de atividade (checkboxes)
+  - [x] 🤝 Reunião
+  - [x] 📞 Call
+  - [x] 📧 E-mail
+  - [x] ✅ Tarefa
+  - [x] 📝 Nota
+- [x] Filtro por status (checkboxes)
+  - [x] ⏳ Agendada
+  - [x] ✅ Concluída
+  - [x] ❌ Cancelada
+  - [x] 📋 Pendente
+- [x] Filtro por data (range picker)
+  - [x] Esta semana (preset)
+  - [x] Este mês (preset)
+  - [x] Range customizado com Calendar
+- [x] Botão "Limpar Filtros"
+- [x] Contador de filtros ativos (badge)
+- [x] Summary visual dos filtros ativos
+
+### Melhorias de UX
+- [x] Loading states em todos os componentes
+- [x] Empty states com ícones e mensagens
+- [x] Toast de confirmação para ações (complete, delete)
+- [x] Animações suaves (animate-fade-in)
+- [x] Responsivo mobile
+  - [x] Grid adaptativo no Kanban
+  - [x] Tabs horizontais em mobile
+  - [x] Cards empilhados em mobile
 
 ### Componente PipelineKanban
 - [ ] Criar componente `PipelineKanban.tsx`
@@ -306,16 +404,16 @@
 |--------|--------|-----------|
 | Sprint 1: Fundação | ✅ Concluído | 100% (59/59 tarefas) |
 | Sprint 2: CRM Core | ✅ Concluído | 100% (54/54 tarefas) |
-| Sprint 3: Pipeline | 🔄 Próximo | 0% (0/52 tarefas) |
+| Sprint 3: Pipeline | ✅ Concluído | 100% (52/52 tarefas) |
 | Sprint 4: Health | ⏳ Pendente | 0% (0/15 tarefas) |
 | Sprint 5: Polish | ⏳ Pendente | 0% (0/16 tarefas) |
 
-**Total Geral:** 113/196 tarefas (58%)
+**Total Geral:** 165/196 tarefas (84%)
 
 ---
 
 ## 🎯 Próximo Passo
 
-**Implementar Sprint 3: Pipeline - Gestão Visual**
+**Implementar Sprint 4: Health & Intelligence**
 
-Foco: Criar sistema completo de pipeline com Kanban visual, calendário de atividades, gerenciamento global de tarefas e filtros avançados. Esta sprint transformará o sistema em uma ferramenta visual poderosa para gestão do dia a dia com os parceiros.
+Foco: Criar sistema de automação para cálculo de Health Scores, alertas automáticos, notificações e relatórios inteligentes sobre o estado das parcerias.

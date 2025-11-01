@@ -1,6 +1,7 @@
-import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings, LogOut, Kanban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 
@@ -10,12 +11,13 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, hasSubmenu: false },
+  { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, hasSubmenu: false, route: "/" },
   { id: "partners", name: "Parceiros", icon: Users, hasSubmenu: true },
-  { id: "stores", name: "Lojas", icon: Store, hasSubmenu: false },
-  { id: "projections", name: "Projeções", icon: TrendingUp, hasSubmenu: false },
-  { id: "reports", name: "Relatórios", icon: FileText, hasSubmenu: false },
-  { id: "admin", name: "Admin", icon: Settings, hasSubmenu: false },
+  { id: "pipeline", name: "Pipeline", icon: Kanban, hasSubmenu: false, route: "/pipeline" },
+  { id: "stores", name: "Lojas", icon: Store, hasSubmenu: false, route: "/" },
+  { id: "projections", name: "Projeções", icon: TrendingUp, hasSubmenu: false, route: "/" },
+  { id: "reports", name: "Relatórios", icon: FileText, hasSubmenu: false, route: "/" },
+  { id: "admin", name: "Admin", icon: Settings, hasSubmenu: false, route: "/" },
 ];
 
 const partnersSubmenu = [
@@ -26,6 +28,8 @@ const partnersSubmenu = [
 
 export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [showPartners, setShowPartners] = useState(
     activeTab.startsWith('partners-')
   );
@@ -92,10 +96,16 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
           return (
             <button
               key={item.id}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => {
+                if (item.route) {
+                  navigate(item.route);
+                } else {
+                  onTabChange(item.id);
+                }
+              }}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                isActive
+                (isActive || (item.route && location.pathname === item.route))
                   ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               )}
