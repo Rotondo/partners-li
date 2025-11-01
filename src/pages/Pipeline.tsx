@@ -11,8 +11,10 @@ import { getAllPartners, getPartnerActivities, getPartnerTasks } from "@/lib/db"
 import { Partner } from "@/types/partner";
 import { PartnerActivity, PartnerTask } from "@/types/crm";
 import { startOfDay, isBefore, isToday } from "date-fns";
+import { Sidebar } from "@/components/layout/Sidebar";
 
 const Pipeline = () => {
+  const [activeTab, setActiveTab] = useState("pipeline");
   const [activityDialogOpen, setActivityDialogOpen] = useState(false);
   const [stats, setStats] = useState({
     thisWeek: 0,
@@ -92,111 +94,116 @@ const Pipeline = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Pipeline</h1>
-          <p className="text-muted-foreground mt-1">
-            Gerencie suas atividades e tarefas
-          </p>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <main className="flex-1 overflow-y-auto">
+        <div className="container mx-auto p-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Pipeline</h1>
+              <p className="text-muted-foreground mt-1">
+                Gerencie suas atividades e tarefas
+              </p>
+            </div>
+            <Button size="lg" onClick={() => setActivityDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nova Atividade
+            </Button>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Esta Semana</p>
+                    <p className="text-2xl font-bold mt-1">{stats.thisWeek}</p>
+                  </div>
+                  <Calendar className="h-8 w-8 text-blue-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tarefas Pendentes</p>
+                    <p className="text-2xl font-bold mt-1">{stats.pendingTasks}</p>
+                  </div>
+                  <ClipboardList className="h-8 w-8 text-yellow-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Atrasadas</p>
+                    <p className="text-2xl font-bold mt-1">{stats.overdue}</p>
+                  </div>
+                  <LayoutGrid className="h-8 w-8 text-red-500" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Hoje</p>
+                    <p className="text-2xl font-bold mt-1">{stats.today}</p>
+                  </div>
+                  <List className="h-8 w-8 text-green-500" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tabs */}
+          <Tabs defaultValue="kanban" className="space-y-6 mt-6">
+            <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+              <TabsTrigger value="kanban">
+                <LayoutGrid className="h-4 w-4 mr-2" />
+                Kanban
+              </TabsTrigger>
+              <TabsTrigger value="calendar">
+                <Calendar className="h-4 w-4 mr-2" />
+                Calendário
+              </TabsTrigger>
+              <TabsTrigger value="tasks">
+                <ClipboardList className="h-4 w-4 mr-2" />
+                Minhas Tarefas
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="kanban" className="space-y-4">
+              <PipelineKanban />
+            </TabsContent>
+
+            <TabsContent value="calendar" className="space-y-4">
+              <ActivityCalendar />
+            </TabsContent>
+
+            <TabsContent value="tasks" className="space-y-4">
+              <TasksListView />
+            </TabsContent>
+          </Tabs>
+
+          <AddActivityDialog
+            open={activityDialogOpen}
+            onOpenChange={setActivityDialogOpen}
+            partnerId={null}
+            partnerName=""
+            onSuccess={() => {
+              setActivityDialogOpen(false);
+              loadStats();
+            }}
+          />
         </div>
-        <Button size="lg" onClick={() => setActivityDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Atividade
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Esta Semana</p>
-                <p className="text-2xl font-bold mt-1">{stats.thisWeek}</p>
-              </div>
-              <Calendar className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Tarefas Pendentes</p>
-                <p className="text-2xl font-bold mt-1">{stats.pendingTasks}</p>
-              </div>
-              <ClipboardList className="h-8 w-8 text-yellow-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Atrasadas</p>
-                <p className="text-2xl font-bold mt-1">{stats.overdue}</p>
-              </div>
-              <LayoutGrid className="h-8 w-8 text-red-500" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Hoje</p>
-                <p className="text-2xl font-bold mt-1">{stats.today}</p>
-              </div>
-              <List className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue="kanban" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
-          <TabsTrigger value="kanban">
-            <LayoutGrid className="h-4 w-4 mr-2" />
-            Kanban
-          </TabsTrigger>
-          <TabsTrigger value="calendar">
-            <Calendar className="h-4 w-4 mr-2" />
-            Calendário
-          </TabsTrigger>
-          <TabsTrigger value="tasks">
-            <ClipboardList className="h-4 w-4 mr-2" />
-            Minhas Tarefas
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="kanban" className="space-y-4">
-          <PipelineKanban />
-        </TabsContent>
-
-        <TabsContent value="calendar" className="space-y-4">
-          <ActivityCalendar />
-        </TabsContent>
-
-        <TabsContent value="tasks" className="space-y-4">
-          <TasksListView />
-        </TabsContent>
-      </Tabs>
-
-      <AddActivityDialog
-        open={activityDialogOpen}
-        onOpenChange={setActivityDialogOpen}
-        partnerId={null}
-        partnerName=""
-        onSuccess={() => {
-          setActivityDialogOpen(false);
-          loadStats();
-        }}
-      />
+      </main>
     </div>
   );
 };
