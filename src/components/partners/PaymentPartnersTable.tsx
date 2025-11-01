@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { AddPartnerDialog } from "./AddPartnerDialog";
 import { useBlurSensitiveData } from "@/hooks/use-blur-sensitive";
-import { getAllPartners, savePartner } from "@/lib/db";
+import { getAllPartners, savePartner, filterPartnersByCategory } from "@/lib/db";
 import { toast } from "sonner";
 
 export const PaymentPartnersTable = () => {
@@ -31,9 +31,8 @@ export const PaymentPartnersTable = () => {
     setIsLoading(true);
     getAllPartners()
       .then(allPartners => {
-        const paymentPartners = allPartners.filter(p => 
-          p.categories.includes('payment') || (p as any).category === 'payment'
-        );
+        // ✅ Use helper function for consistent category filtering
+        const paymentPartners = filterPartnersByCategory(allPartners, 'payment');
         setPartners(paymentPartners as PaymentPartner[]);
         setIsLoading(false);
       })
@@ -51,9 +50,8 @@ export const PaymentPartnersTable = () => {
   const loadPartners = async () => {
     try {
       const allPartners = await getAllPartners();
-      const paymentPartners = allPartners.filter(p => 
-        p.categories.includes('payment') || (p as any).category === 'payment'
-      );
+      // ✅ Use helper function for consistent category filtering
+      const paymentPartners = filterPartnersByCategory(allPartners, 'payment');
       setPartners(paymentPartners as PaymentPartner[]);
     } catch (error) {
       console.error('Erro ao carregar parceiros:', error);
@@ -70,9 +68,8 @@ export const PaymentPartnersTable = () => {
     try {
       await savePartner(partner);
       const allPartners = await getAllPartners();
-      const paymentPartners = allPartners.filter(p => 
-        p.categories.includes('payment') || (p as any).category === 'payment'
-      );
+      // ✅ Use helper function for consistent category filtering
+      const paymentPartners = filterPartnersByCategory(allPartners, 'payment');
       setPartners(paymentPartners as PaymentPartner[]);
       toast.success("Parceiro adicionado com sucesso!");
     } catch (error) {

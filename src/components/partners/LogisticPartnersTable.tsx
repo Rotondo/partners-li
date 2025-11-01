@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Truck } from "lucide-react";
 import { LogisticPartner, Partner } from "@/types/partner";
-import { getAllPartners, savePartner } from "@/lib/db";
+import { getAllPartners, savePartner, filterPartnersByCategory } from "@/lib/db";
 import { toast } from "sonner";
 import { PartnerDetailView } from "./PartnerDetailView";
 import { Button } from "@/components/ui/button";
@@ -55,9 +55,8 @@ export const LogisticPartnersTable = () => {
     setIsLoading(true);
     getAllPartners()
       .then(allPartners => {
-        const logisticPartners = allPartners.filter(p => 
-          p.categories.includes('logistic') || (p as any).category === 'logistic'
-        );
+        // ✅ Use helper function for consistent category filtering
+        const logisticPartners = filterPartnersByCategory(allPartners, 'logistic');
         setPartners(logisticPartners as LogisticPartner[]);
         setIsLoading(false);
       })
@@ -75,9 +74,8 @@ export const LogisticPartnersTable = () => {
   const loadPartners = async () => {
     try {
       const allPartners = await getAllPartners();
-      const logisticPartners = allPartners.filter(p => 
-        p.categories.includes('logistic') || (p as any).category === 'logistic'
-      );
+      // ✅ Use helper function for consistent category filtering
+      const logisticPartners = filterPartnersByCategory(allPartners, 'logistic');
       setPartners(logisticPartners as LogisticPartner[]);
     } catch (error) {
       console.error('Erro ao carregar parceiros:', error);

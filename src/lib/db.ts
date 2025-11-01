@@ -17,6 +17,38 @@ import {
 
 // ==================== PARTNERS ====================
 
+/**
+ * Helper: Check if a partner belongs to a specific category
+ * Supports both new format (categories array) and legacy format (category string)
+ * @param partner - Partner to check
+ * @param category - Category to check for
+ * @returns true if partner has this category
+ */
+export function partnerHasCategory(partner: Partner, category: 'logistic' | 'payment' | 'marketplace'): boolean {
+  // Check new format (categories array)
+  if (partner.categories && Array.isArray(partner.categories)) {
+    return partner.categories.includes(category);
+  }
+
+  // Check legacy format (category string) - for backward compatibility
+  const legacyCategory = (partner as any).category;
+  if (legacyCategory) {
+    return legacyCategory === category;
+  }
+
+  return false;
+}
+
+/**
+ * Helper: Filter partners by category
+ * @param partners - Array of partners
+ * @param category - Category to filter by
+ * @returns Filtered array of partners
+ */
+export function filterPartnersByCategory(partners: Partner[], category: 'logistic' | 'payment' | 'marketplace'): Partner[] {
+  return partners.filter(p => partnerHasCategory(p, category));
+}
+
 export async function savePartner(partner: Partner): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -51,9 +83,17 @@ export async function savePartner(partner: Partner): Promise<void> {
 }
 
 export async function getAllPartners(): Promise<Partner[]> {
+  // ✅ Get current user for filtering
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
   const { data, error } = await supabase
     .from('partners')
     .select('*')
+    .eq('user_id', user.id) // ✅ Security: Filter by user_id (defense in depth)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -365,9 +405,17 @@ export async function savePartnerActivity(activity: NewPartnerActivity & { id?: 
 }
 
 export async function getPartnerActivities(partnerId?: string): Promise<PartnerActivity[]> {
+  // ✅ Get current user for filtering
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
   let query = supabase
     .from('partner_activities')
     .select('*')
+    .eq('user_id', user.id) // ✅ Security: Filter by user_id (defense in depth)
     .order('scheduled_date', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false });
 
@@ -502,9 +550,17 @@ export async function savePartnerTask(task: NewPartnerTask & { id?: string }): P
 }
 
 export async function getPartnerTasks(partnerId?: string): Promise<PartnerTask[]> {
+  // ✅ Get current user for filtering
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
   let query = supabase
     .from('partner_tasks')
     .select('*')
+    .eq('user_id', user.id) // ✅ Security: Filter by user_id (defense in depth)
     .order('due_date', { ascending: true, nullsFirst: false })
     .order('priority', { ascending: false });
 
