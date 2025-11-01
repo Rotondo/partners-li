@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, CreditCard } from "lucide-react";
-import { PaymentPartner } from "@/types/partner";
+import { PaymentPartner, Partner } from "@/types/partner";
+import { PartnerDetailView } from "./PartnerDetailView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,8 @@ export const PaymentPartnersTable = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const { blurClass, isBlurActive } = useBlurSensitiveData();
+  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -44,6 +47,24 @@ export const PaymentPartnersTable = () => {
   const filteredPartners = partners.filter((partner) =>
     partner.name?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const loadPartners = async () => {
+    try {
+      const allPartners = await getAllPartners();
+      const paymentPartners = allPartners.filter(p => 
+        p.categories.includes('payment') || (p as any).category === 'payment'
+      );
+      setPartners(paymentPartners as PaymentPartner[]);
+    } catch (error) {
+      console.error('Erro ao carregar parceiros:', error);
+      toast.error("Erro ao carregar parceiros de pagamento");
+    }
+  };
+
+  const handleRowClick = (partner: PaymentPartner) => {
+    setSelectedPartner(partner as Partner);
+    setDetailViewOpen(true);
+  };
 
   const handleAddPartner = async (partner: PaymentPartner) => {
     try {
@@ -135,7 +156,11 @@ export const PaymentPartnersTable = () => {
             </TableHeader>
             <TableBody>
               {filteredPartners.map((partner) => (
-                <TableRow key={partner.id} className={isBlurActive ? 'blur-table-row' : ''}>
+                <TableRow 
+                  key={partner.id} 
+                  className={`cursor-pointer hover:bg-muted/50 ${isBlurActive ? 'blur-table-row' : ''}`}
+                  onClick={() => handleRowClick(partner)}
+                >
                   <TableCell className="font-medium">{partner.name}</TableCell>
                   <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{partner.fees.mdrCreditVista}%</TableCell>
                   <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{partner.fees.mdrDebit}%</TableCell>
@@ -153,6 +178,13 @@ export const PaymentPartnersTable = () => {
           </Table>
         </div>
       )}
+
+      <PartnerDetailView
+        partner={selectedPartner}
+        open={detailViewOpen}
+        onOpenChange={setDetailViewOpen}
+        onUpdate={loadPartners}
+      />
     </div>
   );
 };

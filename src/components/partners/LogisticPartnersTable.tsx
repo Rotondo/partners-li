@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Truck } from "lucide-react";
-import { LogisticPartner } from "@/types/partner";
+import { LogisticPartner, Partner } from "@/types/partner";
 import { getAllPartners, savePartner } from "@/lib/db";
 import { toast } from "sonner";
+import { PartnerDetailView } from "./PartnerDetailView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,8 @@ export const LogisticPartnersTable = () => {
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
+  const [detailViewOpen, setDetailViewOpen] = useState(false);
   const [newPartner, setNewPartner] = useState<Partial<LogisticPartner>>({
     category: 'logistic',
     status: 'active',
@@ -68,6 +71,24 @@ export const LogisticPartnersTable = () => {
   const filteredPartners = partners.filter((partner) =>
     partner.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const loadPartners = async () => {
+    try {
+      const allPartners = await getAllPartners();
+      const logisticPartners = allPartners.filter(p => 
+        p.categories.includes('logistic') || (p as any).category === 'logistic'
+      );
+      setPartners(logisticPartners as LogisticPartner[]);
+    } catch (error) {
+      console.error('Erro ao carregar parceiros:', error);
+      toast.error("Erro ao carregar parceiros logísticos");
+    }
+  };
+
+  const handleRowClick = (partner: LogisticPartner) => {
+    setSelectedPartner(partner as Partner);
+    setDetailViewOpen(true);
+  };
 
   const handleAddPartner = async () => {
     if (!newPartner.name || !newPartner.startDate) return;
@@ -316,7 +337,11 @@ export const LogisticPartnersTable = () => {
             </TableHeader>
             <TableBody>
               {filteredPartners.map((partner) => (
-                <TableRow key={partner.id}>
+                <TableRow 
+                  key={partner.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleRowClick(partner)}
+                >
                   <TableCell className="font-medium">{partner.name}</TableCell>
                   <TableCell>
                     {partner.coverage.length > 0 ? (
@@ -339,6 +364,13 @@ export const LogisticPartnersTable = () => {
           </Table>
         </div>
       )}
+
+      <PartnerDetailView
+        partner={selectedPartner}
+        open={detailViewOpen}
+        onOpenChange={setDetailViewOpen}
+        onUpdate={loadPartners}
+      />
     </div>
   );
 };
