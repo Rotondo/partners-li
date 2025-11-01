@@ -25,22 +25,22 @@ export function FeesSection({ form }: FeesSectionProps) {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
           <span className="text-destructive">🔴</span>
           Estrutura de Taxas
         </h3>
         <p className="text-sm text-muted-foreground">Campos obrigatórios</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <FormField
           control={form.control}
           name="fees.mdrCreditVista"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>MDR Crédito à Vista (%) *</FormLabel>
+              <FormLabel className="mb-2">MDR Crédito à Vista (%) *</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
@@ -50,7 +50,7 @@ export function FeesSection({ form }: FeesSectionProps) {
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="mt-1" />
             </FormItem>
           )}
         />
@@ -137,16 +137,18 @@ export function FeesSection({ form }: FeesSectionProps) {
       </div>
 
       {/* Campos dinâmicos de taxas (MDR PIX parcelado, etc) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {feeFields.map((field) => (
-          <DynamicField
-            key={field.id}
-            field={field}
-            value={customFields[field.id] || ''}
-            onChange={(value) => setCustomFields({ ...customFields, [field.id]: value })}
-          />
-        ))}
-      </div>
+      {feeFields.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {feeFields.map((field) => (
+            <DynamicField
+              key={field.id}
+              field={field}
+              value={customFields[field.id] || ''}
+              onChange={(value) => setCustomFields({ ...customFields, [field.id]: value })}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

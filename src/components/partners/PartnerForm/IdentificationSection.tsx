@@ -32,9 +32,9 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
           <span className="text-destructive">🔴</span>
           Identificação
         </h3>
@@ -46,11 +46,11 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Nome do Parceiro *</FormLabel>
+            <FormLabel className="mb-2">Nome do Parceiro *</FormLabel>
             <FormControl>
               <Input placeholder="Ex: Stripe, PagSeguro, Stone..." {...field} />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="mt-1" />
           </FormItem>
         )}
       />
@@ -70,7 +70,7 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
         name="startDate"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>Data de Início da Parceria *</FormLabel>
+            <FormLabel className="mb-2">Data de Início da Parceria *</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -96,7 +96,7 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
                 />
               </PopoverContent>
             </Popover>
-            <FormMessage />
+            <FormMessage className="mt-1" />
           </FormItem>
         )}
       />
@@ -106,7 +106,7 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
         name="status"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Status *</FormLabel>
+            <FormLabel className="mb-2">Status *</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
@@ -120,7 +120,7 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
                 <SelectItem value="paused">Pausado</SelectItem>
               </SelectContent>
             </Select>
-            <FormMessage />
+            <FormMessage className="mt-1" />
           </FormItem>
         )}
       />

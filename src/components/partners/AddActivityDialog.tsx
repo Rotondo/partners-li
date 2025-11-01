@@ -28,12 +28,17 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { savePartnerActivity } from "@/lib/db";
 import { toast } from "sonner";
-import { ActivityType, ActivityStatus, NewPartnerActivity } from "@/types/crm";
+import { ActivityType, ActivityStatus, NewPartnerActivity, PartnerContact } from "@/types/crm";
+import { Partner } from "@/types/partner";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { getAllPartners, getPartnerContacts } from "@/lib/db";
+import { useEffect } from "react";
 
 const activitySchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
+  partner_id: z.string().optional(),
+  contact_id: z.string().optional(),
   activity_type: z.enum(["meeting", "call", "email", "task", "note"]),
   status: z.enum(["scheduled", "completed", "cancelled", "pending"]),
   scheduled_date: z.date().optional(),
@@ -48,7 +53,7 @@ type ActivityFormData = z.infer<typeof activitySchema>;
 interface AddActivityDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  partnerId: string;
+  partnerId: string | null;
   partnerName: string;
   onSuccess?: () => void;
 }
@@ -61,11 +66,16 @@ export const AddActivityDialog = ({
   onSuccess 
 }: AddActivityDialogProps) => {
   const [loading, setLoading] = useState(false);
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [contacts, setContacts] = useState<PartnerContact[]>([]);
+  const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(partnerId);
 
   const form = useForm<ActivityFormData>({
     resolver: zodResolver(activitySchema),
     defaultValues: {
       title: "",
+      partner_id: partnerId || undefined,
+      contact_id: undefined,
       activity_type: "meeting",
       status: "scheduled",
       what_discussed: "",
@@ -74,6 +84,43 @@ export const AddActivityDialog = ({
       notes: "",
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      loadPartners();
+      if (partnerId) {
+        setSelectedPartnerId(partnerId);
+        loadContacts(partnerId);
+      }
+    }
+  }, [open, partnerId]);
+
+  useEffect(() => {
+    if (selectedPartnerId) {
+      loadContacts(selectedPartnerId);
+    } else {
+      setContacts([]);
+    }
+  }, [selectedPartnerId]);
+
+  const loadPartners = async () => {
+    try {
+      const data = await getAllPartners();
+      setPartners(data);
+    } catch (error) {
+      console.error("Error loading partners:", error);
+    }
+  };
+
+  const loadContacts = async (pId: string) => {
+    try {
+      const data = await getPartnerContacts(pId);
+      setContacts(data);
+    } catch (error) {
+      console.error("Error loading contacts:", error);
+      setContacts([]);
+    }
+  };
 
   const onSubmit = async (data: ActivityFormData) => {
     try {
@@ -85,8 +132,27 @@ export const AddActivityDialog = ({
         return;
       }
 
+      const finalPartnerId = data.partner_id || partnerId;
+      if (!finalPartnerId) {
+        toast.error("Selecione um parceiro");
+        return;
+      }
+
+      // Build participants array from contact
+      const participants = [];
+      if (data.contact_id) {
+        const contact = contacts.find(c => c.id === data.contact_id);
+        if (contact) {
+          participants.push({
+            name: contact.name,
+            role: contact.role,
+            contact_id: contact.id,
+          });
+        }
+      }
+
       const newActivity: NewPartnerActivity = {
-        partner_id: partnerId,
+        partner_id: finalPartnerId,
         user_id: user.id,
         title: data.title,
         activity_type: data.activity_type as ActivityType,
@@ -96,7 +162,7 @@ export const AddActivityDialog = ({
         opportunities: data.opportunities,
         next_steps: data.next_steps,
         notes: data.notes,
-        participants: [],
+        participants,
       };
 
       await savePartnerActivity(newActivity);
@@ -116,7 +182,9 @@ export const AddActivityDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nova Atividade - {partnerName}</DialogTitle>
+          <DialogTitle>
+            {partnerId ? `Nova Atividade - ${partnerName}` : "Nova Atividade"}
+          </DialogTitle>
           <DialogDescription>
             Registre reuniões, ligações, emails e outras interações
           </DialogDescription>
@@ -124,6 +192,67 @@ export const AddActivityDialog = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {!partnerId && (
+              <FormField
+                control={form.control}
+                name="partner_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Parceiro *</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedPartnerId(value);
+                        form.setValue("contact_id", undefined);
+                      }} 
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o parceiro" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {partners.map((partner) => (
+                          <SelectItem key={partner.id} value={partner.id}>
+                            {partner.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {(selectedPartnerId || partnerId) && contacts.length > 0 && (
+              <FormField
+                control={form.control}
+                name="contact_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contato</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o contato (opcional)" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {contacts.map((contact) => (
+                          <SelectItem key={contact.id} value={contact.id}>
+                            {contact.name} {contact.role ? `- ${contact.role}` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <FormField
               control={form.control}
               name="title"

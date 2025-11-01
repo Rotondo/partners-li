@@ -134,16 +134,16 @@ export function AddPartnerDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="identification" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
-                <TabsTrigger value="identification">Identificação</TabsTrigger>
-                <TabsTrigger value="fees">Taxas</TabsTrigger>
-                <TabsTrigger value="settlement">Prazos</TabsTrigger>
-                <TabsTrigger value="takerate">Take Rate</TabsTrigger>
-                <TabsTrigger value="performance">Performance</TabsTrigger>
-                <TabsTrigger value="payment-types">Meios</TabsTrigger>
-                <TabsTrigger value="antifraud">Antifraude</TabsTrigger>
-                <TabsTrigger value="personalizado">Personalizado</TabsTrigger>
-                <TabsTrigger value="observations">Obs.</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 lg:grid-cols-9 gap-1 h-auto">
+                <TabsTrigger value="identification" className="text-xs md:text-sm">Identificação</TabsTrigger>
+                <TabsTrigger value="fees" className="text-xs md:text-sm">Taxas</TabsTrigger>
+                <TabsTrigger value="settlement" className="text-xs md:text-sm">Prazos</TabsTrigger>
+                <TabsTrigger value="takerate" className="text-xs md:text-sm">Take Rate</TabsTrigger>
+                <TabsTrigger value="performance" className="text-xs md:text-sm">Performance</TabsTrigger>
+                <TabsTrigger value="payment-types" className="text-xs md:text-sm">Meios</TabsTrigger>
+                <TabsTrigger value="antifraud" className="text-xs md:text-sm">Antifraude</TabsTrigger>
+                <TabsTrigger value="personalizado" className="text-xs md:text-sm">Personalizado</TabsTrigger>
+                <TabsTrigger value="observations" className="text-xs md:text-sm">Obs.</TabsTrigger>
               </TabsList>
 
               <TabsContent value="identification" className="mt-6">

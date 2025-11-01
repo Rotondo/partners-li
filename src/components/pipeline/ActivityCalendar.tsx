@@ -248,8 +248,8 @@ export const ActivityCalendar = () => {
                           activity.participants.length > 0 && (
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               <Users className="h-3 w-3" />
-                              {activity.participants.length} participante
-                              {activity.participants.length > 1 ? "s" : ""}
+                              {activity.participants[0].name}
+                              {activity.participants[0].role && ` (${activity.participants[0].role})`}
                             </div>
                           )}
 

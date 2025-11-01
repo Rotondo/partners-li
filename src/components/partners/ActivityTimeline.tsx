@@ -131,9 +131,11 @@ export const ActivityTimeline = ({ activities, onUpdate }: ActivityTimelineProps
 
               {activity.participants && activity.participants.length > 0 && (
                 <div className="text-sm">
-                  <span className="text-muted-foreground">Participantes: </span>
+                  <span className="text-muted-foreground">Contato: </span>
                   <span className="font-medium">
-                    {activity.participants.map(p => p.name).join(", ")}
+                    {activity.participants.map(p => 
+                      `${p.name}${p.role ? ` (${p.role})` : ""}`
+                    ).join(", ")}
                   </span>
                 </div>
               )}
