@@ -14,8 +14,8 @@ const navigation = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, hasSubmenu: false, route: "/" },
   { id: "partners", name: "Parceiros", icon: Users, hasSubmenu: true },
   { id: "pipeline", name: "Pipeline", icon: Kanban, hasSubmenu: false, route: "/pipeline" },
+  { id: "health", name: "Health", icon: TrendingUp, hasSubmenu: false, route: "/health" },
   { id: "stores", name: "Lojas", icon: Store, hasSubmenu: false, route: "/" },
-  { id: "projections", name: "Projeções", icon: TrendingUp, hasSubmenu: false, route: "/" },
   { id: "reports", name: "Relatórios", icon: FileText, hasSubmenu: false, route: "/" },
   { id: "admin", name: "Admin", icon: Settings, hasSubmenu: false, route: "/" },
 ];

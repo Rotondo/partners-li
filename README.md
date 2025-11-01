@@ -1,822 +1,341 @@
-# 🚀 Plataforma de Gestão de Parceiros - PRM/CRM
+# PRM/CRM System - Sistema de Gestão de Parcerias
+
+Sistema completo de gestão de relacionamento com parceiros (PRM/CRM) desenvolvido com React, TypeScript, Tailwind CSS e Supabase.
+
+## 🚀 Funcionalidades
+
+### ✅ Sprint 1: Foundation (Completo)
+- **Banco de Dados Supabase**
+  - Tabelas: partners, partner_contacts, partner_activities, partner_tasks, partner_documents, partner_health_metrics, partner_alerts
+  - RLS (Row Level Security) configurado
+  - Triggers e índices otimizados
+  - TypeScript types auto-gerados
+
+### ✅ Sprint 2: CRM Core (Completo)
+- **Gestão de Parceiros**
+  - CRUD completo de parceiros (Pagamento, Marketplace, Logística)
+  - Visualização detalhada com tabs
+  - Formulários dinâmicos por tipo de parceiro
+  
+- **Gestão de Contatos**
+  - Múltiplos contatos por parceiro
+  - Contato principal
+  - Informações completas (nome, cargo, email, telefone, notas)
+
+- **Timeline de Atividades**
+  - Registro de reuniões, ligações, emails
+  - Notas detalhadas
+  - Próximos passos e oportunidades
+
+- **Gestão de Tarefas**
+  - Tarefas vinculadas a parceiros e atividades
+  - Prioridades e status
+  - Atribuição de responsáveis
+
+- **Documentos**
+  - Upload e gestão de documentos por parceiro
+  - Categorização e descrições
+
+### ✅ Sprint 3: Pipeline (Completo)
+- **Kanban Board**
+  - Visualização em colunas por status
+  - Drag & drop com @dnd-kit
+  - Filtros avançados
+  
+- **Lista Global de Tarefas**
+  - Visualização de todas as tarefas
+  - Ordenação e filtros
+  - Ações rápidas
+
+- **Calendário de Atividades**
+  - Visualização mensal
+  - Indicadores visuais por tipo
+  - Navegação entre meses
+
+- **Página Pipeline**
+  - Rota dedicada `/pipeline`
+  - Interface responsiva
+  - Filtros por parceiro, status, prioridade
+
+### ✅ Sprint 4: Health & Intelligence (Completo)
+- **Sistema de Health Scores**
+  - Edge Function para cálculo automático
+  - Scores: Performance, Engajamento, Comercial, Overall
+  - Status: Excellent, Good, Warning, Critical
+  
+- **Sistema de Alertas**
+  - Alertas automáticos baseados em métricas
+  - Severidade: Low, Medium, High, Critical
+  - Tipos: No Contact, High Priority Issues, Health Critical
+  
+- **Health Dashboard**
+  - Visão geral da saúde das parcerias
+  - Métricas consolidadas
+  - Alertas ativos em destaque
+
+### ✅ Sprint 5: Polish (Completo)
+- **Documentação Completa**
+  - README atualizado
+  - Guia de instalação
+  - Sprint checklist
+
+## 🛠️ Tecnologias
+
+- **Frontend:**
+  - React 18
+  - TypeScript
+  - Tailwind CSS
+  - shadcn/ui components
+  - Vite
+  - React Router
+  - React Query (@tanstack/react-query)
+  - React Hook Form + Zod
+  - date-fns
+  - lucide-react (ícones)
+  - @dnd-kit (drag & drop)
+
+- **Backend:**
+  - Supabase (Lovable Cloud)
+  - PostgreSQL
+  - Row Level Security (RLS)
+  - Edge Functions
+  - Realtime subscriptions
 
-[![Project Status](https://img.shields.io/badge/status-desenvolvimento-yellow.svg)]()
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)]()
-[![License](https://img.shields.io/badge/license-MIT-green.svg)]()
-[![Sprint](https://img.shields.io/badge/sprint-2%2F5-orange.svg)]()
-
-> **Plataforma de Gestão de Parceiros** é uma solução completa de PRM (Partner Relationship Management) e CRM para gestão de parceiros logísticos, de pagamento e marketplaces, com pipeline de atividades, health scores e automações inteligentes.
-
----
-
-## 📋 Índice
-
-- [Sobre o Projeto](#sobre-o-projeto)
-- [Tecnologias](#tecnologias)
-- [Status do Projeto](#status-do-projeto)
-- [O Que Tem](#o-que-tem)
-- [O Que Não Tem](#o-que-não-tem)
-- [Pontos Fortes](#pontos-fortes)
-- [Pontos Fracos](#pontos-fracos)
-- [Próximos Passos](#próximos-passos)
-- [Instalação](#instalação)
-- [Desenvolvimento](#desenvolvimento)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Contribuindo](#contribuindo)
-- [Licença](#licença)
-
----
-
-## 🎯 Sobre o Projeto
-
-**Plataforma de Gestão de Parceiros** é uma solução completa de PRM/CRM que combina:
-
-### Funcionalidades Core
-- ✅ **Gestão de Parceiros Multi-Categoria** (Logística, Pagamento, Marketplace)
-- ✅ **Sistema de Pipeline/CRM** para rastrear atividades e reuniões
-- ✅ **Gestão de Tarefas** com próximos passos e acompanhamento
-- ✅ **Health Scores** automáticos para monitorar saúde das parcerias
-- ✅ **Timeline de Atividades** com histórico completo de interações
-- ✅ **Sistema de Contatos** múltiplos por parceiro
-- ✅ **Gestão de Documentos** com upload e categorização
-- ✅ **Alertas e Notificações** automáticos
-- ✅ **Relatórios Inteligentes** de engajamento e performance
-
-### Arquitetura
-- 🔐 **Backend Supabase** com RLS policies
-- 💾 **Persistência de Dados** em PostgreSQL
-- 🔄 **Real-time Updates** (preparado)
-- 🤖 **Automações Inteligentes** via Edge Functions
-- 📊 **Dashboard Executivo** com métricas de saúde
-
-**Objetivo:** Fornecer uma visão 360° de todos os parceiros, rastreando não apenas dados cadastrais, mas todo o histórico de relacionamento, performance e próximos passos.
-
-**Desenvolvido por:** Thiago Rotondo
-
----
-
-## 🚀 Tecnologias
-
-### Core
-- **React 18.3** - Biblioteca JavaScript para interfaces
-- **TypeScript 5.8** - Superset do JavaScript com tipagem estática
-- **Vite 5.4** - Build tool e dev server ultrarrápido
-
-### Backend (Lovable Cloud)
-- **Supabase** - Backend completo (PostgreSQL + Auth + Storage + Edge Functions)
-- **PostgreSQL** - Banco de dados relacional
-- **Row Level Security (RLS)** - Segurança nativa do banco
-- **Edge Functions** - Serverless logic para automações
-
-### UI/UX
-- **shadcn/ui** - Componentes acessíveis baseados em Radix UI
-- **Tailwind CSS 3.4** - Framework CSS utility-first
-- **Lucide React** - Biblioteca de ícones moderna
-- **recharts** - Biblioteca de gráficos para React
-- **sonner** - Sistema de notificações toast moderno
-
-### Gerenciamento de Estado e Formulários
-- **TanStack Query 5.8** - Gerenciamento de servidor state e cache
-- **React Hook Form 7.6** - Biblioteca performática para formulários
-- **Zod 3.25** - Schema validation
-- **@hookform/resolvers** - Integração Zod + React Hook Form
-
-### Roteamento e Navegação
-- **React Router DOM 6.3** - Roteamento declarativo
-
-### Utilitários
-- **date-fns 3.6** - Manipulação de datas
-- **class-variance-authority** - Gerenciamento de variantes de classe
-- **tailwind-merge** - Merge inteligente de classes Tailwind
-- **clsx** - Construção condicional de classes
-
-### Desenvolvimento
-- **@vitejs/plugin-react-swc** - Plugin React com SWC
-- **ESLint** - Linter de código
-- **TypeScript ESLint** - Regras ESLint para TypeScript
-- **PostCSS & Autoprefixer** - Processamento de CSS
-
----
-
-## 📊 Status do Projeto
-
-### Status: 🟡 Desenvolvimento Ativo - Sprint 2/5
-
-**Fase Atual:** Implementação PRM/CRM
-
-- ✅ **Sprint 1 Concluído:** Database schema completo com 5 novas tabelas
-- 🔄 **Sprint 2 Em Andamento:** Interface CRM (PartnerDetailView, ActivityTimeline)
-- ⏳ **Sprint 3 Pendente:** Pipeline visual (Kanban, calendário)
-- ⏳ **Sprint 4 Pendente:** Health dashboard e automações
-- ⏳ **Sprint 5 Pendente:** Polish e refinamentos
-
-**Progresso Geral:** 44/113 tarefas (39%)
-
----
-
-## ✅ O Que Tem
-
-### Funcionalidades Implementadas
-
-#### 1. Dashboard
-- [x] Layout responsivo com sidebar
-- [x] Cards de métricas (estrutura preparada)
-- [x] Gráficos de distribuição (preparado para dados reais)
-- [x] **Persistência de dados no Supabase**
-
-#### 2. Backend Completo (Lovable Cloud + Supabase)
-- [x] **5 Tabelas CRM:** contacts, activities, health_metrics, tasks, documents
-- [x] **Row Level Security (RLS)** em todas as tabelas
-- [x] **Triggers** para updated_at automático
-- [x] **Indexes** para performance otimizada
-- [x] **Funções CRUD** completas em TypeScript
-- [x] **Autenticação** com Supabase Auth
-- [x] **Validação de dados** no backend e frontend
-
-#### 3. Gestão de Parceiros
-- [x] Visão geral de todos os parceiros
-- [x] Categorização em Logísticos, Pagamento e Marketplaces
-- [x] **Parceiros multi-categoria** (um parceiro pode atuar em múltiplas frentes)
-- [x] **Dados compartilhados** entre categorias (nome, status, data de início, notas)
-- [x] **Persistência no banco** com user_id para multi-tenancy
-- [x] Navegação com submenu expandível
-- [x] Formulários específicos com sistema de abas para cada tipo de parceiro
-
-##### 3.1 Parceiros Logísticos
-- [x] Cadastro de parceiros logísticos
-- [x] Gestão de cobertura por estado
-- [x] Informações de prazo de entrega e capacidade
-- [x] Modelos de preço (fixo/variável)
-- [x] Tipo de integração (API/Manual)
-- [x] Status e observações
-- [x] **Salvamento automático no Supabase**
-
-##### 3.2 Parceiros de Pagamento
-- [x] Cadastro completo de parceiros de pagamento
-- [x] **Formulário com 8 abas** (Identificação, Taxas, Prazos, Take Rate, Performance, Meios, Antifraude, Observações)
-- [x] Gestão de taxas MDR (Crédito, Débito, PIX)
-- [x] Configuração de prazos de liquidação
-- [x] Take Rate e performance (3 meses)
-- [x] Meios de pagamento aceitos (Cartão, PIX, Boleto, Carteiras, BNPL)
-- [x] Sistema de antifraude opcional
-- [x] Observações personalizadas
-- [x] **Salvamento automático no Supabase**
-
-##### 3.3 Parceiros de Marketplace
-- [x] Cadastro de marketplaces
-- [x] Gestão de comissões
-- [x] Seleção de categorias suportadas
-- [x] Alcance mensal de usuários
-- [x] Taxa de conversão e tipo de integração
-- [x] **Salvamento automático no Supabase**
-
-#### 4. Sistema CRM/PRM (Sprint 1 Concluído)
-- [x] **Tabela de Contatos** (partner_contacts)
-  - [x] Múltiplos contatos por parceiro
-  - [x] Contato principal marcado
-  - [x] Cargo, email, telefone, notas
-- [x] **Tabela de Atividades** (partner_activities)
-  - [x] Pipeline de reuniões, calls, emails, tarefas
-  - [x] Participantes em JSONB
-  - [x] O que discutimos, oportunidades, próximos passos
-  - [x] Status: scheduled, completed, cancelled, pending
-- [x] **Tabela de Health Metrics** (partner_health_metrics)
-  - [x] Score geral (0-100)
-  - [x] Scores individuais: performance, engagement, commercial
-  - [x] Indicadores: último contato, reuniões/mês, issues abertos
-- [x] **Tabela de Tarefas** (partner_tasks)
-  - [x] Linked to activities
-  - [x] Prioridade: low, medium, high, urgent
-  - [x] Status: todo, in_progress, done, cancelled
-  - [x] Assignee para delegação
-- [x] **Tabela de Documentos** (partner_documents)
-  - [x] Upload de contratos, propostas
-  - [x] Categorização de documentos
-
-#### 5. Sistema de Administração de Campos
-- [x] **Gestão de campos por tipo de parceiro** (Logístico, Pagamento, Marketplace)
-- [x] Interface admin para habilitar/desabilitar campos
-- [x] Controle de campos obrigatórios
-- [x] Configuração independente para cada tipo
-- [x] **Adicionar novos campos customizados**
-- [x] **Editar campos existentes**
-- [x] **Remover campos**
-- [x] Persistência de configurações no Supabase
-- [x] Estatísticas de campos ativos/desabilitados
-- [x] Reset para configuração padrão
-
-#### 6. Sistema de Proteção de Dados (Blur)
-- [x] **Botão toggle global** para ocultar/mostrar dados sensíveis
-- [x] Blur automático em valores monetários, taxas e dados pessoais
-- [x] Proteção por linha ou célula específica
-- [x] Estado persistido no localStorage
-- [x] Útil para apresentações e demos sem expor dados reais
-- [x] Interface visual clara com ícone Eye/EyeOff
-
-### Infraestrutura e Configuração
-
-#### ✅ Configurações Existentes
-- [x] TypeScript configurado (em modo não-strict)
-- [x] ESLint configurado
-- [x] Tailwind CSS com tema dark/light
-- [x] Vite configurado com SWC
-- [x] Alias `@/` para importação de componentes
-- [x] Componentes shadcn/ui instalados
-- [x] Sistema de design completo (cores, espaçamentos, tipografia)
-
-#### ✅ Qualidade de Código
-- [x] Estrutura modular e organizada
-- [x] Separação de responsabilidades
-- [x] TypeScript em todos os componentes
-- [x] Validação de dados com Zod
-- [x] Componentes reutilizáveis
-- [x] Hooks customizados (`use-toast`, `use-mobile`)
-
----
-
-## ❌ O Que Não Tem
-
-#### Observações de Desenvolvimento
-
-Este é um **sistema privado** desenvolvido por **Thiago Rotondo**:
-- 🔒 Não indexado por buscadores (robots.txt e meta tags configurados)
-- 🛡️ Protegido contra crawlers
-- 🔐 Acesso privado restrito
-
-### Funcionalidades Faltantes
-
-#### 1. Backend e Persistência
-- [ ] Integração com API REST
-- [ ] Banco de dados
-- [ ] Autenticação e autorização
-- [ ] Proteção contra CSRF e XSS
-- [ ] Rate limiting
-- [ ] Upload de arquivos
-
-#### 2. Gestão de Estado
-- [ ] Estado global (Context API/Zustand/Jotai)
-- [ ] Persistência em localStorage/IndexedDB
-- [ ] Cache de requisições
-- [ ] Estado compartilhado entre componentes
-
-#### 3. Testes
-- [ ] Testes unitários (Jest + Testing Library)
-- [ ] Testes de integração
-- [ ] Testes E2E (Playwright/Cypress)
-- [ ] Cobertura de código configurada
-
-#### 4. Performance
-- [ ] Lazy loading de componentes
-- [ ] Code splitting
-- [ ] Memorização de componentes (`React.memo`)
-- [ ] Otimização de re-renders (`useMemo`, `useCallback`)
-- [ ] Virtualização de listas longas
-
-#### 5. Funcionalidades de Negócio
-- [ ] Editar meios de pagamento existentes
-- [ ] Deletar meios de pagamento
-- [ ] Filtros e busca avançada
-- [ ] Ordenação de tabelas
-- [ ] Paginação de resultados
-- [ ] Exportação de dados (CSV/Excel/PDF)
-- [ ] Histórico de alterações
-- [ ] Comparação lado a lado
-
-#### 6. UX/UI
-- [ ] Loading states (skeleton screens)
-- [ ] Error boundaries
-- [ ] Feedback visual de ações
-- [ ] Toggle de tema dark/light no UI
-- [ ] Navegação breadcrumbs
-- [ ] Modais de confirmação
-- [ ] Undo/redo de ações
-
-#### 7. DevOps e Qualidade
-- [ ] GitHub Actions (CI/CD)
-- [ ] Pre-commit hooks (Husky)
-- [ ] Lint-staged
-- [ ] Testes automatizados
-- [ ] Deploy automatizado
-- [ ] Monitoramento de erro (Sentry)
-- [ ] Analytics
-
-#### 8. Documentação
-- [ ] Arquitetura do sistema documentada
-- [ ] Guia de contribuição
-- [ ] Decisões técnicas (ADR)
-- [ ] API endpoints documentados
-- [ ] Exemplos de uso
-
----
-
-## 💪 Pontos Fortes
-
-### 1. Stack Moderna e Bem Escolhida
-- **React + TypeScript**: Tipagem estática, melhor DX
-- **Vite**: Hot reload instantâneo, builds rápidos
-- **shadcn/ui**: Componentes acessíveis por padrão
-- **Tailwind CSS**: CSS moderno e manutenível
-
-### 2. Arquitetura Limpa
-- **Separação de responsabilidades**: Componentes, types, schemas, libs
-- **Modularidade**: Componentes pequenos e reutilizáveis
-- **Organização**: Estrutura de pastas bem definida
-
-### 3. Qualidade de UI
-- **Design System**: Cores, espaçamentos, tipografia consistentes
-- **Responsividade**: Layout adaptável
-- **Acessibilidade**: Componentes Radix UI
-- **Dark Mode**: Preparado para múltiplos temas
-
-### 4. Validação Robusta
-- **Zod**: Schema validation em tempo de desenvolvimento
-- **React Hook Form**: Formulários performáticos
-- **Feedback visual**: Mensagens de erro claras
-
-### 5. Escalabilidade
-- **TypeScript**: Detecção precoce de erros
-- **Component-based**: Fácil adicionar novas features
-- **TanStack Query**: Preparado para integração de API
-
-### 6. Developer Experience
-- **Hot Reload**: Feedback instantâneo
-- **TypeScript**: Autocomplete e type checking
-- **ESLint**: Padronização de código
-- **Aliases**: Importação limpa com `@/`
-
----
-
-## ⚠️ Pontos Fracos
-
-### 1. TypeScript Não-Strict
-```typescript
-// tsconfig.json - Configurações desabilitadas
-"noImplicitAny": false           // ❌ Perde segurança de tipos
-"noUnusedParameters": false      // ❌ Código não otimizado
-"strictNullChecks": false       // ❌ Perigoso para produção
-```
-
-**Risco:** Bugs potenciais em produção, perda de benefícios do TypeScript
-
-### 2. Falta de Persistência
-- **Estado em memória**: Dados perdidos ao recarregar
-- **Sem backend**: Não há API real
-- **Sem database**: Sem armazenamento permanente
-
-**Impacto:** Sistema não funcional para uso real
-
-### 3. Sem Testes
-- **Nenhum teste**: Impossível garantir qualidade
-- **Sem CI/CD**: Deploys manuais e arriscados
-- **Risco de regressão**: Mudanças podem quebrar funcionalidades
-
-**Impacto:** Baixa confiabilidade em produção
-
-### 4. Performance Não Otimizada
-- **Sem memoização**: Re-renders desnecessários
-- **Sem code splitting**: Bundle único e pesado
-- **Sem lazy loading**: Tudo carrega de uma vez
-
-**Impacto:** UX lenta, especialmente em dispositivos móveis
-
-### 5. Funcionalidades Incompletas
-- **Lojas**: Apenas placeholder
-- **Projeções**: Não implementado
-- **Relatórios**: Não implementado
-- **Dashboard**: Sem dados reais
-
-**Impacto:** Produto incompleto
-
-### 6. Muitas Dependências
-- **61 dependências**: Bundle pesado
-- **Combinar ferramentas**: Pode haver overlap
-
-**Impacto:** Build lento, app lento para carregar
-
-### 7. Sem Error Handling
-- **Sem Error Boundaries**: App pode crashar
-- **Sem tratamento de erros**: UX ruim ao falhar
-- **Sem loading states**: Usuário sem feedback
-
-**Impacto:** Experiência negativa ao encontrar erros
-
-### 8. Segurança Básica
-- **Sem autenticação**: Qualquer um pode acessar
-- **Sem autorização**: Sem controle de acesso
-- **Sem sanitização**: Vulnerável a XSS
-
-**Impacto:** Não seguro para produção
-
----
-
-## 🎯 Próximos Passos
-
-### Prioridade ALTA 🔴
-
-#### 1. Configurar TypeScript Strict Mode
-**Objetivo:** Ativar todas as verificações de tipo
-
-```typescript
-// tsconfig.json
-{
-  "compilerOptions": {
-    "strict": true,                    // ✅ Ativar
-    "noImplicitAny": true,             // ✅ Ativar
-    "strictNullChecks": true,          // ✅ Ativar
-    "noUnusedLocals": true,            // ✅ Ativar
-    "noUnusedParameters": true,         // ✅ Ativar
-  }
-}
-```
-
-**Benefício:** Bugs detectados em desenvolvimento, código mais seguro
-
-#### 2. Implementar Persistência Básica
-**Objetivo:** Salvar dados localmente
-
-- [ ] Integrar localStorage para dados temporários
-- [ ] Criar service layer para abstrair persistência
-- [ ] Implementar migrações de dados
-
-**Benefício:** Dados não perdidos ao recarregar
-
-#### 3. Adicionar Loading e Error States
-**Objetivo:** Melhorar UX
-
-```typescript
-// Exemplo de loading state
-const [loading, setLoading] = useState(false);
-
-if (loading) return <Skeleton />;
-if (error) return <ErrorBoundary error={error} />;
-```
-
-**Benefício:** Feedback visual para usuário
-
-#### 4. Implementar Error Boundaries
-**Objetivo:** Prevenir crashes
-
-```typescript
-// src/components/ErrorBoundary.tsx
-class ErrorBoundary extends React.Component {
-  // ... implementação
-}
-```
-
-**Benefício:** App mais resiliente
-
-#### 5. Adicionar Primeiros Testes
-**Objetivo:** Garantir qualidade
-
-- [ ] Instalar Jest + Testing Library
-- [ ] Testes de componentes críticos
-- [ ] Testes de schemas Zod
-- [ ] Configurar cobertura mínima (70%)
-
-**Benefício:** Confiança ao fazer mudanças
-
----
-
-### Prioridade MÉDIA 🟡
-
-#### 6. Otimizar Performance
-- [ ] Adicionar `React.memo` em componentes pesados
-- [ ] Implementar `useMemo` em cálculos custosos
-- [ ] Implementar `useCallback` em callbacks
-- [ ] Lazy loading de rotas
-- [ ] Code splitting
-
-**Benefício:** App mais rápido
-
-#### 7. Implementar Estado Global
-- [ ] Escolher solução (Context API ou Zustand)
-- [ ] Criar stores para cada entidade
-- [ ] Migrar estados locais para global
-
-**Benefício:** Estado compartilhado, menos prop drilling
-
-#### 8. Completar Funcionalidades Core
-- [ ] Implementar edição de meios de pagamento
-- [ ] Adicionar exclusão com confirmação
-- [ ] Implementar Dashboard com dados reais
-- [ ] Adicionar filtros e busca
-
-**Benefício:** Produto mais completo
-
-#### 9. Integrar com Backend
-- [ ] Definir contratos de API
-- [ ] Implementar serviços de API
-- [ ] Usar TanStack Query para cache
-- [ ] Implementar retry e error handling
-
-**Benefício:** Dados reais, app funcional
-
----
-
-### Prioridade BAIXA 🟢
-
-#### 10. Funcionalidades de Negócio
-- [ ] Sistema de Projeções
-- [ ] Sistema de Relatórios
-- [ ] Gestão de Lojas completo
-- [ ] Exportação de dados
-- [ ] Histórico de alterações
-
-**Benefício:** Features completas
-
-#### 11. Melhorias de UX
-- [ ] Toggle dark/light mode no UI
-- [ ] Breadcrumbs
-- [ ] Modal de confirmação
-- [ ] Toast de sucesso/erro
-- [ ] Animações suaves
-
-**Benefício:** UX polida
-
-#### 12. DevOps
-- [ ] Configurar GitHub Actions
-- [ ] Implementar CI/CD
-- [ ] Pre-commit hooks (Husky)
-- [ ] Lint-staged
-- [ ] Deploy automatizado
-
-**Benefício:** Processo de desenvolvimento profissional
-
-#### 13. Documentação
-- [ ] Documentar arquitetura
-- [ ] Guia de contribuição
-- [ ] Decisões técnicas (ADR)
-- [ ] Exemplos de uso
-
-**Benefício:** Onboarding facilitado
-
----
-
-## 🛠️ Instalação
+## 📦 Instalação
 
 ### Pré-requisitos
+- Node.js 18+ ou Bun
+- Conta Lovable Cloud (já configurada)
 
-- **Node.js** 18.x ou superior
-- **npm** ou **bun**
-- Git
+### Setup Local
 
-### ⚡ Instalação Rápida (Windows)
-
-Se você estiver no Windows, execute o script automático:
-
-```powershell
-.\setup.ps1
-```
-
-Este script vai:
-- ✅ Verificar se Node.js está instalado
-- ✅ Instalar dependências automaticamente
-- ✅ Iniciar o servidor de desenvolvimento
-
-### 🔧 Instalação Manual
-
-#### 1. Verificar Node.js
-
+1. Clone o repositório:
 ```bash
-node --version
-npm --version
+git clone <seu-repo>
+cd <nome-do-projeto>
 ```
 
-Se não estiver instalado: [Baixar Node.js](https://nodejs.org/)
-
-#### 2. Instalar Dependências
-
+2. Instale as dependências:
 ```bash
 npm install
+# ou
+bun install
 ```
 
-#### 3. Iniciar Servidor
-
-```bash
-npm run dev
+3. Configure as variáveis de ambiente:
+O arquivo `.env` é gerado automaticamente pelo Lovable Cloud com:
+```
+VITE_SUPABASE_URL=<sua-url>
+VITE_SUPABASE_PUBLISHABLE_KEY=<sua-key>
+VITE_SUPABASE_PROJECT_ID=<seu-project-id>
 ```
 
-#### 4. Acessar Aplicação
+4. Execute o projeto:
+```bash
+npm run dev
+# ou
+bun dev
+```
 
-Abra seu navegador em: **http://localhost:8080**
+5. Acesse: `http://localhost:5173`
 
----
+## 🗄️ Estrutura do Banco de Dados
 
-### 📚 Guias Adicionais
+### Tabelas Principais
 
-- 📖 **[GUIA_INSTALACAO.md](./GUIA_INSTALACAO.md)** - Guia completo de instalação
-- 🔧 **[setup.ps1](./setup.ps1)** - Script de setup automático
+#### partners
+- `id`: UUID (PK)
+- `name`: TEXT
+- `type`: TEXT (payment, marketplace, logistic)
+- `data`: JSONB (campos dinâmicos por tipo)
+- `user_id`: UUID
+- `created_at`, `updated_at`: TIMESTAMP
 
-### ❌ Problemas Comuns
+#### partner_contacts
+- `id`: UUID (PK)
+- `partner_id`: UUID (FK)
+- `name`: TEXT
+- `role`: TEXT
+- `email`: TEXT
+- `phone`: TEXT
+- `is_primary`: BOOLEAN
+- `notes`: TEXT
 
-Veja a seção de [Problemas Comuns](./GUIA_INSTALACAO.md#-problemas-comuns) no guia de instalação.
+#### partner_activities
+- `id`: UUID (PK)
+- `partner_id`: UUID (FK)
+- `title`: TEXT
+- `activity_type`: ENUM (meeting, call, email, video_call, other)
+- `status`: ENUM (pending, completed, cancelled)
+- `scheduled_date`: DATE
+- `completed_date`: DATE
+- `what_discussed`: TEXT
+- `next_steps`: TEXT
+- `opportunities`: TEXT
+- `participants`: JSONB
 
----
+#### partner_tasks
+- `id`: UUID (PK)
+- `partner_id`: UUID (FK)
+- `activity_id`: UUID (FK, nullable)
+- `title`: TEXT
+- `description`: TEXT
+- `status`: ENUM (todo, in_progress, done, cancelled)
+- `priority`: ENUM (low, medium, high)
+- `due_date`: DATE
+- `assigned_to`: UUID
 
-## 💻 Desenvolvimento
+#### partner_health_metrics
+- `id`: UUID (PK)
+- `partner_id`: UUID (FK)
+- `overall_score`: INTEGER (0-100)
+- `performance_score`: INTEGER (0-100)
+- `engagement_score`: INTEGER (0-100)
+- `commercial_score`: INTEGER (0-100)
+- `health_status`: ENUM (excellent, good, warning, critical)
+- `days_since_last_contact`: INTEGER
+- `meetings_this_month`: INTEGER
+- `open_issues_count`: INTEGER
+- `calculated_at`: TIMESTAMP
 
-### Scripts Disponíveis
+#### partner_alerts
+- `id`: UUID (PK)
+- `partner_id`: UUID (FK)
+- `user_id`: UUID
+- `alert_type`: TEXT
+- `severity`: TEXT (low, medium, high, critical)
+- `title`: TEXT
+- `message`: TEXT
+- `is_read`: BOOLEAN
+- `is_resolved`: BOOLEAN
+- `metadata`: JSONB
+
+### Security (RLS)
+
+Todas as tabelas possuem políticas RLS:
+- Usuários só podem ver/editar seus próprios dados
+- Admins têm acesso total
+- Função `has_role()` para verificação de permissões
+
+## 🔧 Edge Functions
+
+### calculate-health-scores
+Calcula automaticamente os health scores de todos os parceiros:
+- Analisa atividades, tarefas e engajamento
+- Gera scores de performance, engajamento e comercial
+- Cria alertas baseados em métricas
+- Atualiza a tabela `partner_health_metrics`
+
+**Endpoint:** `/functions/v1/calculate-health-scores`
+**Método:** POST
+**Auth:** Required (Bearer token)
+
+## 📱 Páginas e Rotas
+
+- `/` - Dashboard principal
+- `/auth` - Login/Signup
+- `/pipeline` - Pipeline Kanban e tarefas
+- `/health` - Health Dashboard
+- `/?view=partners` - Listagem de parceiros
+- `/?view=payment-methods` - Métodos de pagamento (em desenvolvimento)
+
+## 🎨 Design System
+
+- **Cores:** Sistema de tokens HSL configurado em `index.css`
+- **Componentes:** shadcn/ui com customizações
+- **Responsividade:** Mobile-first com Tailwind
+- **Dark Mode:** Suportado via next-themes
+
+## 🔐 Autenticação
+
+- Sistema de autenticação Supabase
+- Email + Senha
+- Auto-confirm habilitado (desenvolvimento)
+- Protected Routes com contexto de autenticação
+- Sistema de roles (admin, user)
+
+## 📊 Métricas e KPIs
+
+### Health Scores
+- **Performance Score:** Baseado em issues abertas e tempo sem contato
+- **Engagement Score:** Reuniões e atividades recentes
+- **Commercial Score:** Atividades completadas e histórico
+- **Overall Score:** Média ponderada (40% perf, 30% eng, 30% comm)
+
+### Alertas Automáticos
+- Sem contato > 30 dias
+- Muitas tarefas de alta prioridade
+- Health score crítico
+
+## 🚧 Desenvolvimento
+
+### Estrutura de Pastas
+```
+src/
+├── components/
+│   ├── admin/          # Componentes admin
+│   ├── dashboard/      # Dashboard e métricas
+│   ├── layout/         # Layout (Sidebar, etc)
+│   ├── partners/       # Gestão de parceiros
+│   ├── payment-methods/# Métodos de pagamento
+│   ├── pipeline/       # Pipeline e Kanban
+│   └── ui/            # shadcn/ui components
+├── contexts/          # React contexts
+├── hooks/            # Custom hooks
+├── integrations/     # Supabase client
+├── lib/             # Utilities
+├── pages/           # Páginas principais
+├── types/           # TypeScript types
+└── main.tsx         # Entry point
+
+supabase/
+├── functions/       # Edge functions
+└── config.toml      # Configuração Supabase
+```
+
+### Comandos Úteis
 
 ```bash
-# Desenvolvimento com hot reload
+# Desenvolvimento
 npm run dev
 
-# Build para produção
+# Build
 npm run build
 
-# Build em modo desenvolvimento (não minificado)
-npm run build:dev
-
-# Visualizar preview da build
+# Preview
 npm run preview
 
-# Lint do código
+# Lint
 npm run lint
 ```
 
-### Estrutura de Pastas
+## 📝 Próximos Passos (Futuras Sprints)
 
-```
-partners-li/
-├── public/              # Arquivos estáticos
-├── src/
-│   ├── components/
-│   │   ├── admin/       # Administração
-│   │   │   └── FieldManager.tsx  # Gestão de campos
-│   │   ├── dashboard/   # Dashboard
-│   │   ├── layout/      # Layout
-│   │   │   ├── Sidebar.tsx
-│   │   │   └── BlurToggle.tsx  # Botão de proteção de dados
-│   │   ├── partners/    # Gestão de parceiros
-│   │   │   ├── AddPartnerDialog.tsx  # Diálogo de cadastro com abas
-│   │   │   ├── LogisticPartnersTable.tsx
-│   │   │   ├── PaymentPartnersTable.tsx
-│   │   │   ├── MarketplacePartnersTable.tsx
-│   │   │   ├── PartnersOverview.tsx
-│   │   │   └── PartnerForm/  # Componentes de formulário (8 abas)
-│   │   ├── payment-methods/  # (Legado)
-│   │   ├── stores/      # Lojas
-│   │   └── ui/          # Componentes shadcn/ui
-│   ├── contexts/
-│   │   └── BlurContext.tsx  # Contexto para controle de blur
-│   ├── hooks/
-│   │   ├── use-blur-sensitive.ts  # Hook para aplicar blur
-│   │   ├── use-field-config.ts
-│   │   └── use-toast.ts
-│   ├── lib/
-│   │   ├── partner-schema.ts  # Schema Zod para parceiros
-│   │   └── utils.ts
-│   ├── pages/           # Páginas
-│   ├── types/           # TypeScript types
-│   │   ├── partner.ts   # Tipos de parceiros (multi-categoria)
-│   │   ├── field-config.ts  # Configuração de campos
-│   │   └── payment-method.ts  # (Legado)
-│   ├── App.tsx          # Componente raiz
-│   └── main.tsx         # Entry point
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── tailwind.config.ts
-```
-
-### Convenções
-
-#### Imports
-```typescript
-// ✅ Usar alias @/
-import { Button } from "@/components/ui/button";
-import { PaymentMethod } from "@/types/payment-method";
-
-// ❌ Evitar paths relativos longos
-import { Button } from "../../../components/ui/button";
-```
-
-#### Nomenclatura
-```typescript
-// ✅ Componentes em PascalCase
-export const PaymentMethodsTable = () => {}
-
-// ✅ Hooks com prefixo "use"
-export const usePaymentMethods = () => {}
-
-// ✅ Types em PascalCase
-export interface PaymentMethod {}
-
-// ✅ Constants em UPPER_SNAKE_CASE
-export const MAX_FILE_SIZE = 1024;
-```
-
----
+- [ ] Exportação de dados (CSV, Excel)
+- [ ] Importação em massa
+- [ ] Dashboards comparativos
+- [ ] Gráficos de tendências
+- [ ] Relatórios automáticos por email
+- [ ] Integração com calendários externos
+- [ ] Mobile app (React Native)
+- [ ] API pública
 
 ## 🤝 Contribuindo
 
-### Fluxo de Trabalho
-
 1. Fork o projeto
-2. Crie uma branch (`git checkout -b feature/NovaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/NovaFeature`)
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
-### Commit Messages
+## 📄 Licença
 
-Use commits descritivos:
+Este projeto está sob a licença MIT.
 
-```bash
-# ✅ Bom
-git commit -m "feat: adiciona filtros na tabela de meios de pagamento"
-git commit -m "fix: corrige cálculo de aprovação média"
-git commit -m "refactor: extrai lógica de formatação para util"
+## 👥 Suporte
 
-# ❌ Evitar
-git commit -m "fix"
-git commit -m "mudanças"
-```
-
-### Padrões de Código
-
-- Seguir configurações do ESLint
-- Usar TypeScript com tipos explícitos
-- Comentar código complexo
-- Manter funções pequenas (< 50 linhas)
-- Evitar aninhamento profundo (< 3 níveis)
+Para suporte, abra uma issue no GitHub ou entre em contato através do Lovable Discord.
 
 ---
 
-## 📝 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
----
-
-## 📞 Contato
-
-**Desenvolvido por:** Thiago Rotondo
-
----
-
-## 📊 Roadmap de Desenvolvimento
-
-### Sprint 1 (Semana 1-2)
-- [x] Setup inicial do projeto
-- [x] Configuração de ferramentas
-- [x] Layout e navegação
-- [x] Formulário de meios de pagamento
-- [ ] **Correção TypeScript strict mode**
-
-### Sprint 2 (Semana 3-4)
-- [ ] Implementar persistência local
-- [ ] Adicionar loading e error states
-- [ ] Implementar Error Boundaries
-- [ ] Primeiros testes automatizados
-
-### Sprint 3 (Semana 5-6)
-- [ ] Otimizar performance
-- [ ] Implementar estado global
-- [ ] Completar Dashboard com dados reais
-- [ ] Integrar com backend mock
-
-### Sprint 4 (Semana 7-8)
-- [ ] Funcionalidades de edição e exclusão
-- [ ] Filtros e busca
-- [ ] Sistema de Projeções
-- [ ] Sistema de Relatórios
-
-### Sprint 5+ (Semana 9+)
-- [ ] CI/CD e DevOps
-- [ ] Testes E2E
-- [ ] Melhorias de UX
-- [ ] Documentação completa
-
----
-
-**Última atualização:** Janeiro 2025
-**Versão:** 0.4.0
-**Desenvolvido por:** Thiago Rotondo
-**Status:** Em Desenvolvimento Ativo 🚧
-
----
-
-## 🎯 Destaques da Versão 0.4.0
-
-### ✅ Sistema de Proteção de Dados
-- **Botão toggle global** (canto superior direito) para ocultar dados sensíveis
-- Blur automático em valores monetários, taxas e informações críticas
-- Perfeito para apresentações e demos sem expor dados reais
-
-### ✅ Gestão Avançada de Campos
-- **Criar, editar e remover campos** customizados
-- Controle granular por tipo de parceiro (Logístico, Pagamento, Marketplace)
-- Interface admin completa
-
-### ✅ Sistema Multi-Categoria
-- Parceiros podem atuar em múltiplas categorias simultaneamente
-- Dados compartilhados (nome, status, notas)
-- Formulários completos com 8 abas
-
-### ✅ Privacidade e Segurança
-- Proteção contra indexação (robots.txt + meta tags)
-- Autor identificado: Thiago Rotondo
-- Sistema privado e não indexável
-
----
+**Desenvolvido com ❤️ usando Lovable**
