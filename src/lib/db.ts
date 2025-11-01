@@ -27,6 +27,13 @@ export async function savePartner(partner: Partner): Promise<void> {
   // Determine primary category from categories array
   const primaryCategory = partner.categories[0] || 'logistic';
 
+  // Ensure customFields and contactFields are preserved in the data
+  const partnerData = {
+    ...partner,
+    customFields: partner.customFields || {},
+    contactFields: partner.contactFields || {},
+  };
+
   const { error } = await supabase
     .from('partners')
     .upsert({
@@ -34,7 +41,7 @@ export async function savePartner(partner: Partner): Promise<void> {
       user_id: user.id,
       name: partner.name,
       type: primaryCategory,
-      data: partner as any,
+      data: partnerData as any,
     }, { onConflict: 'id' });
 
   if (error) {

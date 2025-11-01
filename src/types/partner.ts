@@ -10,6 +10,8 @@ export interface SharedPartnerData {
   status: PartnerStatus;
   startDate: Date;
   notes?: string;
+  customFields?: Record<string, any>; // Campos personalizados configuráveis
+  contactFields?: Record<string, any>; // Campos de contato personalizados
   createdAt: Date;
   updatedAt: Date;
 }
