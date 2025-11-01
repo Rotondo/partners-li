@@ -111,9 +111,7 @@ export const LogisticPartnersTable = () => {
     try {
       await savePartner(partner);
       const allPartners = await getAllPartners();
-      const logisticPartners = allPartners.filter(p => 
-        p.categories.includes('logistic') || (p as any).category === 'logistic'
-      );
+      const logisticPartners = filterPartnersByCategory(allPartners, 'logistic');
       setPartners(logisticPartners as LogisticPartner[]);
       
       setIsDialogOpen(false);
@@ -198,7 +196,7 @@ export const LogisticPartnersTable = () => {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={newPartner.status}
-                  onValueChange={(value) => setNewPartner({ ...newPartner, status: value as any })}
+                  onValueChange={(value) => setNewPartner({ ...newPartner, status: value as "active" | "inactive" | "pending" | "paused" })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -247,7 +245,7 @@ export const LogisticPartnersTable = () => {
                   <Label htmlFor="pricingModel">Modelo de Preço</Label>
                   <Select
                     value={newPartner.pricingModel}
-                    onValueChange={(value) => setNewPartner({ ...newPartner, pricingModel: value as any })}
+                    onValueChange={(value) => setNewPartner({ ...newPartner, pricingModel: value as "fixed" | "variable" })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -262,7 +260,7 @@ export const LogisticPartnersTable = () => {
                   <Label htmlFor="integrationType">Tipo de Integração</Label>
                   <Select
                     value={newPartner.integrationType}
-                    onValueChange={(value) => setNewPartner({ ...newPartner, integrationType: value as any })}
+                    onValueChange={(value) => setNewPartner({ ...newPartner, integrationType: value as "api" | "manual" })}
                   >
                     <SelectTrigger>
                       <SelectValue />

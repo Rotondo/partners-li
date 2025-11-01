@@ -436,6 +436,130 @@ Array de objetos representando campos customizados:
 
 ---
 
+### 10. **stores**
+Gerenciamento de lojas físicas, online e híbridas vinculadas aos parceiros.
+
+#### Campos
+| Campo | Tipo | Nullable | Default | Descrição |
+|-------|------|----------|---------|-----------|
+| `id` | UUID | NOT NULL | `gen_random_uuid()` | Primary Key |
+| `user_id` | UUID | NOT NULL | - | FK para auth.users |
+| `name` | TEXT | NOT NULL | - | Nome da loja |
+| `store_type` | store_type (ENUM) | NOT NULL | - | Tipo de loja |
+| `status` | store_status (ENUM) | NOT NULL | `'active'` | Status da loja |
+| `description` | TEXT | YES | NULL | Descrição da loja |
+| `address` | JSONB | YES | NULL | Endereço completo |
+| `business_hours` | JSONB | YES | NULL | Horário de funcionamento |
+| `contact_info` | JSONB | YES | NULL | Informações de contato |
+| `logistic_partners` | TEXT[] | YES | NULL | Array de IDs de parceiros logísticos |
+| `payment_partners` | TEXT[] | YES | NULL | Array de IDs de parceiros de pagamento |
+| `marketplace_partners` | TEXT[] | YES | NULL | Array de IDs de parceiros marketplace |
+| `metrics` | JSONB | YES | NULL | Métricas de performance |
+| `settings` | JSONB | YES | `'{}'::jsonb` | Configurações específicas |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL | `now()` | Data de criação |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | NOT NULL | `now()` | Última atualização |
+
+#### Constraints
+- **Primary Key:** `id`
+- **Foreign Key:** `user_id` → `auth.users(id)` ON DELETE CASCADE
+
+#### Triggers
+- `update_stores_updated_at` BEFORE UPDATE
+  - Atualiza automaticamente `updated_at` quando o registro é modificado
+
+#### Enums
+
+**store_type:**
+```sql
+CREATE TYPE public.store_type AS ENUM ('physical', 'online', 'hybrid');
+```
+
+**store_status:**
+```sql
+CREATE TYPE public.store_status AS ENUM ('active', 'inactive', 'maintenance', 'planned');
+```
+
+#### Estrutura JSONB do campo `address`
+```json
+{
+  "street": "Rua Exemplo, 123",
+  "complement": "Sala 456",
+  "neighborhood": "Centro",
+  "city": "São Paulo",
+  "state": "SP",
+  "zip_code": "01234-567",
+  "country": "Brasil",
+  "coordinates": {
+    "latitude": -23.5505,
+    "longitude": -46.6333
+  }
+}
+```
+
+#### Estrutura JSONB do campo `business_hours`
+```json
+{
+  "monday": { "open": "09:00", "close": "18:00" },
+  "tuesday": { "open": "09:00", "close": "18:00" },
+  "wednesday": { "open": "09:00", "close": "18:00" },
+  "thursday": { "open": "09:00", "close": "18:00" },
+  "friday": { "open": "09:00", "close": "18:00" },
+  "saturday": { "open": "09:00", "close": "14:00" },
+  "sunday": null
+}
+```
+
+#### Estrutura JSONB do campo `contact_info`
+```json
+{
+  "phone": "(11) 1234-5678",
+  "whatsapp": "(11) 98765-4321",
+  "email": "loja@exemplo.com",
+  "website": "https://exemplo.com",
+  "social_media": {
+    "instagram": "@loja_exemplo",
+    "facebook": "lojaexemplo"
+  }
+}
+```
+
+#### Estrutura JSONB do campo `metrics`
+```json
+{
+  "monthly_revenue": 150000.00,
+  "monthly_orders": 450,
+  "average_ticket": 333.33,
+  "conversion_rate": 3.2,
+  "customer_satisfaction": 4.5,
+  "last_updated": "2025-01-15T10:00:00Z"
+}
+```
+
+#### Regras de Negócio
+- Uma loja DEVE ter um tipo (`physical`, `online`, `hybrid`)
+- Lojas podem ter múltiplos parceiros de cada categoria
+- `logistic_partners`, `payment_partners`, `marketplace_partners` armazenam UUIDs dos parceiros vinculados
+- `address` é obrigatório para lojas `physical` e `hybrid`
+- `business_hours` é relevante principalmente para lojas físicas
+- `metrics` é atualizado periodicamente (diariamente ou via API)
+
+#### Relacionamento com Parceiros
+```sql
+-- Exemplo de query para buscar loja com parceiros
+SELECT
+  s.*,
+  (SELECT json_agg(p.*)
+   FROM partners p
+   WHERE p.id = ANY(s.logistic_partners)) as logistic_partners_data,
+  (SELECT json_agg(p.*)
+   FROM partners p
+   WHERE p.id = ANY(s.payment_partners)) as payment_partners_data
+FROM stores s
+WHERE s.user_id = auth.uid();
+```
+
+---
+
 ## 🔒 Políticas RLS (Row Level Security)
 
 Todas as tabelas possuem RLS habilitado para garantir segurança dos dados.
@@ -594,6 +718,26 @@ Mesmas políticas de `partner_contacts` (view, create, update, delete).
 5. **"Admins can manage field configs"**
    - **Operação:** ALL
    - **Condição:** `has_role(auth.uid(), 'admin')`
+
+---
+
+#### **stores**
+
+1. **"Users can view their own stores"**
+   - **Operação:** SELECT
+   - **Condição:** `user_id = auth.uid() OR has_role(auth.uid(), 'admin')`
+
+2. **"Users can create their own stores"**
+   - **Operação:** INSERT
+   - **Condição:** `user_id = auth.uid()`
+
+3. **"Users can update their own stores"**
+   - **Operação:** UPDATE
+   - **Condição:** `user_id = auth.uid() OR has_role(auth.uid(), 'admin')`
+
+4. **"Users can delete their own stores"**
+   - **Operação:** DELETE
+   - **Condição:** `user_id = auth.uid() OR has_role(auth.uid(), 'admin')`
 
 ---
 
@@ -787,6 +931,31 @@ CREATE TYPE public.health_status AS ENUM ('excellent', 'good', 'warning', 'criti
 
 ---
 
+### 7. **store_type**
+```sql
+CREATE TYPE public.store_type AS ENUM ('physical', 'online', 'hybrid');
+```
+- **Uso:** Classificação de tipo de loja
+- **Valores:**
+  - `physical`: Loja física com ponto de venda
+  - `online`: Loja exclusivamente online (e-commerce)
+  - `hybrid`: Loja com presença física e online
+
+---
+
+### 8. **store_status**
+```sql
+CREATE TYPE public.store_status AS ENUM ('active', 'inactive', 'maintenance', 'planned');
+```
+- **Uso:** Status operacional da loja
+- **Valores:**
+  - `active`: Loja em operação (default)
+  - `inactive`: Loja temporariamente desativada
+  - `maintenance`: Loja em manutenção
+  - `planned`: Loja planejada/em construção
+
+---
+
 ## 📈 Índices e Performance
 
 ### Índices Recomendados
@@ -825,6 +994,14 @@ CREATE INDEX idx_partner_alerts_user_id ON public.partner_alerts(user_id);
 CREATE INDEX idx_partner_alerts_is_read ON public.partner_alerts(is_read);
 CREATE INDEX idx_partner_alerts_is_resolved ON public.partner_alerts(is_resolved);
 CREATE INDEX idx_partner_alerts_severity ON public.partner_alerts(severity);
+
+-- stores
+CREATE INDEX idx_stores_user_id ON public.stores(user_id);
+CREATE INDEX idx_stores_store_type ON public.stores(store_type);
+CREATE INDEX idx_stores_status ON public.stores(status);
+CREATE INDEX idx_stores_logistic_partners ON public.stores USING GIN (logistic_partners);
+CREATE INDEX idx_stores_payment_partners ON public.stores USING GIN (payment_partners);
+CREATE INDEX idx_stores_marketplace_partners ON public.stores USING GIN (marketplace_partners);
 ```
 
 ### Queries Otimizadas

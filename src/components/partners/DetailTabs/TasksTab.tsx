@@ -52,14 +52,14 @@ export const TasksTab = ({ partnerId, onUpdate }: TasksTabProps) => {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    const colors = {
+  const getPriorityColor = (priority: string): "default" | "secondary" | "destructive" | "outline" => {
+    const colors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       urgent: "destructive",
       high: "default",
       medium: "secondary",
       low: "outline",
     };
-    return colors[priority as keyof typeof colors] || "outline";
+    return colors[priority] || "outline";
   };
 
   const getPriorityLabel = (priority: string) => {
@@ -106,7 +106,7 @@ export const TasksTab = ({ partnerId, onUpdate }: TasksTabProps) => {
                     <div className="flex-1 space-y-2">
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-medium">{task.title}</p>
-                        <Badge variant={getPriorityColor(task.priority) as any} className="text-xs">
+                        <Badge variant={getPriorityColor(task.priority)} className="text-xs">
                           {getPriorityLabel(task.priority)}
                         </Badge>
                       </div>
