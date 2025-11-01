@@ -1,10 +1,11 @@
-# 🚀 Plataforma de Gestão de Parceiros
+# 🚀 Plataforma de Gestão de Parceiros - PRM/CRM
 
 [![Project Status](https://img.shields.io/badge/status-desenvolvimento-yellow.svg)]()
-[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)]()
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-green.svg)]()
+[![Sprint](https://img.shields.io/badge/sprint-2%2F5-orange.svg)]()
 
-> **Plataforma de Gestão de Parceiros** é uma aplicação web moderna para gestão completa de parceiros logísticos, de pagamento e marketplaces em um único sistema integrado.
+> **Plataforma de Gestão de Parceiros** é uma solução completa de PRM (Partner Relationship Management) e CRM para gestão de parceiros logísticos, de pagamento e marketplaces, com pipeline de atividades, health scores e automações inteligentes.
 
 ---
 
@@ -28,18 +29,27 @@
 
 ## 🎯 Sobre o Projeto
 
-**Plataforma de Gestão de Parceiros** é uma solução completa para empresas que trabalham com múltiplos tipos de parceiros. O sistema permite:
+**Plataforma de Gestão de Parceiros** é uma solução completa de PRM/CRM que combina:
 
-- ✅ Gestão de parceiros logísticos (cobertura, prazos, capacidade)
-- ✅ Gestão de parceiros de pagamento (taxas MDR, liquidação, performance)
-- ✅ Gestão de marketplaces (comissões, categorias, alcance)
-- ✅ **Parceiros multi-categoria** (um mesmo parceiro pode atuar em várias frentes)
-- ✅ **Sistema de Admin** para configurar campos por tipo de parceiro
-- ✅ **Dados compartilhados** entre categorias (nome, status, notas)
-- ✅ Visão consolidada de todos os parceiros
-- ✅ Interface centralizada para administração
+### Funcionalidades Core
+- ✅ **Gestão de Parceiros Multi-Categoria** (Logística, Pagamento, Marketplace)
+- ✅ **Sistema de Pipeline/CRM** para rastrear atividades e reuniões
+- ✅ **Gestão de Tarefas** com próximos passos e acompanhamento
+- ✅ **Health Scores** automáticos para monitorar saúde das parcerias
+- ✅ **Timeline de Atividades** com histórico completo de interações
+- ✅ **Sistema de Contatos** múltiplos por parceiro
+- ✅ **Gestão de Documentos** com upload e categorização
+- ✅ **Alertas e Notificações** automáticos
+- ✅ **Relatórios Inteligentes** de engajamento e performance
 
-**Objetivo:** Fornecer uma visão completa e centralizada de todos os parceiros logísticos, de pagamento e marketplaces, facilitando a tomada de decisão estratégica.
+### Arquitetura
+- 🔐 **Backend Supabase** com RLS policies
+- 💾 **Persistência de Dados** em PostgreSQL
+- 🔄 **Real-time Updates** (preparado)
+- 🤖 **Automações Inteligentes** via Edge Functions
+- 📊 **Dashboard Executivo** com métricas de saúde
+
+**Objetivo:** Fornecer uma visão 360° de todos os parceiros, rastreando não apenas dados cadastrais, mas todo o histórico de relacionamento, performance e próximos passos.
 
 **Desenvolvido por:** Thiago Rotondo
 
@@ -52,11 +62,18 @@
 - **TypeScript 5.8** - Superset do JavaScript com tipagem estática
 - **Vite 5.4** - Build tool e dev server ultrarrápido
 
+### Backend (Lovable Cloud)
+- **Supabase** - Backend completo (PostgreSQL + Auth + Storage + Edge Functions)
+- **PostgreSQL** - Banco de dados relacional
+- **Row Level Security (RLS)** - Segurança nativa do banco
+- **Edge Functions** - Serverless logic para automações
+
 ### UI/UX
 - **shadcn/ui** - Componentes acessíveis baseados em Radix UI
 - **Tailwind CSS 3.4** - Framework CSS utility-first
 - **Lucide React** - Biblioteca de ícones moderna
 - **recharts** - Biblioteca de gráficos para React
+- **sonner** - Sistema de notificações toast moderno
 
 ### Gerenciamento de Estado e Formulários
 - **TanStack Query 5.8** - Gerenciamento de servidor state e cache
@@ -64,7 +81,7 @@
 - **Zod 3.25** - Schema validation
 - **@hookform/resolvers** - Integração Zod + React Hook Form
 
-### Roteamento
+### Roteamento e Navegação
 - **React Router DOM 6.3** - Roteamento declarativo
 
 ### Utilitários
@@ -72,10 +89,6 @@
 - **class-variance-authority** - Gerenciamento de variantes de classe
 - **tailwind-merge** - Merge inteligente de classes Tailwind
 - **clsx** - Construção condicional de classes
-
-### Outras
-- **Sonner** - Sistema de notificações toast moderno
-- **next-themes** - Suporte a temas dark/light
 
 ### Desenvolvimento
 - **@vitejs/plugin-react-swc** - Plugin React com SWC
@@ -87,16 +100,17 @@
 
 ## 📊 Status do Projeto
 
-### Status: 🟡 Desenvolvimento Ativo
+### Status: 🟡 Desenvolvimento Ativo - Sprint 2/5
 
-**Fase Atual:** MVP/Protótipo Funcional
+**Fase Atual:** Implementação PRM/CRM
 
-- ✅ Interface de usuário completa
-- ✅ Formulários complexos implementados
-- ✅ Validação de dados robusta
-- ⚠️ Integração com backend pendente
-- ⚠️ Testes automatizados não implementados
-- ⚠️ Persistência de dados não configurada
+- ✅ **Sprint 1 Concluído:** Database schema completo com 5 novas tabelas
+- 🔄 **Sprint 2 Em Andamento:** Interface CRM (PartnerDetailView, ActivityTimeline)
+- ⏳ **Sprint 3 Pendente:** Pipeline visual (Kanban, calendário)
+- ⏳ **Sprint 4 Pendente:** Health dashboard e automações
+- ⏳ **Sprint 5 Pendente:** Polish e refinamentos
+
+**Progresso Geral:** 44/113 tarefas (39%)
 
 ---
 
@@ -108,25 +122,36 @@
 - [x] Layout responsivo com sidebar
 - [x] Cards de métricas (estrutura preparada)
 - [x] Gráficos de distribuição (preparado para dados reais)
-- [ ] **Dados mockados** (arrays vazios)
+- [x] **Persistência de dados no Supabase**
 
-#### 2. Gestão de Parceiros
+#### 2. Backend Completo (Lovable Cloud + Supabase)
+- [x] **5 Tabelas CRM:** contacts, activities, health_metrics, tasks, documents
+- [x] **Row Level Security (RLS)** em todas as tabelas
+- [x] **Triggers** para updated_at automático
+- [x] **Indexes** para performance otimizada
+- [x] **Funções CRUD** completas em TypeScript
+- [x] **Autenticação** com Supabase Auth
+- [x] **Validação de dados** no backend e frontend
+
+#### 3. Gestão de Parceiros
 - [x] Visão geral de todos os parceiros
 - [x] Categorização em Logísticos, Pagamento e Marketplaces
 - [x] **Parceiros multi-categoria** (um parceiro pode atuar em múltiplas frentes)
 - [x] **Dados compartilhados** entre categorias (nome, status, data de início, notas)
+- [x] **Persistência no banco** com user_id para multi-tenancy
 - [x] Navegação com submenu expandível
 - [x] Formulários específicos com sistema de abas para cada tipo de parceiro
 
-##### 2.1 Parceiros Logísticos
+##### 3.1 Parceiros Logísticos
 - [x] Cadastro de parceiros logísticos
 - [x] Gestão de cobertura por estado
 - [x] Informações de prazo de entrega e capacidade
 - [x] Modelos de preço (fixo/variável)
 - [x] Tipo de integração (API/Manual)
 - [x] Status e observações
+- [x] **Salvamento automático no Supabase**
 
-##### 2.2 Parceiros de Pagamento
+##### 3.2 Parceiros de Pagamento
 - [x] Cadastro completo de parceiros de pagamento
 - [x] **Formulário com 8 abas** (Identificação, Taxas, Prazos, Take Rate, Performance, Meios, Antifraude, Observações)
 - [x] Gestão de taxas MDR (Crédito, Débito, PIX)
@@ -135,15 +160,40 @@
 - [x] Meios de pagamento aceitos (Cartão, PIX, Boleto, Carteiras, BNPL)
 - [x] Sistema de antifraude opcional
 - [x] Observações personalizadas
+- [x] **Salvamento automático no Supabase**
 
-##### 2.3 Parceiros de Marketplace
+##### 3.3 Parceiros de Marketplace
 - [x] Cadastro de marketplaces
 - [x] Gestão de comissões
 - [x] Seleção de categorias suportadas
 - [x] Alcance mensal de usuários
 - [x] Taxa de conversão e tipo de integração
+- [x] **Salvamento automático no Supabase**
 
-#### 3. Sistema de Administração de Campos
+#### 4. Sistema CRM/PRM (Sprint 1 Concluído)
+- [x] **Tabela de Contatos** (partner_contacts)
+  - [x] Múltiplos contatos por parceiro
+  - [x] Contato principal marcado
+  - [x] Cargo, email, telefone, notas
+- [x] **Tabela de Atividades** (partner_activities)
+  - [x] Pipeline de reuniões, calls, emails, tarefas
+  - [x] Participantes em JSONB
+  - [x] O que discutimos, oportunidades, próximos passos
+  - [x] Status: scheduled, completed, cancelled, pending
+- [x] **Tabela de Health Metrics** (partner_health_metrics)
+  - [x] Score geral (0-100)
+  - [x] Scores individuais: performance, engagement, commercial
+  - [x] Indicadores: último contato, reuniões/mês, issues abertos
+- [x] **Tabela de Tarefas** (partner_tasks)
+  - [x] Linked to activities
+  - [x] Prioridade: low, medium, high, urgent
+  - [x] Status: todo, in_progress, done, cancelled
+  - [x] Assignee para delegação
+- [x] **Tabela de Documentos** (partner_documents)
+  - [x] Upload de contratos, propostas
+  - [x] Categorização de documentos
+
+#### 5. Sistema de Administração de Campos
 - [x] **Gestão de campos por tipo de parceiro** (Logístico, Pagamento, Marketplace)
 - [x] Interface admin para habilitar/desabilitar campos
 - [x] Controle de campos obrigatórios
@@ -151,32 +201,17 @@
 - [x] **Adicionar novos campos customizados**
 - [x] **Editar campos existentes**
 - [x] **Remover campos**
-- [x] Persistência de configurações no localStorage
+- [x] Persistência de configurações no Supabase
 - [x] Estatísticas de campos ativos/desabilitados
 - [x] Reset para configuração padrão
 
-#### 4. Sistema de Proteção de Dados (Blur)
+#### 6. Sistema de Proteção de Dados (Blur)
 - [x] **Botão toggle global** para ocultar/mostrar dados sensíveis
 - [x] Blur automático em valores monetários, taxas e dados pessoais
 - [x] Proteção por linha ou célula específica
 - [x] Estado persistido no localStorage
 - [x] Útil para apresentações e demos sem expor dados reais
 - [x] Interface visual clara com ícone Eye/EyeOff
-
-- [ ] **Persistência:** Estado apenas em memória (React state)
-
-#### 5. Gestão de Lojas
-- [x] Interface preparada
-- [ ] **Funcionalidade não implementada**
-- [ ] **Dados:** Array vazio
-
-#### 6. Projeções
-- [ ] **Em desenvolvimento**
-- [ ] Placeholder visual
-
-#### 7. Relatórios
-- [ ] **Em desenvolvimento**
-- [ ] Placeholder visual
 
 ### Infraestrutura e Configuração
 
