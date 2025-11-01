@@ -2,6 +2,18 @@ import { Partner } from "@/types/partner";
 import { FieldConfig, DEFAULT_FIELD_CONFIGS } from "@/types/field-config";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  PartnerContact,
+  PartnerActivity,
+  PartnerHealthMetrics,
+  PartnerTask,
+  PartnerDocument,
+  NewPartnerContact,
+  NewPartnerActivity,
+  NewPartnerHealthMetrics,
+  NewPartnerTask,
+  NewPartnerDocument,
+} from "@/types/crm";
 
 // ==================== PARTNERS ====================
 
@@ -252,7 +264,325 @@ export async function clearDatabase(): Promise<void> {
   await supabase.from('partners').delete().eq('user_id', user.id);
   await supabase.from('payment_methods').delete().eq('user_id', user.id);
   await supabase.from('field_configs').delete().eq('user_id', user.id);
+  await supabase.from('partner_contacts').delete().eq('user_id', user.id);
+  await supabase.from('partner_activities').delete().eq('user_id', user.id);
+  await supabase.from('partner_health_metrics').delete().eq('user_id', user.id);
+  await supabase.from('partner_tasks').delete().eq('user_id', user.id);
+  await supabase.from('partner_documents').delete().eq('user_id', user.id);
   
   toast.success("Dados removidos com sucesso");
+}
+
+// ==================== PARTNER CONTACTS ====================
+
+export async function savePartnerContact(contact: NewPartnerContact & { id?: string }): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
+  const { error } = await supabase
+    .from('partner_contacts')
+    .upsert({
+      ...contact,
+      id: contact.id || crypto.randomUUID(),
+      user_id: user.id,
+    }, { onConflict: 'id' });
+
+  if (error) {
+    toast.error("Erro ao salvar contato");
+    throw error;
+  }
+}
+
+export async function getPartnerContacts(partnerId: string): Promise<PartnerContact[]> {
+  const { data, error } = await supabase
+    .from('partner_contacts')
+    .select('*')
+    .eq('partner_id', partnerId)
+    .order('is_primary', { ascending: false })
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    toast.error("Erro ao carregar contatos");
+    throw error;
+  }
+
+  return (data || []).map(row => ({
+    ...row,
+    created_at: new Date(row.created_at),
+    updated_at: new Date(row.updated_at),
+  }));
+}
+
+export async function deletePartnerContact(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('partner_contacts')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    toast.error("Erro ao excluir contato");
+    throw error;
+  }
+}
+
+// ==================== PARTNER ACTIVITIES ====================
+
+export async function savePartnerActivity(activity: NewPartnerActivity & { id?: string }): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
+  const activityData: any = {
+    ...activity,
+    user_id: user.id,
+    participants: activity.participants as any,
+  };
+
+  if (activity.id) {
+    activityData.id = activity.id;
+  }
+
+  const { error } = await supabase
+    .from('partner_activities')
+    .upsert(activityData, { onConflict: 'id' });
+
+  if (error) {
+    toast.error("Erro ao salvar atividade");
+    throw error;
+  }
+}
+
+export async function getPartnerActivities(partnerId?: string): Promise<PartnerActivity[]> {
+  let query = supabase
+    .from('partner_activities')
+    .select('*')
+    .order('scheduled_date', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false });
+
+  if (partnerId) {
+    query = query.eq('partner_id', partnerId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    toast.error("Erro ao carregar atividades");
+    throw error;
+  }
+
+  return (data || []).map(row => ({
+    ...row,
+    participants: (row.participants as any) || [],
+    scheduled_date: row.scheduled_date ? new Date(row.scheduled_date) : undefined,
+    completed_date: row.completed_date ? new Date(row.completed_date) : undefined,
+    created_at: new Date(row.created_at),
+    updated_at: new Date(row.updated_at),
+  }));
+}
+
+export async function deletePartnerActivity(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('partner_activities')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    toast.error("Erro ao excluir atividade");
+    throw error;
+  }
+}
+
+// ==================== PARTNER HEALTH METRICS ====================
+
+export async function savePartnerHealthMetrics(metrics: NewPartnerHealthMetrics & { id?: string }): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
+  const metricsData: any = {
+    ...metrics,
+    user_id: user.id,
+  };
+
+  if (metrics.id) {
+    metricsData.id = metrics.id;
+  }
+
+  const { error } = await supabase
+    .from('partner_health_metrics')
+    .upsert(metricsData, { onConflict: 'partner_id' });
+
+  if (error) {
+    toast.error("Erro ao salvar métricas de saúde");
+    throw error;
+  }
+}
+
+export async function getPartnerHealthMetrics(partnerId: string): Promise<PartnerHealthMetrics | null> {
+  const { data, error } = await supabase
+    .from('partner_health_metrics')
+    .select('*')
+    .eq('partner_id', partnerId)
+    .maybeSingle();
+
+  if (error) {
+    toast.error("Erro ao carregar métricas de saúde");
+    throw error;
+  }
+
+  if (!data) return null;
+
+  return {
+    ...data,
+    last_activity_date: data.last_activity_date ? new Date(data.last_activity_date) : undefined,
+    calculated_at: new Date(data.calculated_at),
+    created_at: new Date(data.created_at),
+  };
+}
+
+export async function getAllPartnerHealthMetrics(): Promise<PartnerHealthMetrics[]> {
+  const { data, error } = await supabase
+    .from('partner_health_metrics')
+    .select('*')
+    .order('overall_score', { ascending: false, nullsFirst: false });
+
+  if (error) {
+    toast.error("Erro ao carregar métricas de saúde");
+    throw error;
+  }
+
+  return (data || []).map(row => ({
+    ...row,
+    last_activity_date: row.last_activity_date ? new Date(row.last_activity_date) : undefined,
+    calculated_at: new Date(row.calculated_at),
+    created_at: new Date(row.created_at),
+  }));
+}
+
+// ==================== PARTNER TASKS ====================
+
+export async function savePartnerTask(task: NewPartnerTask & { id?: string }): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
+  const taskData: any = {
+    ...task,
+    user_id: user.id,
+  };
+
+  if (task.id) {
+    taskData.id = task.id;
+  }
+
+  const { error } = await supabase
+    .from('partner_tasks')
+    .upsert(taskData, { onConflict: 'id' });
+
+  if (error) {
+    toast.error("Erro ao salvar tarefa");
+    throw error;
+  }
+}
+
+export async function getPartnerTasks(partnerId?: string): Promise<PartnerTask[]> {
+  let query = supabase
+    .from('partner_tasks')
+    .select('*')
+    .order('due_date', { ascending: true, nullsFirst: false })
+    .order('priority', { ascending: false });
+
+  if (partnerId) {
+    query = query.eq('partner_id', partnerId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    toast.error("Erro ao carregar tarefas");
+    throw error;
+  }
+
+  return (data || []).map(row => ({
+    ...row,
+    due_date: row.due_date ? new Date(row.due_date) : undefined,
+    completed_date: row.completed_date ? new Date(row.completed_date) : undefined,
+    created_at: new Date(row.created_at),
+    updated_at: new Date(row.updated_at),
+  }));
+}
+
+export async function deletePartnerTask(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('partner_tasks')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    toast.error("Erro ao excluir tarefa");
+    throw error;
+  }
+}
+
+// ==================== PARTNER DOCUMENTS ====================
+
+export async function savePartnerDocument(document: NewPartnerDocument & { id?: string }): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
+  const { error } = await supabase
+    .from('partner_documents')
+    .insert({
+      ...document,
+      id: document.id || crypto.randomUUID(),
+      user_id: user.id,
+    });
+
+  if (error) {
+    toast.error("Erro ao salvar documento");
+    throw error;
+  }
+}
+
+export async function getPartnerDocuments(partnerId: string): Promise<PartnerDocument[]> {
+  const { data, error } = await supabase
+    .from('partner_documents')
+    .select('*')
+    .eq('partner_id', partnerId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    toast.error("Erro ao carregar documentos");
+    throw error;
+  }
+
+  return (data || []).map(row => ({
+    ...row,
+    created_at: new Date(row.created_at),
+  }));
+}
+
+export async function deletePartnerDocument(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('partner_documents')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    toast.error("Erro ao excluir documento");
+    throw error;
+  }
 }
 

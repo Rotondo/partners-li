@@ -38,6 +38,287 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_activities: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          completed_date: string | null
+          created_at: string
+          id: string
+          next_steps: string | null
+          notes: string | null
+          opportunities: string | null
+          participants: Json | null
+          partner_id: string
+          scheduled_date: string | null
+          status: Database["public"]["Enums"]["activity_status"]
+          title: string
+          updated_at: string
+          user_id: string
+          what_discussed: string | null
+        }
+        Insert: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          completed_date?: string | null
+          created_at?: string
+          id?: string
+          next_steps?: string | null
+          notes?: string | null
+          opportunities?: string | null
+          participants?: Json | null
+          partner_id: string
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["activity_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+          what_discussed?: string | null
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["activity_type"]
+          completed_date?: string | null
+          created_at?: string
+          id?: string
+          next_steps?: string | null
+          notes?: string | null
+          opportunities?: string | null
+          participants?: Json | null
+          partner_id?: string
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["activity_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+          what_discussed?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_activities_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          is_primary: boolean | null
+          name: string
+          notes: string | null
+          partner_id: string
+          phone: string | null
+          role: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name: string
+          notes?: string | null
+          partner_id: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name?: string
+          notes?: string | null
+          partner_id?: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_contacts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_type: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          id: string
+          partner_id: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_type?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          partner_id: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_type?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          partner_id?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_documents_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_health_metrics: {
+        Row: {
+          calculated_at: string
+          commercial_score: number | null
+          created_at: string
+          days_since_last_contact: number | null
+          engagement_score: number | null
+          health_status: Database["public"]["Enums"]["health_status"]
+          id: string
+          last_activity_date: string | null
+          meetings_this_month: number | null
+          open_issues_count: number | null
+          overall_score: number | null
+          partner_id: string
+          performance_score: number | null
+          user_id: string
+        }
+        Insert: {
+          calculated_at?: string
+          commercial_score?: number | null
+          created_at?: string
+          days_since_last_contact?: number | null
+          engagement_score?: number | null
+          health_status: Database["public"]["Enums"]["health_status"]
+          id?: string
+          last_activity_date?: string | null
+          meetings_this_month?: number | null
+          open_issues_count?: number | null
+          overall_score?: number | null
+          partner_id: string
+          performance_score?: number | null
+          user_id: string
+        }
+        Update: {
+          calculated_at?: string
+          commercial_score?: number | null
+          created_at?: string
+          days_since_last_contact?: number | null
+          engagement_score?: number | null
+          health_status?: Database["public"]["Enums"]["health_status"]
+          id?: string
+          last_activity_date?: string | null
+          meetings_this_month?: number | null
+          open_issues_count?: number | null
+          overall_score?: number | null
+          partner_id?: string
+          performance_score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_health_metrics_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: true
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_tasks: {
+        Row: {
+          activity_id: string | null
+          assigned_to: string | null
+          completed_date: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          partner_id: string
+          priority: Database["public"]["Enums"]["task_priority"]
+          status: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_id?: string | null
+          assigned_to?: string | null
+          completed_date?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          partner_id: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          status?: Database["public"]["Enums"]["task_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_id?: string | null
+          assigned_to?: string | null
+          completed_date?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          partner_id?: string
+          priority?: Database["public"]["Enums"]["task_priority"]
+          status?: Database["public"]["Enums"]["task_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_tasks_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "partner_activities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_tasks_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partners: {
         Row: {
           created_at: string
@@ -127,7 +408,12 @@ export type Database = {
       }
     }
     Enums: {
+      activity_status: "scheduled" | "completed" | "cancelled" | "pending"
+      activity_type: "meeting" | "call" | "email" | "task" | "note"
       app_role: "admin" | "editor" | "viewer"
+      health_status: "excellent" | "good" | "warning" | "critical"
+      task_priority: "low" | "medium" | "high" | "urgent"
+      task_status: "todo" | "in_progress" | "done" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -255,7 +541,12 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_status: ["scheduled", "completed", "cancelled", "pending"],
+      activity_type: ["meeting", "call", "email", "task", "note"],
       app_role: ["admin", "editor", "viewer"],
+      health_status: ["excellent", "good", "warning", "critical"],
+      task_priority: ["low", "medium", "high", "urgent"],
+      task_status: ["todo", "in_progress", "done", "cancelled"],
     },
   },
 } as const
