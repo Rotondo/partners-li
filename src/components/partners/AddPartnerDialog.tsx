@@ -120,11 +120,13 @@ export function AddPartnerDialog({
       category: 'payment',
       status: data.status,
       startDate: data.startDate,
-      categories: ['payment'], // Adicionar campo obrigatório
+      categories: ['payment'],
       fees: {
-        mdrCreditVista: data.fees.mdrCreditVista,
-        mdrDebit: data.fees.mdrDebit,
-        mdrPix: data.fees.mdrPix,
+        creditCard: {
+          vista: { mdr: data.fees.mdrCreditVista },
+        },
+        debitCard: { mdr: data.fees.mdrDebit },
+        pix: { mdr: data.fees.mdrPix },
         anticipationRate: data.fees.anticipationRate,
         chargebackFee: data.fees.chargebackFee,
       },
@@ -134,6 +136,7 @@ export function AddPartnerDialog({
         pix: data.settlement.pix,
       },
       takeRate: data.takeRate,
+      supportedMethods: [],
       performance: data.performance ? {
         month1: {
           approval: data.performance.month1.approval,
@@ -152,9 +155,8 @@ export function AddPartnerDialog({
         },
       } : undefined,
       notes: data.notes,
-      // ✅ Save custom and contact fields from DynamicFieldsSection
       customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
-      contactFields: Object.keys(contactFields).length > 0 ? contactFields : undefined,
+      contactFields: Object.keys(customFields).length > 0 ? customFields : undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

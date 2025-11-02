@@ -11,17 +11,17 @@ export function PerformanceSection({ form }: PerformanceSectionProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
           <span className="text-destructive">🔴</span>
           Indicadores de Performance
         </h3>
-        <p className="text-sm text-muted-foreground">Métricas dos últimos 3 meses</p>
+        <p className="text-sm text-muted-foreground mb-4">Métricas dos últimos 3 meses</p>
       </div>
 
       {/* Mês 1 */}
       <div className="space-y-4 border-b pb-4">
         <h4 className="font-medium">Mês 1</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="performance.month1.approval"
@@ -81,7 +81,7 @@ export function PerformanceSection({ form }: PerformanceSectionProps) {
       {/* Mês 2 */}
       <div className="space-y-4 border-b pb-4">
         <h4 className="font-medium">Mês 2</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="performance.month2.approval"
@@ -141,7 +141,7 @@ export function PerformanceSection({ form }: PerformanceSectionProps) {
       {/* Mês 3 */}
       <div className="space-y-4">
         <h4 className="font-medium">Mês 3</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="performance.month3.approval"

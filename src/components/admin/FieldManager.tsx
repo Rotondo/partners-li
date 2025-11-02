@@ -25,16 +25,18 @@ export function FieldManager() {
 
   // Load field configs from database on mount
   useEffect(() => {
-    getFieldConfigs()
-      .then(configs => {
+    const loadConfigs = async () => {
+      try {
+        const configs = getFieldConfigs();
         setFieldConfigs(configs);
         setIsLoading(false);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Error loading field configs:', error);
         setFieldConfigs(DEFAULT_FIELD_CONFIGS);
         setIsLoading(false);
-      });
+      }
+    };
+    loadConfigs();
   }, []);
 
   const [editingField, setEditingField] = useState<FieldConfig | null>(null);

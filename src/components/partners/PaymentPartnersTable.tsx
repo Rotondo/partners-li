@@ -269,25 +269,25 @@ export const PaymentPartnersTable = () => {
                       case 'mdrCredit':
                         return (
                           <TableCell key={column.id} className={isBlurActive ? 'sensitive-data' : ''}>
-                            {partner.fees.mdrCreditVista}%
+                            {partner.fees?.creditCard?.vista?.mdr || 0}%
                           </TableCell>
                         );
                       case 'mdrDebit':
                         return (
                           <TableCell key={column.id} className={isBlurActive ? 'sensitive-data' : ''}>
-                            {partner.fees.mdrDebit}%
+                            {partner.fees?.debitCard?.mdr || 0}%
                           </TableCell>
                         );
                       case 'mdrPix':
                         return (
                           <TableCell key={column.id} className={isBlurActive ? 'sensitive-data' : ''}>
-                            {partner.fees.mdrPix}%
+                            {partner.fees?.pix?.mdr || 0}%
                           </TableCell>
                         );
                       case 'settlement':
                         return (
                           <TableCell key={column.id} className={isBlurActive ? 'sensitive-data' : ''}>
-                            D+{partner.settlement.credit}
+                            D+{partner.settlement?.credit || 0}
                           </TableCell>
                         );
                       case 'takeRate':
