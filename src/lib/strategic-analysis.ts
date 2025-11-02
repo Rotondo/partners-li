@@ -6,7 +6,8 @@ import {
   StorePartnerMetrics,
   GartnerQuadrant,
   StoreRevenueBreakdownItem,
-  calculateStoreTier
+  calculateStoreTier,
+  STORE_TIERS
 } from "@/types/strategic-analysis";
 
 // Calcular fit score baseado no tier da loja
@@ -131,4 +132,67 @@ export function calculateStoreRevenueBreakdown(
       roi: metric.roi,
     };
   });
+}
+
+/**
+ * Calculate fit score for payment methods based on store tier
+ * Small stores: prefer low fixed fees, fast settlement
+ * Large stores: prefer low percentages, advanced features
+ */
+export function calculatePaymentMethodFitScore(
+  method: any, // PaymentMethod
+  storeTier: 'small' | 'medium' | 'large' | 'enterprise'
+): number {
+  let score = 50; // Base score
+  
+  // Small stores (até R$ 50k/mês)
+  if (storeTier === 'small') {
+    // Prefer low or zero fixed fees
+    if (method.pix?.baseRate < 1) score += 15;
+    if (method.boleto?.fixedFee < 3) score += 10;
+    if (method.debitCard?.baseRate < 2.5) score += 10;
+    
+    // Fast settlement is critical
+    if (method.settlement?.pixDefault === 0) score += 10;
+    if (method.settlement?.debitCardDefault <= 1) score += 5;
+  }
+  
+  // Medium stores (R$ 50k - R$ 200k/mês)
+  else if (storeTier === 'medium') {
+    // Balance between fees and features
+    if (method.creditCard?.feesByRevenue[0]?.baseRate < 4) score += 10;
+    if (method.pix?.baseRate < 0.99) score += 10;
+    
+    // Advanced features start to matter
+    if (method.integration?.hasFraudPrevention) score += 10;
+    if (method.integration?.has3DS) score += 5;
+  }
+  
+  // Large stores (R$ 200k - R$ 1M/mês)
+  else if (storeTier === 'large') {
+    // Low percentage rates are key
+    if (method.creditCard?.feesByRevenue[0]?.baseRate < 3.5) score += 15;
+    if (method.pix?.baseRate < 0.7) score += 10;
+    
+    // Advanced features are important
+    if (method.integration?.hasFraudPrevention) score += 10;
+    if (method.integration?.hasRiskScore) score += 5;
+    if (method.receivablesAdvance?.available) score += 5;
+  }
+  
+  // Enterprise stores (> R$ 1M/mês)
+  else if (storeTier === 'enterprise') {
+    // Best rates required
+    if (method.creditCard?.feesByRevenue[0]?.baseRate < 3) score += 20;
+    if (method.pix?.baseRate < 0.5) score += 10;
+    
+    // Full feature set required
+    if (method.integration?.hasFraudPrevention) score += 5;
+    if (method.integration?.hasRiskScore) score += 5;
+    if (method.integration?.has3DS) score += 5;
+    if (method.receivablesAdvance?.available) score += 5;
+    if (method.platformSplit?.model) score += 5;
+  }
+  
+  return Math.min(score, 100);
 }

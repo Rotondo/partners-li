@@ -125,6 +125,7 @@ export interface WithdrawalFees {
   freeWithdrawalFrom?: number; // R$ - saque gratuito a partir de
   additionalFeePerTransaction?: number; // R$
   withdrawalLimitPerPeriod?: string; // Ex: "5 por mês"
+  notes?: string;
 }
 
 export interface ChargebackPolicy {
@@ -324,6 +325,15 @@ export interface PaymentMethod {
   
   // Metadados
   metadata: RecordMetadata;
+  
+  // Novos campos granulares
+  posFees?: POSFees;                        // Maquininha
+  digitalAccount?: DigitalAccountServices;  // Conta digital
+  atmWithdrawal?: ATMWithdrawalFees;       // Saques
+  deposits?: DepositFees;                   // Depósitos
+  crypto?: CryptoFees;                      // Criptomoedas
+  checkoutMethods?: CheckoutPaymentMethods; // Outros meios checkout
+  partnershipConditions?: PartnershipConditions; // Condições especiais
 }
 
 // Constantes
@@ -401,3 +411,82 @@ export const WEBHOOK_EVENTS = [
   "Reembolso",
   "Estorno"
 ];
+
+// Taxas de Maquininha (POS - Point of Sale)
+export interface POSFees {
+  creditVista: number;          // Crédito à vista
+  creditInstallments: number;   // Crédito parcelado
+  debit: number;                // Débito
+  pix: number;                  // Pix
+  installmentTable?: InstallmentFee[];  // Tabela de parcelamento específica
+  notes?: string;
+}
+
+// Serviços de Conta Digital
+export interface DigitalAccountServices {
+  monthlyFee?: number;              // Mensalidade
+  cardReissueFee?: number;          // Segunda via do cartão
+  invoiceIssuanceFee?: number;      // Emissão de fatura/NF
+  nationalPaymentsFee?: number;     // Pagamentos nacionais
+  internationalPaymentsFee?: number; // Pagamentos internacionais
+  iofPercentage?: number;           // IOF (%)
+  hasCheckingAccount?: boolean;
+  hasCreditLine?: boolean;
+  notes?: string;
+}
+
+// Taxas de Saque
+export interface ATMWithdrawalFees {
+  banco24HorasQR?: number;           // Saque com QR Code
+  debitCardNational?: number;        // Cartão débito nacional
+  debitCardInternational?: number;   // Cartão débito internacional
+  creditCardNational?: number;       // Cartão crédito nacional
+  creditCardInternational?: number;  // Cartão crédito internacional
+  iofPercentage?: number;            // IOF (%)
+  freeWithdrawalsPerMonth?: number;  // Saques gratuitos/mês
+  notes?: string;
+}
+
+// Taxas de Depósito
+export interface DepositFees {
+  pix: number;                    // Taxa de depósito via Pix
+  ted: number;                    // Taxa de TED
+  boleto: number;                 // Taxa de boleto
+  boletoFreeLimit?: number;       // Boletos gratuitos/mês
+  lottery: number;                // Taxa de lotérica
+  lotteryFreeLimit?: number;      // Depósitos lotérica gratuitos/mês
+  virtualDebitCard?: number;      // Taxa cartão débito virtual
+  notes?: string;
+}
+
+// Criptomoedas
+export interface CryptoFees {
+  buyRate: number;        // Taxa de compra (%)
+  sellRate: number;       // Taxa de venda (%)
+  minimumBuy: number;     // Mínimo para compra (R$)
+  minimumSell: number;    // Mínimo para venda (R$)
+  monthlyLimit?: number;  // Limite mensal (R$)
+  supportedCoins?: string[]; // ["BTC", "ETH", "USDT"]
+  notes?: string;
+}
+
+// Outros meios de pagamento (Checkout)
+export interface CheckoutPaymentMethods {
+  mercadoPagoBalance?: number;    // Saldo conta MP (%)
+  creditLine?: number;            // Linha de crédito (%)
+  openFinance?: number;           // Open Finance (%)
+  prepaidCard?: number;           // Cartão pré-pago (%)
+  bankSlip?: number;              // Boleto no checkout (%)
+  notes?: string;
+}
+
+// Condições de Parceria
+export interface PartnershipConditions {
+  isExclusive: boolean;           // Condições exclusivas?
+  partnerName?: string;           // Ex: "Loja Integrada", "VTEX"
+  specialNotes?: string;          // Notas sobre condições especiais
+  publicRatesUrl?: string;        // URL taxas públicas
+  partnerRatesUrl?: string;       // URL taxas parceria
+  discountPercentage?: number;    // Desconto sobre taxas públicas (%)
+  volumeRequired?: string;        // Volume mínimo exigido
+}

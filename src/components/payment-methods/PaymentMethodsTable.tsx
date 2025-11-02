@@ -10,10 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 import { AddPaymentMethodDialog } from "./AddPaymentMethodDialog";
 import { PaymentMethod } from "@/types/payment-method";
 import { getAllPaymentMethods, savePaymentMethod } from "@/lib/db";
+import { seedPaymentMethodsIfNeeded } from "@/lib/seedPaymentMethods";
 import { useToast } from "@/hooks/use-toast";
 
 const STATUS_VARIANTS = {
@@ -31,21 +32,47 @@ export const PaymentMethodsTable = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    getAllPaymentMethods()
-      .then(methods => {
-        setPaymentMethods(methods);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error('Error loading payment methods:', error);
-        toast({
-          title: "Erro ao carregar métodos de pagamento",
-          description: "Não foi possível carregar os dados.",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-      });
+    loadPaymentMethods();
   }, []);
+
+  const loadPaymentMethods = async () => {
+    try {
+      const methods = await getAllPaymentMethods();
+      setPaymentMethods(methods);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error loading payment methods:', error);
+      toast({
+        title: "Erro ao carregar métodos de pagamento",
+        description: "Não foi possível carregar os dados.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const handleSeedData = async () => {
+    setIsLoading(true);
+    try {
+      const result = await seedPaymentMethodsIfNeeded();
+      if (result.seeded) {
+        await loadPaymentMethods();
+      } else {
+        toast({
+          title: "Dados já existentes",
+          description: "Os métodos de pagamento já foram cadastrados.",
+        });
+      }
+    } catch (error) {
+      console.error('Error seeding payment methods:', error);
+      toast({
+        title: "Erro ao cadastrar métodos",
+        description: "Não foi possível cadastrar os dados iniciais.",
+        variant: "destructive",
+      });
+    }
+    setIsLoading(false);
+  };
 
   const handleAddPaymentMethod = async (paymentMethod: PaymentMethod) => {
     try {
@@ -75,10 +102,16 @@ export const PaymentMethodsTable = () => {
             Gerencie os parceiros e soluções de pagamento integradas
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Meio
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleSeedData} disabled={isLoading}>
+            <Download className="mr-2 h-4 w-4" />
+            Carregar Parceiros Padrão
+          </Button>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Meio
+          </Button>
+        </div>
       </div>
 
       <Card>

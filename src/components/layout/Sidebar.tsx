@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings, LogOut, Kanban } from "lucide-react";
+import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings, LogOut, Kanban, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -10,6 +10,7 @@ const navigation = [
   { id: "partners", name: "Parceiros", icon: Users, hasSubmenu: true, route: "/partners" },
   { id: "pipeline", name: "Pipeline", icon: Kanban, hasSubmenu: false, route: "/pipeline" },
   { id: "health", name: "Health", icon: TrendingUp, hasSubmenu: false, route: "/health" },
+  { id: "strategic", name: "Estratégico", icon: Target, hasSubmenu: false, route: "/strategic" },
   { id: "stores", name: "Lojas", icon: Store, hasSubmenu: false, route: "/stores" },
   { id: "reports", name: "Relatórios", icon: FileText, hasSubmenu: false, route: "/reports" },
   { id: "admin", name: "Admin", icon: Settings, hasSubmenu: false, route: "/admin" },

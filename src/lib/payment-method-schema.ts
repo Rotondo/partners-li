@@ -111,6 +111,80 @@ export const withdrawalFeesSchema = z.object({
   freeWithdrawalFrom: z.number().min(0).optional(),
   additionalFeePerTransaction: z.number().min(0).optional(),
   withdrawalLimitPerPeriod: z.string().optional(),
+  notes: z.string().optional(),
+});
+
+// Novos schemas granulares
+export const posFeesSchema = z.object({
+  creditVista: z.number().min(0),
+  creditInstallments: z.number().min(0),
+  debit: z.number().min(0),
+  pix: z.number().min(0),
+  installmentTable: z.array(installmentFeeSchema).optional(),
+  notes: z.string().optional(),
+});
+
+export const digitalAccountServicesSchema = z.object({
+  monthlyFee: z.number().min(0).optional(),
+  cardReissueFee: z.number().min(0).optional(),
+  invoiceIssuanceFee: z.number().min(0).optional(),
+  nationalPaymentsFee: z.number().min(0).optional(),
+  internationalPaymentsFee: z.number().min(0).optional(),
+  iofPercentage: z.number().min(0).max(100).optional(),
+  hasCheckingAccount: z.boolean().optional(),
+  hasCreditLine: z.boolean().optional(),
+  notes: z.string().optional(),
+});
+
+export const atmWithdrawalFeesSchema = z.object({
+  banco24HorasQR: z.number().min(0).optional(),
+  debitCardNational: z.number().min(0).optional(),
+  debitCardInternational: z.number().min(0).optional(),
+  creditCardNational: z.number().min(0).optional(),
+  creditCardInternational: z.number().min(0).optional(),
+  iofPercentage: z.number().min(0).max(100).optional(),
+  freeWithdrawalsPerMonth: z.number().int().min(0).optional(),
+  notes: z.string().optional(),
+});
+
+export const depositFeesSchema = z.object({
+  pix: z.number().min(0),
+  ted: z.number().min(0),
+  boleto: z.number().min(0),
+  boletoFreeLimit: z.number().int().min(0).optional(),
+  lottery: z.number().min(0),
+  lotteryFreeLimit: z.number().int().min(0).optional(),
+  virtualDebitCard: z.number().min(0).optional(),
+  notes: z.string().optional(),
+});
+
+export const cryptoFeesSchema = z.object({
+  buyRate: z.number().min(0).max(100),
+  sellRate: z.number().min(0).max(100),
+  minimumBuy: z.number().min(0),
+  minimumSell: z.number().min(0),
+  monthlyLimit: z.number().min(0).optional(),
+  supportedCoins: z.array(z.string()).optional(),
+  notes: z.string().optional(),
+});
+
+export const checkoutPaymentMethodsSchema = z.object({
+  mercadoPagoBalance: z.number().min(0).max(100).optional(),
+  creditLine: z.number().min(0).max(100).optional(),
+  openFinance: z.number().min(0).max(100).optional(),
+  prepaidCard: z.number().min(0).max(100).optional(),
+  bankSlip: z.number().min(0).max(100).optional(),
+  notes: z.string().optional(),
+});
+
+export const partnershipConditionsSchema = z.object({
+  isExclusive: z.boolean(),
+  partnerName: z.string().optional(),
+  specialNotes: z.string().optional(),
+  publicRatesUrl: z.string().url().optional().or(z.literal("")),
+  partnerRatesUrl: z.string().url().optional().or(z.literal("")),
+  discountPercentage: z.number().min(0).max(100).optional(),
+  volumeRequired: z.string().optional(),
 });
 
 export const chargebackPolicySchema = z.object({
@@ -348,6 +422,15 @@ export const paymentMethodSchema = z.object({
   
   // Metadados
   metadata: recordMetadataSchema,
+  
+  // Novos campos granulares
+  posFees: posFeesSchema.optional(),
+  digitalAccount: digitalAccountServicesSchema.optional(),
+  atmWithdrawal: atmWithdrawalFeesSchema.optional(),
+  deposits: depositFeesSchema.optional(),
+  crypto: cryptoFeesSchema.optional(),
+  checkoutMethods: checkoutPaymentMethodsSchema.optional(),
+  partnershipConditions: partnershipConditionsSchema.optional(),
 });
 
 export type PaymentMethodFormData = z.infer<typeof paymentMethodSchema>;
