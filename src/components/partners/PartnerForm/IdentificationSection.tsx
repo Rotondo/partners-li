@@ -9,32 +9,17 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { DynamicField } from "../DynamicField";
-import { getFieldConfigsByPartnerType } from "@/lib/db";
-import { useState, useEffect } from "react";
-import { FieldConfig } from "@/types/field-config";
 
 interface IdentificationSectionProps {
   form: UseFormReturn<PartnerFormData>;
 }
 
 export function IdentificationSection({ form }: IdentificationSectionProps) {
-  const [customFields, setCustomFields] = useState<Record<string, any>>({});
-  const [identificationFields, setIdentificationFields] = useState<FieldConfig[]>([]);
-
-  useEffect(() => {
-    getFieldConfigsByPartnerType('payment').then(configs => {
-      const filtered = configs
-        .filter(f => f.category === 'identification' && f.id !== 'name')
-        .sort((a, b) => a.order - b.order);
-      setIdentificationFields(filtered);
-    });
-  }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
           <span className="text-destructive">🔴</span>
           Identificação
         </h3>
@@ -46,31 +31,21 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="mb-2">Nome do Parceiro *</FormLabel>
+            <FormLabel>Nome do Parceiro *</FormLabel>
             <FormControl>
               <Input placeholder="Ex: Stripe, PagSeguro, Stone..." {...field} />
             </FormControl>
-            <FormMessage className="mt-1" />
+            <FormMessage />
           </FormItem>
         )}
       />
-
-      {/* Campos dinâmicos de identificação (URL, etc) */}
-      {identificationFields.map((field) => (
-        <DynamicField
-          key={field.id}
-          field={field}
-          value={customFields[field.id] || ''}
-          onChange={(value) => setCustomFields({ ...customFields, [field.id]: value })}
-        />
-      ))}
 
       <FormField
         control={form.control}
         name="startDate"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel className="mb-2">Data de Início da Parceria *</FormLabel>
+            <FormLabel>Data de Início *</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -96,7 +71,7 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
                 />
               </PopoverContent>
             </Popover>
-            <FormMessage className="mt-1" />
+            <FormMessage />
           </FormItem>
         )}
       />
@@ -106,7 +81,7 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
         name="status"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="mb-2">Status *</FormLabel>
+            <FormLabel>Status *</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
                 <SelectTrigger>
@@ -120,7 +95,7 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
                 <SelectItem value="paused">Pausado</SelectItem>
               </SelectContent>
             </Select>
-            <FormMessage className="mt-1" />
+            <FormMessage />
           </FormItem>
         )}
       />

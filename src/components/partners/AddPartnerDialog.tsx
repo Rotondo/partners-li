@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -17,25 +17,56 @@ import { AntiFraudSection } from "./PartnerForm/AntiFraudSection";
 import { ObservationsSection } from "./PartnerForm/ObservationsSection";
 import { DynamicFieldsSection } from "./DynamicFieldsSection";
 import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 
 interface AddPartnerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdd: (partner: PaymentPartner) => void;
+  onEdit?: (partner: PaymentPartner) => void;
+  initialPartner?: PaymentPartner | null; // Partner para edição
 }
 
 export function AddPartnerDialog({
   open,
   onOpenChange,
   onAdd,
+  onEdit,
+  initialPartner,
 }: AddPartnerDialogProps) {
   const { toast } = useToast();
-  const [contactFields, setContactFields] = useState<Record<string, any>>({});
   const [customFields, setCustomFields] = useState<Record<string, any>>({});
+  const [savedPartnerId, setSavedPartnerId] = useState<string | null>(null);
+  
+  const isEditing = !!initialPartner;
 
-  const form = useForm<PartnerFormData>({
-    resolver: zodResolver(partnerSchema),
-    defaultValues: {
+  const getDefaultValues = (): PartnerFormData => {
+    if (initialPartner) {
+      return {
+        name: initialPartner.name,
+        status: initialPartner.status,
+        startDate: initialPartner.startDate,
+        fees: initialPartner.fees,
+        settlement: initialPartner.settlement,
+        takeRate: initialPartner.takeRate,
+        performance: initialPartner.performance || {
+          month1: { approval: 0, gmv: 0, transactions: 0 },
+          month2: { approval: 0, gmv: 0, transactions: 0 },
+          month3: { approval: 0, gmv: 0, transactions: 0 },
+        },
+        acceptedPaymentMethods: {
+          creditCard: { enabled: false, brands: [] },
+          debitCard: { enabled: false, brands: [] },
+          pix: { enabled: false, normal: false, installment: false },
+          boleto: false,
+          digitalWallet: { enabled: false, wallets: [] },
+          bnpl: false,
+        },
+        notes: initialPartner.notes,
+      };
+    }
+    
+    return {
       name: "",
       status: "active",
       startDate: new Date(),
@@ -65,17 +96,31 @@ export function AddPartnerDialog({
         digitalWallet: { enabled: false, wallets: [] },
         bnpl: false,
       },
-    },
+    };
+  };
+
+  const form = useForm<PartnerFormData>({
+    resolver: zodResolver(partnerSchema),
+    defaultValues: getDefaultValues(),
   });
+
+  // Resetar formulário quando initialPartner mudar
+  useEffect(() => {
+    if (initialPartner) {
+      form.reset(getDefaultValues());
+    } else {
+      form.reset();
+    }
+  }, [initialPartner, open]);
 
   const onSubmit = (data: PartnerFormData) => {
     const newPartner: PaymentPartner = {
-      id: crypto.randomUUID(),
+      id: initialPartner?.id || Date.now().toString(),
       name: data.name,
       category: 'payment',
       status: data.status,
       startDate: data.startDate,
-      categories: ['payment'],
+      categories: ['payment'], // Adicionar campo obrigatório
       fees: {
         mdrCreditVista: data.fees.mdrCreditVista,
         mdrDebit: data.fees.mdrDebit,
@@ -115,12 +160,18 @@ export function AddPartnerDialog({
     };
 
     onAdd(newPartner);
+    setSavedPartnerId(newPartner.id);
     
-    toast({
-      title: "Parceiro cadastrado",
-      description: `${data.name} foi adicionado com sucesso.`,
+    // Mostrar toast
+    const message = isEditing 
+      ? `${data.name} foi atualizado com sucesso!` 
+      : `${data.name} foi adicionado com sucesso!`;
+    
+    sonnerToast.success(message, {
+      duration: 3000,
     });
 
+    // Fechar o dialog após salvar
     form.reset();
     onOpenChange(false);
   };
@@ -129,22 +180,25 @@ export function AddPartnerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Adicionar Novo Parceiro de Pagamento</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Editar Parceiro de Pagamento" : "Adicionar Novo Parceiro de Pagamento"}
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="identification" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 lg:grid-cols-9 gap-1 h-auto">
-                <TabsTrigger value="identification" className="text-xs md:text-sm">Identificação</TabsTrigger>
-                <TabsTrigger value="fees" className="text-xs md:text-sm">Taxas</TabsTrigger>
-                <TabsTrigger value="settlement" className="text-xs md:text-sm">Prazos</TabsTrigger>
-                <TabsTrigger value="takerate" className="text-xs md:text-sm">Take Rate</TabsTrigger>
-                <TabsTrigger value="performance" className="text-xs md:text-sm">Performance</TabsTrigger>
-                <TabsTrigger value="payment-types" className="text-xs md:text-sm">Meios</TabsTrigger>
-                <TabsTrigger value="antifraud" className="text-xs md:text-sm">Antifraude</TabsTrigger>
-                <TabsTrigger value="personalizado" className="text-xs md:text-sm">Personalizado</TabsTrigger>
-                <TabsTrigger value="observations" className="text-xs md:text-sm">Obs.</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
+                <TabsTrigger value="identification">Identificação</TabsTrigger>
+                <TabsTrigger value="contact">Contato</TabsTrigger>
+                <TabsTrigger value="fees">Taxas</TabsTrigger>
+                <TabsTrigger value="settlement">Prazos</TabsTrigger>
+                <TabsTrigger value="takerate">Take Rate</TabsTrigger>
+                <TabsTrigger value="performance">Performance</TabsTrigger>
+                <TabsTrigger value="payment-types">Meios</TabsTrigger>
+                <TabsTrigger value="antifraud">Antifraude</TabsTrigger>
+                <TabsTrigger value="custom">Custom</TabsTrigger>
+                <TabsTrigger value="observations">Obs.</TabsTrigger>
               </TabsList>
 
               <TabsContent value="identification" className="mt-6">
@@ -179,29 +233,24 @@ export function AddPartnerDialog({
                 <ObservationsSection form={form} />
               </TabsContent>
 
-              {/* Campos Personalizados - Unificados */}
-              <TabsContent value="personalizado" className="mt-6">
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Campos de Contato</h3>
-                    <DynamicFieldsSection
-                      partnerType="payment"
-                      category="contact"
-                      values={contactFields}
-                      onChange={(fieldId, value) => setContactFields({ ...contactFields, [fieldId]: value })}
-                    />
-                  </div>
-                  
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-semibold mb-4">Campos Customizados</h3>
-                    <DynamicFieldsSection
-                      partnerType="payment"
-                      category="custom"
-                      values={customFields}
-                      onChange={(fieldId, value) => setCustomFields({ ...customFields, [fieldId]: value })}
-                    />
-                  </div>
-                </div>
+              {/* Campo customizado */}
+              <TabsContent value="custom" className="mt-6">
+                <DynamicFieldsSection
+                  partnerType="payment"
+                  category="custom"
+                  values={customFields}
+                  onChange={(fieldId, value) => setCustomFields({ ...customFields, [fieldId]: value })}
+                />
+              </TabsContent>
+
+              {/* Campo de contato/URL */}
+              <TabsContent value="contact" className="mt-6">
+                <DynamicFieldsSection
+                  partnerType="payment"
+                  category="contact"
+                  values={customFields}
+                  onChange={(fieldId, value) => setCustomFields({ ...customFields, [fieldId]: value })}
+                />
               </TabsContent>
             </Tabs>
 
@@ -209,7 +258,21 @@ export function AddPartnerDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit">Salvar Parceiro</Button>
+              {savedPartnerId && (
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => {
+                    form.reset();
+                    setSavedPartnerId(null);
+                  }}
+                >
+                  Cadastrar Novo
+                </Button>
+              )}
+              <Button type="submit">
+                {savedPartnerId ? "Atualizar Parceiro" : "Salvar Parceiro"}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

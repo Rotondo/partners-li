@@ -1,12 +1,20 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, CreditCard } from "lucide-react";
-import { PaymentPartner, Partner } from "@/types/partner";
-import { PartnerDetailView } from "./PartnerDetailView";
-import { PaymentPartnersComparison } from "./PaymentPartnersComparison";
-import { ErrorState } from "@/components/ui/error-alert";
+import { Plus, Search, CreditCard, Settings2, Pencil, Trash2 } from "lucide-react";
+import { PaymentPartner } from "@/types/partner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Table,
   TableBody,
@@ -15,10 +23,28 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
 import { AddPartnerDialog } from "./AddPartnerDialog";
 import { useBlurSensitiveData } from "@/hooks/use-blur-sensitive";
-import { getAllPartners, savePartner, filterPartnersByCategory } from "@/lib/db";
+import { useColumnVisibility } from "@/hooks/use-column-visibility";
+import { getAllPartners, savePartner, deletePartner, filterPartnersByCategory } from "@/lib/db";
 import { toast } from "sonner";
+import { ErrorState } from "@/components/ui/error-alert";
+
+const DEFAULT_COLUMNS = [
+  { id: 'name', label: 'Parceiro', visible: true, order: 1 },
+  { id: 'mdrCredit', label: 'MDR Crédito', visible: true, order: 2 },
+  { id: 'mdrDebit', label: 'MDR Débito', visible: true, order: 3 },
+  { id: 'mdrPix', label: 'MDR PIX', visible: true, order: 4 },
+  { id: 'settlement', label: 'Liquidação', visible: true, order: 5 },
+  { id: 'takeRate', label: 'Take Rate', visible: true, order: 6 },
+  { id: 'status', label: 'Status', visible: true, order: 7 },
+];
 
 export const PaymentPartnersTable = () => {
   const [partners, setPartners] = useState<PaymentPartner[]>([]);
@@ -26,9 +52,11 @@ export const PaymentPartnersTable = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editingPartner, setEditingPartner] = useState<PaymentPartner | null>(null);
+  const [deletingPartner, setDeletingPartner] = useState<PaymentPartner | null>(null);
   const { blurClass, isBlurActive } = useBlurSensitiveData();
-  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
-  const [detailViewOpen, setDetailViewOpen] = useState(false);
+  
+  const { columns, visibleColumns, toggleColumn, resetColumns } = useColumnVisibility('payment', DEFAULT_COLUMNS);
 
   const loadPartnersData = async () => {
     try {
@@ -54,25 +82,38 @@ export const PaymentPartnersTable = () => {
     partner.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const loadPartners = loadPartnersData;
-
-  const handleRowClick = (partner: PaymentPartner) => {
-    setSelectedPartner(partner as Partner);
-    setDetailViewOpen(true);
-  };
-
   const handleAddPartner = async (partner: PaymentPartner) => {
     try {
       await savePartner(partner);
-      const allPartners = await getAllPartners();
-      // ✅ Use helper function for consistent category filtering
-      const paymentPartners = filterPartnersByCategory(allPartners, 'payment');
-      setPartners(paymentPartners as PaymentPartner[]);
+      await loadPartnersData();
       toast.success("Parceiro adicionado com sucesso!");
+      setEditingPartner(null);
     } catch (error) {
       console.error('Erro ao salvar parceiro:', error);
       toast.error("Erro ao salvar parceiro");
     }
+  };
+
+  const handleEditPartner = (partner: PaymentPartner) => {
+    setEditingPartner(partner);
+    setIsDialogOpen(true);
+  };
+
+  const handleDeletePartner = async (partner: PaymentPartner) => {
+    try {
+      await deletePartner(partner.id);
+      await loadPartnersData();
+      toast.success("Parceiro excluído com sucesso!");
+      setDeletingPartner(null);
+    } catch (error) {
+      console.error('Erro ao excluir parceiro:', error);
+      toast.error("Erro ao excluir parceiro");
+    }
+  };
+
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+    setEditingPartner(null);
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -99,17 +140,80 @@ export const PaymentPartnersTable = () => {
             Gerencie seus parceiros e soluções de pagamento
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Parceiro
-        </Button>
+        <div className="flex gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Settings2 className="h-4 w-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-56">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Colunas Exibidas</Label>
+                  <div className="space-y-2">
+                    {columns.map((column) => (
+                      <div key={column.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={column.id}
+                          checked={column.visible}
+                          onCheckedChange={() => toggleColumn(column.id)}
+                        />
+                        <label
+                          htmlFor={column.id}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {column.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={resetColumns}
+                >
+                  Restaurar Padrão
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Parceiro
+          </Button>
+        </div>
       </div>
 
       <AddPartnerDialog
         open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        onOpenChange={handleDialogClose}
         onAdd={handleAddPartner}
+        initialPartner={editingPartner}
       />
+
+      {/* Dialog de confirmação de exclusão */}
+      <AlertDialog open={!!deletingPartner} onOpenChange={() => setDeletingPartner(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir {deletingPartner?.name}? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deletingPartner && handleDeletePartner(deletingPartner)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
@@ -141,46 +245,88 @@ export const PaymentPartnersTable = () => {
           </p>
         </div>
       ) : (
-        <div className="border rounded-lg">
+        <div className="border rounded-lg overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Parceiro</TableHead>
-                <TableHead>MDR Crédito</TableHead>
-                <TableHead>MDR Débito</TableHead>
-                <TableHead>MDR PIX</TableHead>
-                <TableHead>Liquidação</TableHead>
-                <TableHead>Take Rate</TableHead>
-                <TableHead>Status</TableHead>
+                {visibleColumns.map((column) => (
+                  <TableHead key={column.id}>{column.label}</TableHead>
+                ))}
+                <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredPartners.map((partner) => (
-                <TableRow 
-                  key={partner.id} 
-                  className={`cursor-pointer hover:bg-muted/50 ${isBlurActive ? 'blur-table-row' : ''}`}
-                  onClick={() => handleRowClick(partner)}
-                >
-                  <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
-                    {partner.payment?.fees.creditCard?.vista?.mdr ? `${partner.payment.fees.creditCard.vista.mdr}%` : 'N/A'}
-                  </TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
-                    {partner.payment?.fees.debitCard?.mdr ? `${partner.payment.fees.debitCard.mdr}%` : 'N/A'}
-                  </TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
-                    {partner.payment?.fees.pix?.mdr ? `${partner.payment.fees.pix.mdr}%` : 'N/A'}
-                  </TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
-                    D+{partner.payment?.settlement.credit || '-'}
-                  </TableCell>
-                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
-                    {partner.payment?.takeRate ? `${partner.payment.takeRate}%` : 'N/A'}
-                  </TableCell>
+                <TableRow key={partner.id} className={isBlurActive ? 'blur-table-row' : ''}>
+                  {visibleColumns.map((column) => {
+                    switch (column.id) {
+                      case 'name':
+                        return (
+                          <TableCell key={column.id} className="font-medium">
+                            {partner.name}
+                          </TableCell>
+                        );
+                      case 'mdrCredit':
+                        return (
+                          <TableCell key={column.id} className={isBlurActive ? 'sensitive-data' : ''}>
+                            {partner.fees.mdrCreditVista}%
+                          </TableCell>
+                        );
+                      case 'mdrDebit':
+                        return (
+                          <TableCell key={column.id} className={isBlurActive ? 'sensitive-data' : ''}>
+                            {partner.fees.mdrDebit}%
+                          </TableCell>
+                        );
+                      case 'mdrPix':
+                        return (
+                          <TableCell key={column.id} className={isBlurActive ? 'sensitive-data' : ''}>
+                            {partner.fees.mdrPix}%
+                          </TableCell>
+                        );
+                      case 'settlement':
+                        return (
+                          <TableCell key={column.id} className={isBlurActive ? 'sensitive-data' : ''}>
+                            D+{partner.settlement.credit}
+                          </TableCell>
+                        );
+                      case 'takeRate':
+                        return (
+                          <TableCell key={column.id} className={isBlurActive ? 'sensitive-data' : ''}>
+                            {partner.takeRate}%
+                          </TableCell>
+                        );
+                      case 'status':
+                        return (
+                          <TableCell key={column.id}>
+                            <Badge variant={getStatusBadgeVariant(partner.status)}>
+                              {partner.status}
+                            </Badge>
+                          </TableCell>
+                        );
+                      default:
+                        return null;
+                    }
+                  })}
                   <TableCell>
-                    <Badge variant={getStatusBadgeVariant(partner.status)}>
-                      {partner.status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditPartner(partner)}
+                        className="h-8 w-8"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeletingPartner(partner)}
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -188,20 +334,6 @@ export const PaymentPartnersTable = () => {
           </Table>
         </div>
       )}
-
-      {/* Comparação Detalhada - aparece quando há 2+ parceiros */}
-      {partners.length >= 2 && (
-        <div className="mt-8">
-          <PaymentPartnersComparison partners={partners} />
-        </div>
-      )}
-
-      <PartnerDetailView
-        partner={selectedPartner}
-        open={detailViewOpen}
-        onOpenChange={setDetailViewOpen}
-        onUpdate={loadPartners}
-      />
     </div>
   );
 };

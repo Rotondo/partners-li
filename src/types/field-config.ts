@@ -15,8 +15,8 @@ export interface FieldConfig {
 export const LOGISTIC_FIELDS: FieldConfig[] = [
   // Campos compartilhados
   { id: 'name', label: 'Nome do Parceiro', category: 'identification', partnerType: 'logistic', enabled: true, required: true, order: 1 },
-  { id: 'startDate', label: 'Data de Início', category: 'identification', partnerType: 'logistic', enabled: true, required: true, order: 2 },
-  { id: 'status', label: 'Status', category: 'identification', partnerType: 'logistic', enabled: true, required: true, order: 3 },
+  { id: 'startDate', label: 'Data de Início', category: 'dateStart', partnerType: 'logistic', enabled: true, required: true, order: 2 },
+  { id: 'status', label: 'Status', category: 'status', partnerType: 'logistic', enabled: true, required: true, order: 3 },
   
   // Campos específicos de logística
   { id: 'coverage', label: 'Cobertura (Estados)', category: 'coverage', partnerType: 'logistic', enabled: true, required: true, order: 4 },
@@ -31,20 +31,32 @@ export const LOGISTIC_FIELDS: FieldConfig[] = [
 export const PAYMENT_FIELDS: FieldConfig[] = [
   // Campos compartilhados
   { id: 'name', label: 'Nome do Parceiro', category: 'identification', partnerType: 'payment', enabled: true, required: true, order: 1 },
-  { id: 'startDate', label: 'Data de Início', category: 'identification', partnerType: 'payment', enabled: true, required: true, order: 2 },
-  { id: 'status', label: 'Status', category: 'identification', partnerType: 'payment', enabled: true, required: true, order: 3 },
+  { 
+    id: 'url', 
+    label: 'URL', 
+    category: 'identification', 
+    partnerType: 'payment',
+    partnerTypes: ['logistic', 'payment', 'marketplace'], // Usado em todos os tipos
+    enabled: true, 
+    required: false, 
+    order: 2 
+  },
+  { id: 'startDate', label: 'Data de Início', category: 'dateStart', partnerType: 'payment', enabled: true, required: true, order: 3 },
+  { id: 'status', label: 'Status', category: 'status', partnerType: 'payment', enabled: true, required: true, order: 4 },
   
   // Taxas
   { id: 'mdrCreditVista', label: 'MDR Crédito à Vista', category: 'fees', partnerType: 'payment', enabled: true, required: true, order: 1 },
   { id: 'mdrDebit', label: 'MDR Débito', category: 'fees', partnerType: 'payment', enabled: true, required: true, order: 2 },
   { id: 'mdrPix', label: 'MDR Pix', category: 'fees', partnerType: 'payment', enabled: true, required: true, order: 3 },
-  { id: 'anticipationRate', label: 'Taxa Antecipação', category: 'fees', partnerType: 'payment', enabled: true, required: true, order: 4 },
-  { id: 'chargebackFee', label: 'Taxa Chargeback', category: 'fees', partnerType: 'payment', enabled: true, required: true, order: 5 },
+  { id: 'mdrPixParceladoQuinzenal', label: 'MDR Pix Parcelado Quinzenal', category: 'fees', partnerType: 'payment', enabled: true, required: false, order: 4 },
+  { id: 'mdrPixParceladoMensal', label: 'MDR Pix Parcelado Mensal', category: 'fees', partnerType: 'payment', enabled: true, required: false, order: 5 },
+  { id: 'anticipationRate', label: 'Taxa Antecipação', category: 'fees', partnerType: 'payment', enabled: true, required: true, order: 6 },
+  { id: 'chargebackFee', label: 'Taxa Chargeback', category: 'fees', partnerType: 'payment', enabled: true, required: true, order: 7 },
   
   // Prazos
-  { id: 'settlementCredit', label: 'Liquidação Crédito', category: 'settlement', partnerType: 'payment', enabled: true, required: true, order: 1 },
-  { id: 'settlementDebit', label: 'Liquidação Débito', category: 'settlement', partnerType: 'payment', enabled: true, required: true, order: 2 },
-  { id: 'settlementPix', label: 'Liquidação Pix', category: 'settlement', partnerType: 'payment', enabled: true, required: true, order: 3 },
+  { id: 'settlementCredit', label: 'Prazo Liquidação Crédito', category: 'settlement', partnerType: 'payment', enabled: true, required: true, order: 1 },
+  { id: 'settlementDebit', label: 'Prazo Liquidação Débito', category: 'settlement', partnerType: 'payment', enabled: true, required: true, order: 2 },
+  { id: 'settlementPix', label: 'Prazo Liquidação Pix', category: 'settlement', partnerType: 'payment', enabled: true, required: true, order: 3 },
   
   // Take Rate
   { id: 'takeRate', label: 'Take Rate', category: 'takeRate', partnerType: 'payment', enabled: true, required: true, order: 1 },
@@ -66,8 +78,8 @@ export const PAYMENT_FIELDS: FieldConfig[] = [
 export const MARKETPLACE_FIELDS: FieldConfig[] = [
   // Campos compartilhados
   { id: 'name', label: 'Nome do Marketplace', category: 'identification', partnerType: 'marketplace', enabled: true, required: true, order: 1 },
-  { id: 'startDate', label: 'Data de Início', category: 'identification', partnerType: 'marketplace', enabled: true, required: true, order: 2 },
-  { id: 'status', label: 'Status', category: 'identification', partnerType: 'marketplace', enabled: true, required: true, order: 3 },
+  { id: 'startDate', label: 'Data de Início', category: 'dateStart', partnerType: 'marketplace', enabled: true, required: true, order: 2 },
+  { id: 'status', label: 'Status', category: 'status', partnerType: 'marketplace', enabled: true, required: true, order: 3 },
   
   // Campos específicos de marketplace
   { id: 'commission', label: 'Comissão (%)', category: 'commission', partnerType: 'marketplace', enabled: true, required: true, order: 4 },

@@ -1,4 +1,4 @@
-import { Partner } from "@/types/partner";
+import { Partner, LogisticPartnerData, PaymentPartnerData, MarketplacePartnerData } from "@/types/partner";
 import { FieldConfig, DEFAULT_FIELD_CONFIGS } from "@/types/field-config";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,6 +14,12 @@ import {
   NewPartnerTask,
   NewPartnerDocument,
 } from "@/types/crm";
+
+const DB_KEYS = {
+  PARTNERS: 'partners',
+  FIELD_CONFIGS: 'fieldConfigs',
+  BLUR_ACTIVE: 'blurActive',
+} as const;
 
 // ==================== PARTNERS ====================
 
@@ -104,135 +110,59 @@ export async function getAllPartners(): Promise<Partner[]> {
 }
 
 export async function getPartnerById(id: string): Promise<Partner | undefined> {
-  const { data, error } = await supabase
-    .from('partners')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    if (error.code !== 'PGRST116') { // Not found is ok
-      toast.error("Erro ao carregar parceiro");
-    }
-    return undefined;
-  }
-
-  return data?.data as any as Partner;
-}
-
-export async function deletePartner(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('partners')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    toast.error("Erro ao excluir parceiro");
-    throw error;
-  }
+  const partners = await getAllPartners();
+  return partners.find(p => p.id === id);
 }
 
 // ==================== FIELD CONFIGS ====================
 
-export async function saveFieldConfigs(configs: FieldConfig[]): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  // Check if config exists
-  const { data: existing } = await supabase
-    .from('field_configs')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (existing) {
-    // Update existing
-    const { error } = await supabase
-      .from('field_configs')
-      .update({ config: configs as any })
-      .eq('user_id', user.id);
-    
-    if (error) {
-      toast.error("Erro ao salvar configurações");
-      throw error;
-    }
-  } else {
-    // Insert new
-    const { error } = await supabase
-      .from('field_configs')
-      .insert({ user_id: user.id, config: configs as any });
-    
-    if (error) {
-      toast.error("Erro ao salvar configurações");
-      throw error;
-    }
-  }
+export function saveFieldConfigs(configs: FieldConfig[]): void {
+  localStorage.setItem(DB_KEYS.FIELD_CONFIGS, JSON.stringify(configs));
 }
 
-export async function getFieldConfigs(): Promise<FieldConfig[]> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return DEFAULT_FIELD_CONFIGS;
-
-  const { data, error } = await supabase
-    .from('field_configs')
-    .select('config')
-    .eq('user_id', user.id)
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') { // Not found
-      return DEFAULT_FIELD_CONFIGS;
-    }
-    return DEFAULT_FIELD_CONFIGS;
+export function getFieldConfigs(): FieldConfig[] {
+  const data = localStorage.getItem(DB_KEYS.FIELD_CONFIGS);
+  if (data) {
+    return JSON.parse(data);
   }
-
-  return data?.config as any as FieldConfig[] || DEFAULT_FIELD_CONFIGS;
+  // Se não há dados salvos, retornar os defaults
+  return DEFAULT_FIELD_CONFIGS;
 }
 
-export async function getFieldConfigsByPartnerType(type: 'logistic' | 'payment' | 'marketplace'): Promise<FieldConfig[]> {
-  const configs = await getFieldConfigs();
-  return configs.filter(f => f.partnerType === type && f.enabled);
+export function getFieldConfigsByPartnerType(type: 'logistic' | 'payment' | 'marketplace'): FieldConfig[] {
+  const configs = getFieldConfigs();
+  return configs.filter(f => {
+    // Retorna se o campo é específico desse tipo OU se está nos partnerTypes
+    const isMainType = f.partnerType === type;
+    const isInPartnerTypes = f.partnerTypes?.includes(type);
+    return (isMainType || isInPartnerTypes) && f.enabled;
+  });
 }
 
 // ==================== EXPORT/IMPORT ====================
 
-export async function exportDatabase(): Promise<string> {
-  const partners = await getAllPartners();
-  const fieldConfigs = await getFieldConfigs();
-  
+export function exportDatabase(): string {
   const data = {
-    partners,
-    fieldConfigs,
+    partners: getAllPartners(),
+    fieldConfigs: getFieldConfigs(),
     exportedAt: new Date().toISOString(),
     version: '1.0',
   };
   return JSON.stringify(data, null, 2);
 }
 
-export async function importDatabase(jsonData: string): Promise<void> {
+export function importDatabase(jsonData: string): void {
   try {
     const data = JSON.parse(jsonData);
-    
-    if (data.partners) {
-      for (const partner of data.partners) {
-        await savePartner(partner);
-      }
-    }
-    
-    if (data.fieldConfigs) {
-      await saveFieldConfigs(data.fieldConfigs);
-    }
-    
-    toast.success("Dados importados com sucesso");
+    if (data.partners) localStorage.setItem(DB_KEYS.PARTNERS, JSON.stringify(data.partners));
+    if (data.fieldConfigs) localStorage.setItem(DB_KEYS.FIELD_CONFIGS, JSON.stringify(data.fieldConfigs));
   } catch (error) {
-    toast.error("Dados inválidos");
+    console.error('Erro ao importar banco de dados:', error);
     throw new Error('Dados inválidos');
   }
 }
 
+<<<<<<< HEAD
 // ==================== PAYMENT METHODS ====================
 
 export async function savePaymentMethod(paymentMethod: any): Promise<void> {
@@ -646,5 +576,44 @@ export async function deletePartnerDocument(id: string): Promise<void> {
     toast.error("Erro ao excluir documento");
     throw error;
   }
+}
+
+export async function deletePartner(id: string): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
+  const { error } = await supabase
+    .from('partners')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id); // ✅ Security: Ensure user can only delete their own partners
+
+  if (error) {
+    toast.error("Erro ao excluir parceiro");
+    throw error;
+  }
+}
+
+export async function clearDatabase(): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
+  // Delete all user's data
+  await supabase.from('partners').delete().eq('user_id', user.id);
+  await supabase.from('payment_methods').delete().eq('user_id', user.id);
+  await supabase.from('field_configs').delete().eq('user_id', user.id);
+  await supabase.from('partner_contacts').delete().eq('user_id', user.id);
+  await supabase.from('partner_activities').delete().eq('user_id', user.id);
+  await supabase.from('partner_health_metrics').delete().eq('user_id', user.id);
+  await supabase.from('partner_tasks').delete().eq('user_id', user.id);
+  await supabase.from('partner_documents').delete().eq('user_id', user.id);
+  
+  toast.success("Dados removidos com sucesso");
 }
 

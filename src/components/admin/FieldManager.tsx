@@ -302,7 +302,7 @@ export function FieldManager() {
                       >
                         <div className="flex items-center gap-4">
                           <div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-medium">{field.label}</span>
                               <Badge variant="outline" className="text-xs">
                                 {field.category}
@@ -311,6 +311,19 @@ export function FieldManager() {
                                 <Badge variant="destructive" className="text-xs">
                                   Obrigatório
                                 </Badge>
+                              )}
+                              {/* Mostrar onde o campo pode ser usado */}
+                              {field.partnerTypes && field.partnerTypes.length > 0 && (
+                                <div className="flex gap-1">
+                                  {field.partnerTypes.map(pt => {
+                                    const typeInfo = PARTNER_TYPES.find(t => t.value === pt);
+                                    return typeInfo ? (
+                                      <Badge key={pt} variant="secondary" className="text-xs">
+                                        {typeInfo.icon} {typeInfo.label}
+                                      </Badge>
+                                    ) : null;
+                                  })}
+                                </div>
                               )}
                             </div>
                             <p className="text-sm text-muted-foreground">
