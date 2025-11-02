@@ -9,6 +9,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Partners from "./pages/Partners";
+import PartnersLogistics from "./pages/PartnersLogistics";
+import PartnersPayment from "./pages/PartnersPayment";
+import PartnersMarketplace from "./pages/PartnersMarketplace";
 import Pipeline from "./pages/Pipeline";
 import Health from "./pages/Health";
 import Stores from "./pages/Stores";
@@ -32,6 +36,10 @@ const App = () => {
               <Routes>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+                <Route path="/partners" element={<ProtectedRoute><Partners /></ProtectedRoute>} />
+                <Route path="/partners/logistics" element={<ProtectedRoute><PartnersLogistics /></ProtectedRoute>} />
+                <Route path="/partners/payment" element={<ProtectedRoute><PartnersPayment /></ProtectedRoute>} />
+                <Route path="/partners/marketplace" element={<ProtectedRoute><PartnersMarketplace /></ProtectedRoute>} />
                 <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
                 <Route path="/health" element={<ProtectedRoute><Health /></ProtectedRoute>} />
                 <Route path="/stores" element={<ProtectedRoute><Stores /></ProtectedRoute>} />

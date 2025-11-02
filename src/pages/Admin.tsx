@@ -16,7 +16,6 @@ import { seedPaymentPartnersIfNeeded } from "@/lib/seedPartners";
 import { toast } from "sonner";
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState("admin");
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedStatus, setSeedStatus] = useState<{
     done: boolean;
@@ -91,7 +90,7 @@ export default function Admin() {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar />
 
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-8">

@@ -23,7 +23,6 @@ import { Store as StoreType, STORE_STATUSES, STORE_TYPES } from "@/types/store";
 import { toast } from "sonner";
 
 export default function Stores() {
-  const [activeTab, setActiveTab] = useState("stores");
   const [stores, setStores] = useState<StoreType[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -77,7 +76,7 @@ export default function Stores() {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar />
 
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-8">
