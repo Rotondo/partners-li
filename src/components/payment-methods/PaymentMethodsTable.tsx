@@ -40,6 +40,11 @@ export const PaymentMethodsTable = () => {
       const methods = await getAllPaymentMethods();
       setPaymentMethods(methods);
       setIsLoading(false);
+      
+      // Auto-seed se não houver dados
+      if (methods.length === 0) {
+        handleSeedData();
+      }
     } catch (error) {
       console.error('Error loading payment methods:', error);
       toast({
