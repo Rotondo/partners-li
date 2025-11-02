@@ -19,7 +19,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 export default function Reports() {
-  const [activeTab, setActiveTab] = useState("reports");
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
@@ -80,7 +79,7 @@ export default function Reports() {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar />
 
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-8">

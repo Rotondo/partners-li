@@ -382,8 +382,11 @@ export type Database = {
         Row: {
           created_at: string
           data: Json
+          fit_by_tier: Json | null
           id: string
           name: string
+          rebate_config: Json | null
+          strategic_priority: string | null
           type: string
           updated_at: string
           user_id: string
@@ -391,8 +394,11 @@ export type Database = {
         Insert: {
           created_at?: string
           data?: Json
+          fit_by_tier?: Json | null
           id?: string
           name: string
+          rebate_config?: Json | null
+          strategic_priority?: string | null
           type: string
           updated_at?: string
           user_id: string
@@ -400,8 +406,11 @@ export type Database = {
         Update: {
           created_at?: string
           data?: Json
+          fit_by_tier?: Json | null
           id?: string
           name?: string
+          rebate_config?: Json | null
+          strategic_priority?: string | null
           type?: string
           updated_at?: string
           user_id?: string
@@ -431,6 +440,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      store_partner_metrics: {
+        Row: {
+          created_at: string | null
+          fit_score: number | null
+          id: string
+          monthly_gmv: number | null
+          partner_id: string
+          partner_revenue: number | null
+          period_end: string
+          period_start: string
+          rebate_generated: number | null
+          rebate_percentage: number | null
+          roi: number | null
+          store_id: string
+          store_tier: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          fit_score?: number | null
+          id?: string
+          monthly_gmv?: number | null
+          partner_id: string
+          partner_revenue?: number | null
+          period_end: string
+          period_start: string
+          rebate_generated?: number | null
+          rebate_percentage?: number | null
+          roi?: number | null
+          store_id: string
+          store_tier: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          fit_score?: number | null
+          id?: string
+          monthly_gmv?: number | null
+          partner_id?: string
+          partner_revenue?: number | null
+          period_end?: string
+          period_start?: string
+          rebate_generated?: number | null
+          rebate_percentage?: number | null
+          roi?: number | null
+          store_id?: string
+          store_tier?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_partner_metrics_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

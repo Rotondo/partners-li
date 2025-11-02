@@ -61,6 +61,9 @@ export interface Store {
   notes?: string;
   tags?: string[];
 
+  // Strategic Analysis
+  tier?: 'small' | 'medium' | 'large' | 'enterprise';
+
   created_at: Date;
   updated_at: Date;
 }

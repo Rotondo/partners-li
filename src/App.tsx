@@ -17,6 +17,7 @@ import Pipeline from "./pages/Pipeline";
 import Health from "./pages/Health";
 import Stores from "./pages/Stores";
 import Reports from "./pages/Reports";
+import Strategic from "./pages/Strategic";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import { useState } from "react";
@@ -44,6 +45,7 @@ const App = () => {
                 <Route path="/health" element={<ProtectedRoute><Health /></ProtectedRoute>} />
                 <Route path="/stores" element={<ProtectedRoute><Stores /></ProtectedRoute>} />
                 <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+                <Route path="/strategic" element={<ProtectedRoute><Strategic /></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
