@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
         : 999;
 
       const meetingsThisMonth = recentActivities.filter(a =>
-        a.activity_type === 'meeting' || a.activity_type === 'call'
+        a.activity_type === 'meeting' || a.activity_type === 'call' || a.activity_type === 'video_call'
       ).length;
 
       const openIssues = tasks.filter(t =>
