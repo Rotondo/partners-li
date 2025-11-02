@@ -790,14 +790,17 @@ export async function saveCalendarSyncConfig(config: {
   }
 
   return {
-    ...data,
-    calendar_url: data.calendar_url,
+    id: data.id,
+    user_id: data.user_id,
+    calendar_url: data.calendar_url || undefined,
+    enabled: data.enabled ?? true,
+    sync_interval_minutes: data.sync_interval_minutes ?? 15,
     last_sync_at: data.last_sync_at ? new Date(data.last_sync_at) : null,
-    google_token_expires_at: data.google_token_expires_at ? new Date(data.google_token_expires_at) : null,
-    google_access_token: data.google_access_token,
-    google_refresh_token: data.google_refresh_token,
+    google_token_expires_at: data.google_token_expires_at ? new Date(data.google_token_expires_at) : undefined,
+    google_access_token: data.google_access_token || undefined,
+    google_refresh_token: data.google_refresh_token || undefined,
     google_calendar_id: data.google_calendar_id || 'primary',
-    connected_via_oauth: data.connected_via_oauth || false,
+    connected_via_oauth: data.connected_via_oauth ?? false,
     created_at: new Date(data.created_at),
     updated_at: new Date(data.updated_at),
   };
@@ -822,14 +825,17 @@ export async function getCalendarSyncConfig(): Promise<CalendarSyncConfig | null
   if (!data) return null;
 
   return {
-    ...data,
-    calendar_url: data.calendar_url,
+    id: data.id,
+    user_id: data.user_id,
+    calendar_url: data.calendar_url || undefined,
+    enabled: data.enabled ?? true,
+    sync_interval_minutes: data.sync_interval_minutes ?? 15,
     last_sync_at: data.last_sync_at ? new Date(data.last_sync_at) : null,
-    google_token_expires_at: data.google_token_expires_at ? new Date(data.google_token_expires_at) : null,
-    google_access_token: data.google_access_token,
-    google_refresh_token: data.google_refresh_token,
+    google_token_expires_at: data.google_token_expires_at ? new Date(data.google_token_expires_at) : undefined,
+    google_access_token: data.google_access_token || undefined,
+    google_refresh_token: data.google_refresh_token || undefined,
     google_calendar_id: data.google_calendar_id || 'primary',
-    connected_via_oauth: data.connected_via_oauth || false,
+    connected_via_oauth: data.connected_via_oauth ?? false,
     created_at: new Date(data.created_at),
     updated_at: new Date(data.updated_at),
   };
@@ -868,20 +874,32 @@ async function findOrCreateCalendarPartner(): Promise<Partner> {
     .maybeSingle();
 
   if (existing) {
-    return existing as Partner;
+    const partner = existing.data as any as Partner;
+    if (existing.is_important !== undefined) partner.isImportant = existing.is_important;
+    if (existing.priority_rank !== null && existing.priority_rank !== undefined) partner.priorityRank = existing.priority_rank;
+    if (existing.pareto_focus) partner.paretoFocus = existing.pareto_focus as 'gmv' | 'rebate';
+    return partner;
   }
 
-  // Criar novo parceiro genérico
-  const newPartner: Partial<Partner> = {
+  // Criar novo parceiro genérico com estrutura mínima
+  const newPartnerData = {
+    id: crypto.randomUUID(),
     name: 'Calendário Google',
-    categories: [],
-    status: 'active',
-    user_id: user.id,
+    categories: [] as string[],
+    status: 'active' as const,
+    startDate: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
 
-  const { data: created, error } = await supabase
+  const { data: created, error} = await supabase
     .from('partners')
-    .insert(newPartner)
+    .insert([{
+      name: newPartnerData.name,
+      type: 'other',
+      user_id: user.id,
+      data: newPartnerData as any,
+    }])
     .select()
     .single();
 
@@ -889,7 +907,11 @@ async function findOrCreateCalendarPartner(): Promise<Partner> {
     throw new Error('Failed to create calendar partner');
   }
 
-  return created as Partner;
+  const partner = created.data as any as Partner;
+  if (created.is_important !== undefined) partner.isImportant = created.is_important;
+  if (created.priority_rank !== null && created.priority_rank !== undefined) partner.priorityRank = created.priority_rank;
+  if (created.pareto_focus) partner.paretoFocus = created.pareto_focus as 'gmv' | 'rebate';
+  return partner;
 }
 
 export async function syncCalendarNow(): Promise<{ imported: number; skipped: number }> {

@@ -43,6 +43,8 @@ export type Database = {
           activity_type: Database["public"]["Enums"]["activity_type"]
           completed_date: string | null
           created_at: string
+          google_calendar_synced: boolean | null
+          google_event_id: string | null
           id: string
           next_steps: string | null
           notes: string | null
@@ -60,6 +62,8 @@ export type Database = {
           activity_type: Database["public"]["Enums"]["activity_type"]
           completed_date?: string | null
           created_at?: string
+          google_calendar_synced?: boolean | null
+          google_event_id?: string | null
           id?: string
           next_steps?: string | null
           notes?: string | null
@@ -77,6 +81,8 @@ export type Database = {
           activity_type?: Database["public"]["Enums"]["activity_type"]
           completed_date?: string | null
           created_at?: string
+          google_calendar_synced?: boolean | null
+          google_event_id?: string | null
           id?: string
           next_steps?: string | null
           notes?: string | null
@@ -567,6 +573,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_calendar_sync: {
+        Row: {
+          calendar_url: string | null
+          connected_via_oauth: boolean | null
+          created_at: string
+          enabled: boolean | null
+          google_access_token: string | null
+          google_calendar_id: string | null
+          google_refresh_token: string | null
+          google_token_expires_at: string | null
+          id: string
+          last_sync_at: string | null
+          sync_interval_minutes: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          calendar_url?: string | null
+          connected_via_oauth?: boolean | null
+          created_at?: string
+          enabled?: boolean | null
+          google_access_token?: string | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          google_token_expires_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          sync_interval_minutes?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          calendar_url?: string | null
+          connected_via_oauth?: boolean | null
+          created_at?: string
+          enabled?: boolean | null
+          google_access_token?: string | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          google_token_expires_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          sync_interval_minutes?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

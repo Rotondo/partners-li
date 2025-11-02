@@ -187,7 +187,7 @@ function detectActivityType(title: string, description: string): ActivityType {
  * Determina status da atividade
  */
 function getStatusFromEvent(event: ICAL.Event): ActivityStatus {
-  const status = event.status;
+  const status = (event as any).status;
   const startDate = event.startDate?.toJSDate();
   const now = new Date();
   
@@ -205,8 +205,8 @@ function getStatusFromEvent(event: ICAL.Event): ActivityStatus {
 /**
  * Extrai participantes do evento
  */
-function extractParticipants(event: ICAL.Event): Array<{ name: string; email?: string; role?: string }> {
-  const participants: Array<{ name: string; email?: string; role?: string }> = [];
+function extractParticipants(event: ICAL.Event): string {
+  const participants: string[] = [];
   
   const attendees = event.component.getAllProperties('attendee');
   
@@ -221,13 +221,12 @@ function extractParticipants(event: ICAL.Event): Array<{ name: string; email?: s
       const cnParam = attendeeProp.getParameter('cn');
       const name = cnParam || (email ? email.split('@')[0] : 'Participante');
       
-      participants.push({
-        name: name,
-        email: email,
-      });
+      if (typeof name === 'string') {
+        participants.push(name);
+      }
     }
   });
   
-  return participants;
+  return participants.join(', ');
 }
 
