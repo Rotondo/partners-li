@@ -1,6 +1,5 @@
 import { generatePaymentPartnersWithIds } from '@/data/paymentPartnersSeed';
 import { savePartner } from '@/lib/db';
-import { PaymentPartner } from '@/types/partner';
 
 /**
  * Insere os 5 parceiros de pagamento no banco de dados

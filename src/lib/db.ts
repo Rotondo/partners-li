@@ -86,7 +86,6 @@ export async function getAllPartners(): Promise<Partner[]> {
   // ✅ Get current user for filtering
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    toast.error("Usuário não autenticado");
     throw new Error("User not authenticated");
   }
 

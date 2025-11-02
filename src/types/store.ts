@@ -44,7 +44,7 @@ export interface Store {
   };
 
   // Partnerships
-  logistic_partners?: string[]; // IDs of partner
+  logistic_partners?: string[]; // IDs of partners
   payment_partners?: string[]; // IDs of partners
   marketplace_partners?: string[]; // IDs of partners
 

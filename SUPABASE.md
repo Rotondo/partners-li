@@ -476,7 +476,7 @@ CREATE TYPE public.store_type AS ENUM ('physical', 'online', 'hybrid');
 
 **store_status:**
 ```sql
-CREATE TYPE public.store_status AS ENUM ('active', 'inactive', 'maintenance', 'planned');
+CREATE TYPE public.store_status AS ENUM ('active', 'inactive', 'pending', 'suspended');
 ```
 
 #### Estrutura JSONB do campo `address`

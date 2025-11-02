@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { Settings, Database, Users, Shield, Bell, Palette, Download, CheckCircle, AlertCircle } from "lucide-react";
+import { Settings, Database, Users, Shield, Bell, Palette, Download, CheckCircle } from "lucide-react";
 import {
   Card,
   CardContent,
