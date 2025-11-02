@@ -315,6 +315,59 @@ export type Database = {
           },
         ]
       }
+      partner_monthly_metrics: {
+        Row: {
+          created_at: string
+          gmv_amount: number | null
+          gmv_share: number | null
+          id: string
+          month: number
+          notes: string | null
+          partner_id: string
+          rebate_amount: number | null
+          rebate_share: number | null
+          updated_at: string
+          user_id: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          gmv_amount?: number | null
+          gmv_share?: number | null
+          id?: string
+          month: number
+          notes?: string | null
+          partner_id: string
+          rebate_amount?: number | null
+          rebate_share?: number | null
+          updated_at?: string
+          user_id: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          gmv_amount?: number | null
+          gmv_share?: number | null
+          id?: string
+          month?: number
+          notes?: string | null
+          partner_id?: string
+          rebate_amount?: number | null
+          rebate_share?: number | null
+          updated_at?: string
+          user_id?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_monthly_metrics_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_tasks: {
         Row: {
           activity_id: string | null
@@ -384,7 +437,10 @@ export type Database = {
           data: Json
           fit_by_tier: Json | null
           id: string
+          is_important: boolean | null
           name: string
+          pareto_focus: string | null
+          priority_rank: number | null
           rebate_config: Json | null
           strategic_priority: string | null
           type: string
@@ -396,7 +452,10 @@ export type Database = {
           data?: Json
           fit_by_tier?: Json | null
           id?: string
+          is_important?: boolean | null
           name: string
+          pareto_focus?: string | null
+          priority_rank?: number | null
           rebate_config?: Json | null
           strategic_priority?: string | null
           type: string
@@ -408,7 +467,10 @@ export type Database = {
           data?: Json
           fit_by_tier?: Json | null
           id?: string
+          is_important?: boolean | null
           name?: string
+          pareto_focus?: string | null
+          priority_rank?: number | null
           rebate_config?: Json | null
           strategic_priority?: string | null
           type?: string
