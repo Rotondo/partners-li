@@ -4,7 +4,6 @@ import { LogisticPartner, Partner } from "@/types/partner";
 import { getAllPartners, savePartner, filterPartnersByCategory } from "@/lib/db";
 import { toast } from "sonner";
 import { PartnerDetailView } from "./PartnerDetailView";
-import { ErrorState } from "@/components/ui/error-alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

@@ -14,7 +14,6 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2024-01-15'),
-    category: 'payment',
 
     fees: {
       creditCard: {
@@ -70,7 +69,6 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2023-08-20'),
-    category: 'payment',
 
     fees: {
       creditCard: {
@@ -126,7 +124,6 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2023-03-10'),
-    category: 'payment',
 
     fees: {
       creditCard: {
@@ -182,7 +179,6 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2024-02-01'),
-    category: 'payment',
 
     fees: {
       pix: {
@@ -225,7 +221,6 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2022-11-05'),
-    category: 'payment',
 
     fees: {
       creditCard: {
