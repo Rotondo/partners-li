@@ -9,22 +9,22 @@ interface SettlementSectionProps {
 
 export function SettlementSection({ form }: SettlementSectionProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
           <span className="text-destructive">🔴</span>
           Prazos de Repasse (Liquidação)
         </h3>
-        <p className="text-sm text-muted-foreground">Dias úteis para liquidação dos valores</p>
+        <p className="text-sm text-muted-foreground mb-4">Dias úteis para liquidação dos valores</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <FormField
           control={form.control}
           name="settlement.credit"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Liquidação Crédito (D+) *</FormLabel>
+              <FormLabel className="mb-2">Liquidação Crédito (D+) *</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
@@ -33,7 +33,7 @@ export function SettlementSection({ form }: SettlementSectionProps) {
                   onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="mt-1" />
             </FormItem>
           )}
         />
@@ -43,7 +43,7 @@ export function SettlementSection({ form }: SettlementSectionProps) {
           name="settlement.debit"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Liquidação Débito (D+) *</FormLabel>
+              <FormLabel className="mb-2">Liquidação Débito (D+) *</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
@@ -52,7 +52,7 @@ export function SettlementSection({ form }: SettlementSectionProps) {
                   onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="mt-1" />
             </FormItem>
           )}
         />
@@ -62,7 +62,7 @@ export function SettlementSection({ form }: SettlementSectionProps) {
           name="settlement.pix"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Liquidação Pix (D+) *</FormLabel>
+              <FormLabel className="mb-2">Liquidação Pix (D+) *</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
@@ -71,7 +71,7 @@ export function SettlementSection({ form }: SettlementSectionProps) {
                   onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="mt-1" />
             </FormItem>
           )}
         />

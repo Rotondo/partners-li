@@ -9,13 +9,13 @@ interface TakeRateSectionProps {
 
 export function TakeRateSection({ form }: TakeRateSectionProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
           <span className="text-destructive">🔴</span>
           Take Rate da Plataforma
         </h3>
-        <p className="text-sm text-muted-foreground">% repassado à plataforma sobre o GMV</p>
+        <p className="text-sm text-muted-foreground mb-4">% repassado à plataforma sobre o GMV</p>
       </div>
 
       <div className="max-w-md">
@@ -24,7 +24,7 @@ export function TakeRateSection({ form }: TakeRateSectionProps) {
           name="takeRate"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Take Rate (%) *</FormLabel>
+              <FormLabel className="mb-2">Take Rate (%) *</FormLabel>
               <FormControl>
                 <Input 
                   type="number" 
@@ -34,7 +34,7 @@ export function TakeRateSection({ form }: TakeRateSectionProps) {
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                 />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="mt-1" />
             </FormItem>
           )}
         />

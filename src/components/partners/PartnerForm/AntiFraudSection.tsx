@@ -11,14 +11,14 @@ export function AntiFraudSection({ form }: AntiFraudSectionProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
           <span className="text-yellow-600">🟡</span>
           Ferramentas de Antifraude
         </h3>
-        <p className="text-sm text-muted-foreground">Campos opcionais</p>
+        <p className="text-sm text-muted-foreground mb-4">Campos opcionais</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <FormField
           control={form.control}
           name="antiFraud.solution"

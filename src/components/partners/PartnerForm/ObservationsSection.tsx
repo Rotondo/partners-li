@@ -11,10 +11,10 @@ export function ObservationsSection({ form }: ObservationsSectionProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
           Observações Gerais
         </h3>
-        <p className="text-sm text-muted-foreground">Campo para informações adicionais</p>
+        <p className="text-sm text-muted-foreground mb-4">Campo para informações adicionais</p>
       </div>
 
       <FormField

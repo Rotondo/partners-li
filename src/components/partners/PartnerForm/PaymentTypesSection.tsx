@@ -12,11 +12,11 @@ export function PaymentTypesSection({ form }: PaymentTypesSectionProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+        <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
           <span className="text-destructive">🔴</span>
           Meios de Pagamento Aceitos
         </h3>
-        <p className="text-sm text-muted-foreground">Selecione os meios aceitos</p>
+        <p className="text-sm text-muted-foreground mb-4">Selecione os meios aceitos</p>
       </div>
 
       {/* Cartão de Crédito */}
