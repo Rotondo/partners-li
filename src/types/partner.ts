@@ -2,6 +2,22 @@ export type PartnerCategory = 'logistic' | 'payment' | 'marketplace';
 
 export type PartnerStatus = 'active' | 'inactive' | 'pending' | 'paused';
 
+// Métricas mensais de parceiro
+export interface PartnerMonthlyMetric {
+  id: string;
+  partnerId: string;
+  userId: string;
+  year: number;
+  month: number; // 1-12
+  gmvShare: number; // % de participação no GMV total
+  rebateShare: number; // % de participação no rebate total
+  gmvAmount: number; // Valor absoluto de GMV (R$)
+  rebateAmount: number; // Valor absoluto de rebate (R$)
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Dados compartilhados por todos os parceiros
 export interface SharedPartnerData {
   id: string;
@@ -12,6 +28,10 @@ export interface SharedPartnerData {
   notes?: string;
   customFields?: Record<string, any>; // Campos personalizados configuráveis
   contactFields?: Record<string, any>; // Campos de contato personalizados
+  // Priorização e análise Pareto
+  isImportant?: boolean; // Indica se o parceiro é importante
+  priorityRank?: number; // Ranking de prioridade (1 = 1º lugar, 2 = 2º lugar, etc)
+  paretoFocus?: 'gmv' | 'rebate'; // Métrica usada para análise de Pareto (80/20)
   createdAt: Date;
   updatedAt: Date;
 }

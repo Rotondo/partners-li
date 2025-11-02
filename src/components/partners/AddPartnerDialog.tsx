@@ -15,6 +15,7 @@ import { PerformanceSection } from "./PartnerForm/PerformanceSection";
 import { PaymentTypesSection } from "./PartnerForm/PaymentTypesSection";
 import { AntiFraudSection } from "./PartnerForm/AntiFraudSection";
 import { ObservationsSection } from "./PartnerForm/ObservationsSection";
+import { PrioritySection } from "./PartnerForm/PrioritySection";
 import { DynamicFieldsSection } from "./DynamicFieldsSection";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
@@ -63,6 +64,9 @@ export function AddPartnerDialog({
           bnpl: false,
         },
         notes: initialPartner.notes,
+        isImportant: initialPartner.isImportant || false,
+        priorityRank: initialPartner.priorityRank,
+        paretoFocus: initialPartner.paretoFocus,
       };
     }
     
@@ -96,6 +100,9 @@ export function AddPartnerDialog({
         digitalWallet: { enabled: false, wallets: [] },
         bnpl: false,
       },
+      isImportant: false,
+      priorityRank: undefined,
+      paretoFocus: undefined,
     };
   };
 
@@ -155,6 +162,9 @@ export function AddPartnerDialog({
         },
       } : undefined,
       notes: data.notes,
+      isImportant: data.isImportant || false,
+      priorityRank: data.priorityRank,
+      paretoFocus: data.paretoFocus,
       customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
       contactFields: Object.keys(customFields).length > 0 ? customFields : undefined,
       createdAt: new Date(),
@@ -190,7 +200,7 @@ export function AddPartnerDialog({
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Tabs defaultValue="identification" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10">
+              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11">
                 <TabsTrigger value="identification">Identificação</TabsTrigger>
                 <TabsTrigger value="contact">Contato</TabsTrigger>
                 <TabsTrigger value="fees">Taxas</TabsTrigger>
@@ -199,6 +209,7 @@ export function AddPartnerDialog({
                 <TabsTrigger value="performance">Performance</TabsTrigger>
                 <TabsTrigger value="payment-types">Meios</TabsTrigger>
                 <TabsTrigger value="antifraud">Antifraude</TabsTrigger>
+                <TabsTrigger value="priority">⭐ Prioridade</TabsTrigger>
                 <TabsTrigger value="custom">Custom</TabsTrigger>
                 <TabsTrigger value="observations">Obs.</TabsTrigger>
               </TabsList>
@@ -229,6 +240,10 @@ export function AddPartnerDialog({
 
               <TabsContent value="antifraud" className="mt-6">
                 <AntiFraudSection form={form} />
+              </TabsContent>
+
+              <TabsContent value="priority" className="mt-6">
+                <PrioritySection form={form} />
               </TabsContent>
 
               <TabsContent value="observations" className="mt-6">

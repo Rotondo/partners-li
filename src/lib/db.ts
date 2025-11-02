@@ -14,6 +14,10 @@ import {
   NewPartnerTask,
   NewPartnerDocument,
 } from "@/types/crm";
+import {
+  PartnerMonthlyMetric,
+  NewPartnerMonthlyMetric,
+} from "@/types/partner-metrics";
 
 const DB_KEYS = {
   PARTNERS: 'partners',
@@ -72,15 +76,18 @@ export async function savePartner(partner: Partner): Promise<void> {
     contactFields: partner.contactFields || {},
   };
 
-  const { error } = await supabase
-    .from('partners')
-    .upsert({
-      id: partner.id,
-      user_id: user.id,
-      name: partner.name,
-      type: primaryCategory,
-      data: partnerData as any,
-    }, { onConflict: 'id' });
+        const { error } = await supabase
+          .from('partners')
+          .upsert({
+            id: partner.id,
+            user_id: user.id,
+            name: partner.name,
+            type: primaryCategory,
+            data: partnerData as any,
+            is_important: partner.isImportant || false,
+            priority_rank: partner.priorityRank || null,
+            pareto_focus: partner.paretoFocus || null,
+          }, { onConflict: 'id' });
 
   if (error) {
     toast.error("Erro ao salvar parceiro");
@@ -106,7 +113,14 @@ export async function getAllPartners(): Promise<Partner[]> {
     throw error;
   }
 
-  return (data || []).map(row => row.data as any as Partner);
+  return (data || []).map(row => {
+    const partner = row.data as any as Partner;
+    // Include priority fields from database
+    if (row.is_important !== undefined) partner.isImportant = row.is_important;
+    if (row.priority_rank !== null && row.priority_rank !== undefined) partner.priorityRank = row.priority_rank;
+    if (row.pareto_focus) partner.paretoFocus = row.pareto_focus as 'gmv' | 'rebate';
+    return partner;
+  });
 }
 
 export async function getPartnerById(id: string): Promise<Partner | undefined> {
@@ -595,5 +609,132 @@ export async function clearDatabase(): Promise<void> {
   await supabase.from('partner_documents').delete().eq('user_id', user.id);
   
   toast.success("Dados removidos com sucesso");
+}
+
+// ==================== PARTNER MONTHLY METRICS ====================
+
+export async function savePartnerMonthlyMetric(metric: NewPartnerMonthlyMetric & { id?: string }): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    toast.error("Usuário não autenticado");
+    throw new Error("User not authenticated");
+  }
+
+  const metricData: any = {
+    ...metric,
+    user_id: user.id,
+  };
+
+  if (metric.id) {
+    metricData.id = metric.id;
+  } else {
+    metricData.id = crypto.randomUUID();
+  }
+
+  // Use upsert com constraint único
+  const { error } = await supabase
+    .from('partner_monthly_metrics')
+    .upsert({
+      ...metricData,
+      partner_id: metric.partnerId,
+    }, { 
+      onConflict: 'partner_id,user_id,year,month',
+      ignoreDuplicates: false 
+    });
+
+  if (error) {
+    toast.error("Erro ao salvar métrica mensal");
+    throw error;
+  }
+}
+
+export async function getPartnerMonthlyMetrics(partnerId: string): Promise<PartnerMonthlyMetric[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const { data, error } = await supabase
+    .from('partner_monthly_metrics')
+    .select('*')
+    .eq('partner_id', partnerId)
+    .eq('user_id', user.id)
+    .order('year', { ascending: false })
+    .order('month', { ascending: false });
+
+  if (error) {
+    toast.error("Erro ao carregar métricas mensais");
+    throw error;
+  }
+
+  return (data || []).map(row => ({
+    id: row.id,
+    partnerId: row.partner_id,
+    userId: row.user_id,
+    year: row.year,
+    month: row.month,
+    gmvShare: parseFloat(row.gmv_share) || 0,
+    rebateShare: parseFloat(row.rebate_share) || 0,
+    gmvAmount: parseFloat(row.gmv_amount) || 0,
+    rebateAmount: parseFloat(row.rebate_amount) || 0,
+    notes: row.notes,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  }));
+}
+
+export async function getAllPartnersMonthlyMetrics(year?: number, month?: number): Promise<PartnerMonthlyMetric[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  let query = supabase
+    .from('partner_monthly_metrics')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('year', { ascending: false })
+    .order('month', { ascending: false });
+
+  if (year) {
+    query = query.eq('year', year);
+  }
+  if (month) {
+    query = query.eq('month', month);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    toast.error("Erro ao carregar métricas mensais");
+    throw error;
+  }
+
+  return (data || []).map(row => ({
+    id: row.id,
+    partnerId: row.partner_id,
+    userId: row.user_id,
+    year: row.year,
+    month: row.month,
+    gmvShare: parseFloat(row.gmv_share) || 0,
+    rebateShare: parseFloat(row.rebate_share) || 0,
+    gmvAmount: parseFloat(row.gmv_amount) || 0,
+    rebateAmount: parseFloat(row.rebate_amount) || 0,
+    notes: row.notes,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+  }));
+}
+
+export async function deletePartnerMonthlyMetric(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('partner_monthly_metrics')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    toast.error("Erro ao excluir métrica mensal");
+    throw error;
+  }
 }
 

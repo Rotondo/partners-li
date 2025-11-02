@@ -81,6 +81,9 @@ Tabela principal para armazenar informações de parceiros (pagamento, marketpla
 | `name` | TEXT | NOT NULL | - | Nome do parceiro |
 | `type` | TEXT | NOT NULL | - | Tipo: payment/marketplace/logistic |
 | `data` | JSONB | NOT NULL | `'{}'::jsonb` | Dados dinâmicos específicos do tipo |
+| `is_important` | BOOLEAN | YES | `false` | Indica se o parceiro é considerado importante |
+| `priority_rank` | INTEGER | YES | NULL | Ranking de prioridade (1 = 1º lugar, 2 = 2º lugar, etc). Não limitado ao top 3. |
+| `pareto_focus` | TEXT | YES | NULL | Métrica usada para análise de Pareto (80/20): 'gmv' ou 'rebate' |
 | `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL | `now()` | Data de criação |
 | `updated_at` | TIMESTAMP WITH TIME ZONE | NOT NULL | `now()` | Última atualização |
 
@@ -343,7 +346,61 @@ overall_score = (performance_score * 0.4) + (engagement_score * 0.3) + (commerci
 
 ---
 
-### 8. **partner_alerts**
+### 8. **partner_monthly_metrics**
+Armazena métricas mensais de GMV e rebate por parceiro. Permite análise histórica e identificação de padrões para análise de Pareto (80/20).
+
+#### Campos
+| Campo | Tipo | Nullable | Default | Descrição |
+|-------|------|----------|---------|-----------|
+| `id` | UUID | NOT NULL | `gen_random_uuid()` | Primary Key |
+| `partner_id` | UUID | NOT NULL | - | FK para partners |
+| `user_id` | UUID | NOT NULL | - | FK para auth.users |
+| `year` | INTEGER | NOT NULL | - | Ano da métrica (ex: 2024) |
+| `month` | INTEGER | NOT NULL | - | Mês da métrica (1-12) |
+| `gmv_share` | DECIMAL(5,2) | YES | `0` | Percentual de participação no GMV total do mês (0-100%) |
+| `rebate_share` | DECIMAL(5,2) | YES | `0` | Percentual de participação no rebate total do mês (0-100%) |
+| `gmv_amount` | DECIMAL(15,2) | YES | `0` | Valor absoluto de GMV transacionado no mês (R$) |
+| `rebate_amount` | DECIMAL(15,2) | YES | `0` | Valor absoluto de rebate gerado no mês (R$) |
+| `notes` | TEXT | YES | NULL | Observações sobre o mês |
+| `created_at` | TIMESTAMP WITH TIME ZONE | NOT NULL | `now()` | Data de criação |
+| `updated_at` | TIMESTAMP WITH TIME ZONE | NOT NULL | `now()` | Última atualização |
+
+#### Constraints
+- **Primary Key:** `id`
+- **Foreign Key:** `partner_id` → `partners(id)` ON DELETE CASCADE
+- **Foreign Key:** `user_id` → `auth.users(id)` ON DELETE CASCADE
+- **Unique:** `(partner_id, user_id, year, month)` - Um parceiro só pode ter uma métrica por mês/ano
+
+#### Indexes
+- `idx_partner_metrics_partner_id` ON `partner_id`
+- `idx_partner_metrics_user_id` ON `user_id`
+- `idx_partner_metrics_year_month` ON `(year, month)`
+
+#### Triggers
+- `update_partner_monthly_metrics_updated_at` BEFORE UPDATE
+
+#### RLS Policies
+- **SELECT:** Usuários podem ver suas próprias métricas ou ser admin
+- **INSERT:** Usuários podem criar métricas apenas para seus próprios parceiros
+- **UPDATE:** Usuários podem atualizar suas próprias métricas ou ser admin
+- **DELETE:** Usuários podem deletar suas próprias métricas ou ser admin
+
+#### Regras de Negócio
+- Métricas devem ser cadastradas mensalmente para análise contínua
+- `gmv_share` e `rebate_share` são percentuais que devem somar 100% entre todos os parceiros (validação aplicada na aplicação)
+- Usado para análise de Pareto (80/20): identificar quais parceiros geram 80% do GMV ou rebate
+- Aplicável a parceiros de **pagamento** e **logística**
+
+#### Motivo da Criação
+Esta tabela foi criada para permitir tracking mensal de performance financeira dos parceiros, essencial para:
+- **Análise de Pareto:** Identificar quais parceiros geram 80% do valor (GMV ou rebate)
+- **Priorização:** Tomar decisões baseadas em dados sobre quais parceiros merecem mais atenção
+- **Tendências:** Identificar padrões de crescimento ou declínio ao longo do tempo
+- **Foco Estratégico:** Alternar entre foco em GMV ou rebate conforme estratégia do negócio
+
+---
+
+### 9. **partner_alerts**
 Alertas automáticos gerados pelo sistema baseados em métricas.
 
 #### Campos

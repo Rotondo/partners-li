@@ -160,6 +160,11 @@ export const partnerSchema = z.object({
     minScore: z.number().min(0).max(100),
   }).optional(),
 
+  // Priorização e Análise Pareto (opcional)
+  isImportant: z.boolean().optional(),
+  priorityRank: z.number().int().min(1).optional(),
+  paretoFocus: z.enum(["gmv", "rebate"]).optional(),
+
   // Observações
   notes: z.string().optional(),
 });

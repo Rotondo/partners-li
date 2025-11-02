@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, CreditCard, Settings2, Pencil, Trash2, AlertCircle, Database } from "lucide-react";
+import { Plus, Search, CreditCard, Settings2, Pencil, Trash2, AlertCircle } from "lucide-react";
 import { PaymentPartner } from "@/types/partner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,8 +35,6 @@ import { useColumnVisibility } from "@/hooks/use-column-visibility";
 import { getAllPartners, savePartner, deletePartner, filterPartnersByCategory } from "@/lib/db";
 import { toast } from "sonner";
 import { ErrorState } from "@/components/ui/error-alert";
-import { seedLegacyPaymentPartnersFromGranular } from "@/lib/seedLegacyPaymentPartners";
-import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 
 const DEFAULT_COLUMNS = [
@@ -58,9 +56,6 @@ export const PaymentPartnersTable = () => {
   const [editingPartner, setEditingPartner] = useState<PaymentPartner | null>(null);
   const [deletingPartner, setDeletingPartner] = useState<PaymentPartner | null>(null);
   const { blurClass, isBlurActive } = useBlurSensitiveData();
-  const [isSeedingData, setIsSeedingData] = useState(false);
-  const [seedProgress, setSeedProgress] = useState(0);
-  const [showSeedDialog, setShowSeedDialog] = useState(false);
   
   const { columns, visibleColumns, toggleColumn, resetColumns } = useColumnVisibility('payment', DEFAULT_COLUMNS);
 
@@ -122,36 +117,6 @@ export const PaymentPartnersTable = () => {
     setEditingPartner(null);
   };
 
-  const handleConfirmSeed = async () => {
-    setShowSeedDialog(false);
-    setIsSeedingData(true);
-    setSeedProgress(0);
-
-    try {
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setSeedProgress(prev => Math.min(prev + 15, 90));
-      }, 300);
-
-      const ids = await seedLegacyPaymentPartnersFromGranular();
-      
-      clearInterval(progressInterval);
-      setSeedProgress(100);
-      
-      toast.success(`${ids.length} parceiros cadastrados com sucesso!`);
-      
-      await loadPartnersData();
-    } catch (error) {
-      console.error('Erro ao cadastrar parceiros:', error);
-      toast.error("Erro ao cadastrar parceiros iniciais");
-    } finally {
-      setTimeout(() => {
-        setIsSeedingData(false);
-        setSeedProgress(0);
-      }, 500);
-    }
-  };
-
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case 'active':
@@ -184,16 +149,6 @@ export const PaymentPartnersTable = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {partners.length < 3 && !isSeedingData && (
-            <Button 
-              onClick={() => setShowSeedDialog(true)} 
-              variant="outline"
-              className="gap-2"
-            >
-              <Database className="h-4 w-4" />
-              Cadastrar Parceiros Iniciais (Resumo)
-            </Button>
-          )}
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" size="icon">
@@ -240,37 +195,6 @@ export const PaymentPartnersTable = () => {
         </div>
       </div>
 
-      {/* Seed Confirmation Dialog */}
-      <AlertDialog open={showSeedDialog} onOpenChange={setShowSeedDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cadastrar Parceiros Iniciais</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-4">
-              <p>
-                Isso irá adicionar 6 parceiros de pagamento pré-configurados à visão resumida:
-              </p>
-              <ul className="list-disc pl-6 space-y-1 text-sm">
-                <li>Mercado Pago</li>
-                <li>APP MAX</li>
-                <li>Pagar.me</li>
-                <li>PagBank</li>
-                <li>PagHiper</li>
-                <li>PayPal</li>
-              </ul>
-              <p className="text-sm text-muted-foreground">
-                Os parceiros existentes não serão afetados.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSeed}>
-              Confirmar Cadastro
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <AddPartnerDialog
         open={isDialogOpen}
         onOpenChange={handleDialogClose}
@@ -299,20 +223,6 @@ export const PaymentPartnersTable = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {isSeedingData && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Cadastrando parceiros...</span>
-                <span className="font-medium">{seedProgress}%</span>
-              </div>
-              <Progress value={seedProgress} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
@@ -323,7 +233,7 @@ export const PaymentPartnersTable = () => {
         />
       </div>
 
-      {!isSeedingData && partners.length === 0 && !isLoading && (
+      {partners.length === 0 && !isLoading && (
         <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20">
           <CardContent className="pt-6">
             <div className="flex gap-4">
@@ -334,7 +244,7 @@ export const PaymentPartnersTable = () => {
                 </h4>
                 <p className="text-sm text-orange-800 dark:text-orange-200">
                   Você ainda não tem parceiros de pagamento na visão resumida. 
-                  Clique no botão "Cadastrar Parceiros Iniciais (Resumo)" para adicionar 6 parceiros pré-configurados.
+                  Use o botão "Adicionar Parceiro" acima para cadastrar novos parceiros.
                 </p>
               </div>
             </div>

@@ -43,21 +43,27 @@ export function GartnerQuadrantChart({ data, onPartnerClick }: GartnerQuadrantCh
       <CardContent>
         <div className="h-[500px]">
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 20, right: 30, bottom: 20, left: 20 }}>
+            <ScatterChart margin={{ top: 20, right: 30, bottom: 60, left: 60 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 type="number" 
                 dataKey="fitScore" 
                 name="Fit Score" 
                 domain={[0, 100]}
-                label={{ value: 'Fit com Base de Lojas', position: 'insideBottom', offset: -10 }}
+                tickCount={6}
+                allowDecimals={false}
+                tick={{ fontSize: 12 }}
+                label={{ value: 'Fit com Base de Lojas', position: 'outside', offset: 10, style: { textAnchor: 'middle' } }}
               />
               <YAxis 
                 type="number" 
                 dataKey="rebateScore" 
                 name="Rebate Score" 
                 domain={[0, 100]}
-                label={{ value: 'Rebate Gerado', angle: -90, position: 'insideLeft' }}
+                tickCount={6}
+                allowDecimals={false}
+                tick={{ fontSize: 12 }}
+                label={{ value: 'Rebate Gerado', angle: -90, position: 'outside', offset: 10, style: { textAnchor: 'middle' } }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
