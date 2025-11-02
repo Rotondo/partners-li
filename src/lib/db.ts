@@ -735,6 +735,293 @@ export async function getAllPartnersMonthlyMetrics(year?: number, month?: number
   }));
 }
 
+// ==================== CALENDAR SYNC ====================
+
+export interface CalendarSyncConfig {
+  id: string;
+  user_id: string;
+  calendar_url: string | null;
+  enabled: boolean;
+  sync_interval_minutes: number;
+  last_sync_at: Date | null;
+  google_access_token: string | null;
+  google_refresh_token: string | null;
+  google_token_expires_at: Date | null;
+  google_calendar_id: string;
+  connected_via_oauth: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export async function saveCalendarSyncConfig(config: {
+  calendar_url?: string;
+  enabled?: boolean;
+  sync_interval_minutes?: number;
+  google_access_token?: string;
+  google_refresh_token?: string;
+  google_token_expires_at?: Date | null;
+  google_calendar_id?: string;
+  connected_via_oauth?: boolean;
+}): Promise<CalendarSyncConfig> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const { data, error } = await supabase
+    .from('user_calendar_sync')
+    .upsert({
+      user_id: user.id,
+      calendar_url: config.calendar_url || null,
+      enabled: config.enabled ?? true,
+      sync_interval_minutes: config.sync_interval_minutes ?? 15,
+      google_access_token: config.google_access_token || null,
+      google_refresh_token: config.google_refresh_token || null,
+      google_token_expires_at: config.google_token_expires_at?.toISOString() || null,
+      google_calendar_id: config.google_calendar_id || 'primary',
+      connected_via_oauth: config.connected_via_oauth ?? false,
+    }, { onConflict: 'user_id' })
+    .select()
+    .single();
+
+  if (error) {
+    toast.error("Erro ao salvar configuração do calendário");
+    throw error;
+  }
+
+  return {
+    ...data,
+    calendar_url: data.calendar_url,
+    last_sync_at: data.last_sync_at ? new Date(data.last_sync_at) : null,
+    google_token_expires_at: data.google_token_expires_at ? new Date(data.google_token_expires_at) : null,
+    google_access_token: data.google_access_token,
+    google_refresh_token: data.google_refresh_token,
+    google_calendar_id: data.google_calendar_id || 'primary',
+    connected_via_oauth: data.connected_via_oauth || false,
+    created_at: new Date(data.created_at),
+    updated_at: new Date(data.updated_at),
+  };
+}
+
+export async function getCalendarSyncConfig(): Promise<CalendarSyncConfig | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const { data, error } = await supabase
+    .from('user_calendar_sync')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) return null;
+
+  return {
+    ...data,
+    calendar_url: data.calendar_url,
+    last_sync_at: data.last_sync_at ? new Date(data.last_sync_at) : null,
+    google_token_expires_at: data.google_token_expires_at ? new Date(data.google_token_expires_at) : null,
+    google_access_token: data.google_access_token,
+    google_refresh_token: data.google_refresh_token,
+    google_calendar_id: data.google_calendar_id || 'primary',
+    connected_via_oauth: data.connected_via_oauth || false,
+    created_at: new Date(data.created_at),
+    updated_at: new Date(data.updated_at),
+  };
+}
+
+export async function deleteCalendarSyncConfig(): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const { error } = await supabase
+    .from('user_calendar_sync')
+    .delete()
+    .eq('user_id', user.id);
+
+  if (error) {
+    toast.error("Erro ao excluir configuração do calendário");
+    throw error;
+  }
+}
+
+/**
+ * Busca ou cria um parceiro genérico para atividades do calendário
+ */
+async function findOrCreateCalendarPartner(): Promise<Partner> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated");
+
+  // Buscar parceiro "Calendário" existente
+  const { data: existing } = await supabase
+    .from('partners')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('name', 'Calendário Google')
+    .maybeSingle();
+
+  if (existing) {
+    return existing as Partner;
+  }
+
+  // Criar novo parceiro genérico
+  const newPartner: Partial<Partner> = {
+    name: 'Calendário Google',
+    categories: [],
+    status: 'active',
+    user_id: user.id,
+  };
+
+  const { data: created, error } = await supabase
+    .from('partners')
+    .insert(newPartner)
+    .select()
+    .single();
+
+  if (error || !created) {
+    throw new Error('Failed to create calendar partner');
+  }
+
+  return created as Partner;
+}
+
+export async function syncCalendarNow(): Promise<{ imported: number; skipped: number }> {
+  const config = await getCalendarSyncConfig();
+  if (!config) {
+    throw new Error('Calendar sync not configured');
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  let activities: any[] = [];
+
+  try {
+    // Se conectado via OAuth, usar Google Calendar API
+    if (config.connected_via_oauth && config.google_access_token) {
+      console.log('Syncing via OAuth (Google Calendar API)');
+      
+      // Verificar se token expirou e renovar se necessário
+      let accessToken = config.google_access_token;
+      if (config.google_token_expires_at && new Date(config.google_token_expires_at) < new Date()) {
+        console.log('Token expirado, renovando...');
+        if (!config.google_refresh_token) {
+          throw new Error('Token expirado e refresh token não disponível. Por favor, reconecte.');
+        }
+        
+        const { refreshAccessToken } = await import('./google-calendar-oauth');
+        const newTokens = await refreshAccessToken(config.google_refresh_token);
+        accessToken = newTokens.access_token;
+        
+        // Atualizar token no banco
+        const expiresAt = new Date(Date.now() + newTokens.expires_in * 1000);
+        await supabase
+          .from('user_calendar_sync')
+          .update({
+            google_access_token: accessToken,
+            google_token_expires_at: expiresAt.toISOString(),
+          })
+          .eq('user_id', user.id);
+      }
+      
+      // Buscar eventos via Google Calendar API
+      const { fetchGoogleCalendarEvents, convertGoogleEventToActivity } = await import('./google-calendar-oauth');
+      const googleEvents = await fetchGoogleCalendarEvents(
+        accessToken,
+        config.google_calendar_id || 'primary'
+      );
+      
+      console.log('Fetched events from Google Calendar API:', googleEvents.length);
+      
+      // Converter eventos
+      activities = googleEvents
+        .map(event => convertGoogleEventToActivity(event, user.id))
+        .filter(Boolean);
+    } 
+    // Senão, usar iCal feed (fallback)
+    else if (config.calendar_url) {
+      console.log('Importing calendar from iCal URL:', config.calendar_url);
+      const { importFromICalFeed } = await import('./google-calendar-simple');
+      activities = await importFromICalFeed(config.calendar_url);
+    } else {
+      throw new Error('Nenhum método de sincronização configurado (OAuth ou iCal)');
+    }
+    
+    console.log('Imported activities count:', activities.length);
+
+    let imported = 0;
+    let skipped = 0;
+
+    // Verificar quais eventos já existem (por google_event_id)
+    const { data: existingActivitiesData, error: existingError } = await supabase
+      .from('partner_activities')
+      .select('google_event_id')
+      .eq('user_id', user.id)
+      .not('google_event_id', 'is', null);
+
+    if (existingError) {
+      console.error('Error checking existing activities:', existingError);
+    }
+
+    const existingIds = new Set(
+      (existingActivitiesData || []).map(a => a.google_event_id).filter(Boolean)
+    );
+    
+    console.log('Existing event IDs:', existingIds.size);
+
+    // Importar apenas novos eventos
+    for (const activity of activities) {
+      if (!activity.google_event_id) {
+        activity.google_event_id = `${activity.title}-${activity.scheduled_date?.getTime()}`;
+      }
+
+      // Pular se já existe
+      if (existingIds.has(activity.google_event_id)) {
+        skipped++;
+        continue;
+      }
+
+      // Preencher campos obrigatórios
+      (activity as any).user_id = user.id;
+      
+      // Se partner_id estiver vazio, tentar criar ou usar parceiro genérico "Calendário"
+      if (!activity.partner_id || activity.partner_id.trim() === '') {
+        // Buscar ou criar parceiro genérico para atividades do calendário
+        const calendarPartner = await findOrCreateCalendarPartner();
+        activity.partner_id = calendarPartner.id;
+      }
+
+      try {
+        await savePartnerActivity(activity as NewPartnerActivity & { id?: string });
+        imported++;
+      } catch (error) {
+        console.error('Error importing activity:', error);
+        skipped++;
+      }
+    }
+
+    // Atualizar last_sync_at
+    await supabase
+      .from('user_calendar_sync')
+      .update({ last_sync_at: new Date().toISOString() })
+      .eq('user_id', user.id);
+
+    return { imported, skipped };
+  } catch (error) {
+    console.error('Error syncing calendar:', error);
+    throw error;
+  }
+}
+
 export async function deletePartnerMonthlyMetric(id: string): Promise<void> {
   const { error } = await supabase
     .from('partner_monthly_metrics')

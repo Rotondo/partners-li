@@ -26,6 +26,7 @@ import { AddPaymentMethodDialog } from "./AddPaymentMethodDialog";
 import { PaymentMethod } from "@/types/payment-method";
 import { getAllPaymentMethods, savePaymentMethod, deletePaymentMethod } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
+import { useBlurSensitiveData } from "@/hooks/use-blur-sensitive";
 
 const STATUS_VARIANTS = {
   "Ativo": "default",
@@ -44,6 +45,7 @@ export const PaymentMethodsTable = () => {
   const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
   const [deletingMethod, setDeletingMethod] = useState<PaymentMethod | null>(null);
   const { toast } = useToast();
+  const { blurClass, isBlurActive } = useBlurSensitiveData();
 
   useEffect(() => {
     loadPaymentMethods();
@@ -131,7 +133,7 @@ export const PaymentMethodsTable = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${blurClass}`}>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Meios de Pagamento</h1>
@@ -221,15 +223,15 @@ export const PaymentMethodsTable = () => {
               </TableHeader>
               <TableBody>
                 {filteredMethods.map((method) => (
-                  <TableRow key={method.id}>
+                  <TableRow key={method.id} className={isBlurActive ? 'blur-table-row' : ''}>
                     <TableCell className="font-medium">{method.company.tradeName}</TableCell>
                     <TableCell>{method.company.solutionType}</TableCell>
-                    <TableCell>{method.creditCard.feesByRevenue[0]?.baseRate || 0}%</TableCell>
-                    <TableCell>{method.debitCard.baseRate}%</TableCell>
-                    <TableCell>{method.pix.baseRate}%</TableCell>
-                    <TableCell>D+{method.settlement.creditCardDefault}</TableCell>
-                    <TableCell>{method.platformSplit.takeRatePercentage || 0}%</TableCell>
-                    <TableCell>{method.performance?.approvalRates[0]?.averageRate || 0}%</TableCell>
+                    <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{method.creditCard.feesByRevenue[0]?.baseRate || 0}%</TableCell>
+                    <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{method.debitCard.baseRate}%</TableCell>
+                    <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{method.pix.baseRate}%</TableCell>
+                    <TableCell className={isBlurActive ? 'sensitive-data' : ''}>D+{method.settlement.creditCardDefault}</TableCell>
+                    <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{method.platformSplit.takeRatePercentage || 0}%</TableCell>
+                    <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{method.performance?.approvalRates[0]?.averageRate || 0}%</TableCell>
                     <TableCell>
                       <Badge variant={STATUS_VARIANTS[method.status] || "default"}>
                         {method.status}

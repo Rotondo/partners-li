@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Plus, Search, ShoppingBag } from "lucide-react";
 import { MarketplacePartner, Partner, MARKETPLACE_CATEGORIES } from "@/types/partner";
+import { useBlurSensitiveData } from "@/hooks/use-blur-sensitive";
 import { PartnerDetailView } from "./PartnerDetailView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ export const MarketplacePartnersTable = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [detailViewOpen, setDetailViewOpen] = useState(false);
+  const { blurClass, isBlurActive } = useBlurSensitiveData();
   const [newPartner, setNewPartner] = useState<Partial<MarketplacePartner>>({
     category: 'marketplace',
     status: 'active',
@@ -116,7 +118,7 @@ export const MarketplacePartnersTable = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${blurClass}`}>
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Parceiros de Marketplace</h2>
@@ -307,11 +309,11 @@ export const MarketplacePartnersTable = () => {
               {filteredPartners.map((partner) => (
                 <TableRow 
                   key={partner.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className={`cursor-pointer hover:bg-muted/50 ${isBlurActive ? 'blur-table-row' : ''}`}
                   onClick={() => handleRowClick(partner)}
                 >
                   <TableCell className="font-medium">{partner.name}</TableCell>
-                  <TableCell>{partner.commission}%</TableCell>
+                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{partner.commission}%</TableCell>
                   <TableCell>
                     {partner.supportedCategories.length > 0 ? (
                       <Badge variant="secondary">
@@ -321,8 +323,8 @@ export const MarketplacePartnersTable = () => {
                       <span className="text-muted-foreground">Nenhuma</span>
                     )}
                   </TableCell>
-                  <TableCell>{partner.monthlyReach.toLocaleString('pt-BR')} usuários</TableCell>
-                  <TableCell>
+                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>{partner.monthlyReach.toLocaleString('pt-BR')} usuários</TableCell>
+                  <TableCell className={isBlurActive ? 'sensitive-data' : ''}>
                     {partner.avgConversionRate ? `${partner.avgConversionRate}%` : '-'}
                   </TableCell>
                   <TableCell className="capitalize">{partner.integrationType}</TableCell>

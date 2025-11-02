@@ -19,6 +19,7 @@ import Stores from "./pages/Stores";
 import Reports from "./pages/Reports";
 import Strategic from "./pages/Strategic";
 import Admin from "./pages/Admin";
+import { GoogleCallback } from "./pages/GoogleCallback";
 import NotFound from "./pages/NotFound";
 import { useState } from "react";
 
@@ -46,6 +47,7 @@ const App = () => {
                 <Route path="/reports" element={<ProtectedRoute><><BlurToggle /><Reports /></></ProtectedRoute>} />
                 <Route path="/strategic" element={<ProtectedRoute><><BlurToggle /><Strategic /></></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute><><BlurToggle /><Admin /></></ProtectedRoute>} />
+                <Route path="/auth/google/callback" element={<GoogleCallback />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

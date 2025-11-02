@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { Settings, Database, Users, Shield, Bell, Palette, Download, CheckCircle } from "lucide-react";
+import { Settings, Database, Users, Shield, Bell, Palette, Download, CheckCircle, Calendar } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FieldManager } from "@/components/admin/FieldManager";
+import { CalendarSyncSettings } from "@/components/settings/CalendarSyncSettings";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { seedPaymentPartnersIfNeeded } from "@/lib/seedPartners";
@@ -110,9 +111,10 @@ export default function Admin() {
           </div>
 
           <Tabs defaultValue="field-config" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="field-config">Campos</TabsTrigger>
               <TabsTrigger value="database">Banco de Dados</TabsTrigger>
+              <TabsTrigger value="calendar">Calendário</TabsTrigger>
               <TabsTrigger value="users" disabled>Usuários</TabsTrigger>
               <TabsTrigger value="security" disabled>Segurança</TabsTrigger>
               <TabsTrigger value="notifications" disabled>Notificações</TabsTrigger>
@@ -234,6 +236,10 @@ export default function Admin() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="calendar" className="space-y-6">
+              <CalendarSyncSettings />
             </TabsContent>
 
             <TabsContent value="users" className="space-y-6">
