@@ -21,7 +21,7 @@ export function DocumentationSection({ form }: DocumentationSectionProps) {
         <p className="text-sm text-muted-foreground">Links para documentação oficial</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-4">
         <FormField
           control={form.control}
           name="documentation.apiDocsUrl"

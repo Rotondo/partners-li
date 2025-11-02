@@ -24,7 +24,7 @@ export function IntegrationSection({ form }: IntegrationSectionProps) {
             <ChecklistField
               label="Tipo de Integração *"
               options={INTEGRATION_TYPES}
-              value={field.value}
+              value={Array.isArray(field.value) ? field.value : []}
               onChange={field.onChange}
               allowCustom={false}
             />
@@ -41,7 +41,7 @@ export function IntegrationSection({ form }: IntegrationSectionProps) {
             <ChecklistField
               label="Tipos de Checkout Disponíveis *"
               options={CHECKOUT_TYPES}
-              value={field.value}
+              value={Array.isArray(field.value) ? field.value : []}
               onChange={field.onChange}
               allowCustom={false}
             />
@@ -168,7 +168,7 @@ export function IntegrationSection({ form }: IntegrationSectionProps) {
               <ChecklistField
                 label="Eventos Notificados"
                 options={WEBHOOK_EVENTS}
-                value={field.value || []}
+                value={Array.isArray(field.value) ? field.value : []}
                 onChange={field.onChange}
                 allowCustom={true}
                 customPlaceholder="Outro evento..."

@@ -646,6 +646,15 @@ export async function savePartnerMonthlyMetric(metric: NewPartnerMonthlyMetric &
     toast.error("Erro ao salvar métrica mensal");
     throw error;
   }
+
+  // Auto-update partner priorities based on new metrics
+  try {
+    const { autoUpdateSinglePartnerPriority } = await import('./partner-priority-auto');
+    await autoUpdateSinglePartnerPriority(metric.partnerId);
+  } catch (err) {
+    // Don't fail if auto-update fails, just log it
+    console.warn('Erro ao atualizar prioridades automaticamente:', err);
+  }
 }
 
 export async function getPartnerMonthlyMetrics(partnerId: string): Promise<PartnerMonthlyMetric[]> {
@@ -677,6 +686,9 @@ export async function getPartnerMonthlyMetrics(partnerId: string): Promise<Partn
     rebateShare: Number(row.rebate_share) || 0,
     gmvAmount: Number(row.gmv_amount) || 0,
     rebateAmount: Number(row.rebate_amount) || 0,
+    numberOfStores: Number(row.number_of_stores) || 0,
+    approvalRate: Number(row.approval_rate) || 0,
+    numberOfOrders: Number(row.number_of_orders) || 0,
     notes: row.notes,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
@@ -720,6 +732,9 @@ export async function getAllPartnersMonthlyMetrics(year?: number, month?: number
     rebateShare: Number(row.rebate_share) || 0,
     gmvAmount: Number(row.gmv_amount) || 0,
     rebateAmount: Number(row.rebate_amount) || 0,
+    numberOfStores: Number(row.number_of_stores) || 0,
+    approvalRate: Number(row.approval_rate) || 0,
+    numberOfOrders: Number(row.number_of_orders) || 0,
     notes: row.notes,
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),

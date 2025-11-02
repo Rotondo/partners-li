@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -10,10 +11,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, AlertCircle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Plus, AlertCircle, Search, Pencil, Trash2 } from "lucide-react";
 import { AddPaymentMethodDialog } from "./AddPaymentMethodDialog";
 import { PaymentMethod } from "@/types/payment-method";
-import { getAllPaymentMethods, savePaymentMethod } from "@/lib/db";
+import { getAllPaymentMethods, savePaymentMethod, deletePaymentMethod } from "@/lib/db";
 import { useToast } from "@/hooks/use-toast";
 
 const STATUS_VARIANTS = {
@@ -26,13 +37,29 @@ const STATUS_VARIANTS = {
 
 export const PaymentMethodsTable = () => {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [filteredMethods, setFilteredMethods] = useState<PaymentMethod[]>([]);
+  const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
+  const [deletingMethod, setDeletingMethod] = useState<PaymentMethod | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     loadPaymentMethods();
   }, []);
+
+  useEffect(() => {
+    if (search) {
+      const filtered = paymentMethods.filter((method) =>
+        method.company.tradeName.toLowerCase().includes(search.toLowerCase()) ||
+        method.company.solutionType.toLowerCase().includes(search.toLowerCase())
+      );
+      setFilteredMethods(filtered);
+    } else {
+      setFilteredMethods(paymentMethods);
+    }
+  }, [search, paymentMethods]);
 
   const loadPaymentMethods = async () => {
     try {
@@ -56,9 +83,13 @@ export const PaymentMethodsTable = () => {
       const updated = await getAllPaymentMethods();
       setPaymentMethods(updated);
       toast({
-        title: "Método adicionado com sucesso",
-        description: "O método de pagamento foi salvo.",
+        title: editingMethod ? "Método atualizado com sucesso" : "Método adicionado com sucesso",
+        description: editingMethod 
+          ? "O método de pagamento foi atualizado."
+          : "O método de pagamento foi salvo.",
       });
+      setEditingMethod(null);
+      setDialogOpen(false);
     } catch (error) {
       console.error('Error saving payment method:', error);
       toast({
@@ -67,6 +98,36 @@ export const PaymentMethodsTable = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEditMethod = (method: PaymentMethod) => {
+    setEditingMethod(method);
+    setDialogOpen(true);
+  };
+
+  const handleDeleteMethod = async (method: PaymentMethod) => {
+    try {
+      await deletePaymentMethod(method.id);
+      const updated = await getAllPaymentMethods();
+      setPaymentMethods(updated);
+      toast({
+        title: "Método excluído com sucesso",
+        description: "O método de pagamento foi removido.",
+      });
+      setDeletingMethod(null);
+    } catch (error) {
+      console.error('Error deleting payment method:', error);
+      toast({
+        title: "Erro ao excluir método",
+        description: "Não foi possível excluir o método de pagamento.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    setEditingMethod(null);
   };
 
   return (
@@ -79,11 +140,24 @@ export const PaymentMethodsTable = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={() => setDialogOpen(true)}>
+          <Button onClick={() => {
+            setEditingMethod(null);
+            setDialogOpen(true);
+          }}>
             <Plus className="mr-2 h-4 w-4" />
             Adicionar Meio
           </Button>
         </div>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+        <Input
+          placeholder="Buscar parceiros..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-10"
+        />
       </div>
 
       {!isLoading && paymentMethods.length === 0 && (
@@ -142,10 +216,11 @@ export const PaymentMethodsTable = () => {
                   <TableHead>Take Rate</TableHead>
                   <TableHead>Aprovação Média</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paymentMethods.map((method) => (
+                {filteredMethods.map((method) => (
                   <TableRow key={method.id}>
                     <TableCell className="font-medium">{method.company.tradeName}</TableCell>
                     <TableCell>{method.company.solutionType}</TableCell>
@@ -160,6 +235,26 @@ export const PaymentMethodsTable = () => {
                         {method.status}
                       </Badge>
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditMethod(method)}
+                          className="h-8 w-8"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeletingMethod(method)}
+                          className="h-8 w-8 text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -168,11 +263,40 @@ export const PaymentMethodsTable = () => {
         </CardContent>
       </Card>
 
+      {filteredMethods.length === 0 && search && !isLoading && (
+        <div className="text-center py-12 border rounded-lg">
+          <p className="text-muted-foreground">
+            Nenhum parceiro encontrado com "{search}"
+          </p>
+        </div>
+      )}
+
       <AddPaymentMethodDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={handleDialogClose}
         onAdd={handleAddPaymentMethod}
+        initialMethod={editingMethod}
       />
+
+      <AlertDialog open={!!deletingMethod} onOpenChange={() => setDeletingMethod(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir {deletingMethod?.company.tradeName}? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deletingMethod && handleDeleteMethod(deletingMethod)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

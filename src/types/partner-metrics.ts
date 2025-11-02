@@ -10,6 +10,9 @@ export interface PartnerMonthlyMetric {
   rebateShare: number; // % de participação no rebate total do mês
   gmvAmount: number; // Valor absoluto de GMV transacionado (R$)
   rebateAmount: number; // Valor absoluto de rebate gerado (R$)
+  numberOfStores: number; // Número de lojas ativas no mês
+  approvalRate: number; // Taxa de aprovação (%)
+  numberOfOrders: number; // Número total de pedidos no mês
   notes?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -23,6 +26,9 @@ export interface NewPartnerMonthlyMetric {
   rebateShare: number;
   gmvAmount: number;
   rebateAmount: number;
+  numberOfStores: number;
+  approvalRate: number;
+  numberOfOrders: number;
   notes?: string;
 }
 

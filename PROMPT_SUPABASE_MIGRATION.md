@@ -4,9 +4,11 @@ Copie e cole o seguinte prompt no Lovable para criar as tabelas e campos necess�
 
 ---
 
-## PROMPT:
+## PROMPT COMPLETO PARA LOVABLE:
 
-Preciso criar uma migration SQL no Supabase para adicionar funcionalidades de priorização de parceiros e métricas mensais. Execute a seguinte migration SQL:
+Preciso criar duas migrations SQL no Supabase para adicionar funcionalidades de priorização de parceiros e métricas mensais completas. Execute as seguintes migrations SQL na ordem:
+
+### MIGRATION 1: Priorização e Métricas Base
 
 ```sql
 -- Migration: Add partner priority and monthly metrics support
@@ -84,8 +86,30 @@ COMMENT ON COLUMN public.partner_monthly_metrics.gmv_amount IS 'Valor absoluto d
 COMMENT ON COLUMN public.partner_monthly_metrics.rebate_amount IS 'Valor absoluto de rebate gerado no mês (R$)';
 ```
 
-## O que esta migration faz:
+### MIGRATION 2: Campos Adicionais de Métricas
 
+```sql
+-- Migration: Add additional monthly metrics fields
+-- Purpose: Add numberOfStores, approvalRate, and numberOfOrders to partner_monthly_metrics
+-- Date: 2025-11-02
+
+-- Add new columns to partner_monthly_metrics table
+ALTER TABLE public.partner_monthly_metrics
+ADD COLUMN IF NOT EXISTS number_of_stores INTEGER DEFAULT 0 CHECK (number_of_stores >= 0),
+ADD COLUMN IF NOT EXISTS approval_rate DECIMAL(5,2) DEFAULT 0 CHECK (approval_rate >= 0 AND approval_rate <= 100),
+ADD COLUMN IF NOT EXISTS number_of_orders INTEGER DEFAULT 0 CHECK (number_of_orders >= 0);
+
+-- Add comments for documentation
+COMMENT ON COLUMN public.partner_monthly_metrics.number_of_stores IS 'Número de lojas ativas usando este parceiro no mês';
+COMMENT ON COLUMN public.partner_monthly_metrics.approval_rate IS 'Taxa de aprovação de transações no mês (%)';
+COMMENT ON COLUMN public.partner_monthly_metrics.number_of_orders IS 'Número total de pedidos/transações processados no mês';
+```
+
+---
+
+## Resumo do que as migrations fazem:
+
+### Migration 1 - Priorização e Métricas Base:
 1. **Adiciona 3 campos na tabela `partners`:**
    - `is_important` (BOOLEAN) - marca parceiros importantes
    - `priority_rank` (INTEGER) - ranking de prioridade (1, 2, 3, etc - não limitado a top 3)
@@ -98,12 +122,35 @@ COMMENT ON COLUMN public.partner_monthly_metrics.rebate_amount IS 'Valor absolut
    - RLS Policies para segurança
    - Indexes para performance
 
-3. **Funcionalidades:**
-   - Tracking mensal de share e valores absolutos de GMV e rebate
-   - Suporte para análise de Pareto (80/20)
-   - Aplicável a parceiros de pagamento e logística
+### Migration 2 - Campos Adicionais:
+3. **Adiciona 3 novos campos na tabela `partner_monthly_metrics`:**
+   - `number_of_stores` (INTEGER) - Número de lojas ativas no mês
+   - `approval_rate` (DECIMAL) - Taxa de aprovação de transações (%)
+   - `number_of_orders` (INTEGER) - Número total de pedidos/transações
 
-**IMPORTANTE:** Esta migration é segura e usa `IF NOT EXISTS` para não causar erros se executada múltiplas vezes. Aplique no Supabase através do SQL Editor ou via migrations.
+### Funcionalidades Completas:
+- ✅ Tracking mensal completo de métricas por parceiro
+- ✅ Priorização automática baseada em Pareto (80/20)
+- ✅ Campos para número de lojas, taxa de aprovação e número de pedidos
+- ✅ Suporte para análise histórica e identificação de padrões
+- ✅ Aplicável a parceiros de pagamento e logística
+
+**IMPORTANTE:** 
+- Execute as migrations na ordem (primeiro Migration 1, depois Migration 2)
+- Ambas as migrations são seguras e usam `IF NOT EXISTS` para não causar erros se executadas múltiplas vezes
+- Aplique no Supabase através do SQL Editor ou via migrations no Lovable
 
 ---
 
+## Checklist de Verificação:
+
+Após executar as migrations, verifique se foram criadas:
+
+- [ ] Colunas `is_important`, `priority_rank`, `pareto_focus` na tabela `partners`
+- [ ] Tabela `partner_monthly_metrics` criada
+- [ ] Colunas `number_of_stores`, `approval_rate`, `number_of_orders` na tabela `partner_monthly_metrics`
+- [ ] RLS Policies criadas e ativas
+- [ ] Indexes criados
+- [ ] Trigger `update_partner_monthly_metrics_updated_at` criado
+
+---

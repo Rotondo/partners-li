@@ -26,18 +26,19 @@ export function PrioritySection({ form }: PrioritySectionProps) {
         control={form.control}
         name="isImportant"
         render={({ field }) => (
-          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-muted/30">
             <FormControl>
               <Checkbox
                 checked={field.value}
                 onCheckedChange={field.onChange}
+                className="mt-1"
               />
             </FormControl>
-            <div className="space-y-1 leading-none">
-              <FormLabel className="font-semibold">
+            <div className="space-y-1 leading-none flex-1">
+              <FormLabel className="font-semibold text-base cursor-pointer" onClick={() => field.onChange(!field.value)}>
                 Parceiro Importante
               </FormLabel>
-              <FormDescription>
+              <FormDescription className="text-sm">
                 Marque este parceiro como importante para o negócio
               </FormDescription>
             </div>

@@ -1,23 +1,62 @@
+import { useState } from "react";
 import { Partner } from "@/types/partner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, DollarSign, CreditCard, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, TrendingDown, DollarSign, CreditCard, BarChart3, Plus, Calendar } from "lucide-react";
+import { MonthlyMetricsDialog } from "../MonthlyMetricsDialog";
 
 interface PerformanceTabProps {
   partner: Partner;
 }
 
 export const PerformanceTab = ({ partner }: PerformanceTabProps) => {
+  const [metricsDialogOpen, setMetricsDialogOpen] = useState(false);
+  
+  // Verificar se é parceiro de pagamento ou logística (tipos que têm métricas mensais)
+  const hasMonthlyMetrics = partner.categories.includes("payment") || partner.categories.includes("logistic");
+  
   if (!partner.payment || !partner.payment.performance) {
     return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">Dados de performance não disponíveis</p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Adicione informações de performance para visualizar métricas
-          </p>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <BarChart3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Dados de performance não disponíveis</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Adicione informações de performance para visualizar métricas
+            </p>
+          </CardContent>
+        </Card>
+        
+        {hasMonthlyMetrics && (
+          <Card>
+            <CardContent className="py-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold mb-1">Métricas Mensais</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Registre mensalmente GMV, rebate, lojas, taxa de aprovação e pedidos
+                  </p>
+                </div>
+                <Button onClick={() => setMetricsDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Cadastrar Métricas
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        
+        <MonthlyMetricsDialog
+          open={metricsDialogOpen}
+          onOpenChange={setMetricsDialogOpen}
+          partnerId={partner.id}
+          partnerName={partner.name}
+          onSave={() => {
+            // Recarregar dados se necessário
+          }}
+        />
+      </div>
     );
   }
 
@@ -121,6 +160,35 @@ export const PerformanceTab = ({ partner }: PerformanceTabProps) => {
           </div>
         </CardContent>
       </Card>
+      
+      {hasMonthlyMetrics && (
+        <Card>
+          <CardContent className="py-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-semibold mb-1">Métricas Mensais</h4>
+                <p className="text-sm text-muted-foreground">
+                  Registre mensalmente GMV, rebate, lojas, taxa de aprovação e pedidos
+                </p>
+              </div>
+              <Button onClick={() => setMetricsDialogOpen(true)}>
+                <Calendar className="h-4 w-4 mr-2" />
+                Cadastrar Métricas Mensais
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      <MonthlyMetricsDialog
+        open={metricsDialogOpen}
+        onOpenChange={setMetricsDialogOpen}
+        partnerId={partner.id}
+        partnerName={partner.name}
+        onSave={() => {
+          // Recarregar dados se necessário
+        }}
+      />
     </div>
   );
 };

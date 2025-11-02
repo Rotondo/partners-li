@@ -42,6 +42,9 @@ const monthlyMetricSchema = z.object({
   rebateShare: z.number().min(0).max(100, "Share de rebate não pode ser maior que 100%"),
   gmvAmount: z.number().min(0, "Valor deve ser positivo"),
   rebateAmount: z.number().min(0, "Valor deve ser positivo"),
+  numberOfStores: z.number().int().min(0, "Número de lojas deve ser positivo"),
+  approvalRate: z.number().min(0).max(100, "Taxa de aprovação não pode ser maior que 100%"),
+  numberOfOrders: z.number().int().min(0, "Número de pedidos deve ser positivo"),
   notes: z.string().optional(),
 });
 
@@ -90,6 +93,9 @@ export function MonthlyMetricsDialog({
       rebateShare: 0,
       gmvAmount: 0,
       rebateAmount: 0,
+      numberOfStores: 0,
+      approvalRate: 0,
+      numberOfOrders: 0,
       notes: "",
     },
   });
@@ -105,6 +111,9 @@ export function MonthlyMetricsDialog({
         rebateShare: 0,
         gmvAmount: 0,
         rebateAmount: 0,
+        numberOfStores: 0,
+        approvalRate: 0,
+        numberOfOrders: 0,
         notes: "",
       });
     }
@@ -129,11 +138,17 @@ export function MonthlyMetricsDialog({
         rebateShare: data.rebateShare,
         gmvAmount: data.gmvAmount,
         rebateAmount: data.rebateAmount,
+        numberOfStores: data.numberOfStores,
+        approvalRate: data.approvalRate,
+        numberOfOrders: data.numberOfOrders,
         notes: data.notes,
       };
 
       await savePartnerMonthlyMetric(metric);
       toast.success(`Métricas de ${MONTHS[data.month - 1].label}/${data.year} salvas com sucesso!`);
+      
+      // Priority ranking will be auto-updated by savePartnerMonthlyMetric
+      toast.info("Priorização dos parceiros atualizada automaticamente com base nas métricas.");
       
       await loadExistingMetrics();
       onSave?.();
@@ -148,6 +163,9 @@ export function MonthlyMetricsDialog({
         rebateShare: 0,
         gmvAmount: 0,
         rebateAmount: 0,
+        numberOfStores: 0,
+        approvalRate: 0,
+        numberOfOrders: 0,
         notes: "",
       });
     } catch (error) {
@@ -184,6 +202,9 @@ export function MonthlyMetricsDialog({
         rebateShare: existing.rebateShare,
         gmvAmount: existing.gmvAmount,
         rebateAmount: existing.rebateAmount,
+        numberOfStores: existing.numberOfStores || 0,
+        approvalRate: existing.approvalRate || 0,
+        numberOfOrders: existing.numberOfOrders || 0,
         notes: existing.notes || "",
       });
     }
@@ -201,8 +222,8 @@ export function MonthlyMetricsDialog({
         <DialogHeader>
           <DialogTitle>Cadastrar Métricas Mensais - {partnerName}</DialogTitle>
           <DialogDescription>
-            Registre mensalmente o share de GMV e rebate, além dos valores absolutos transacionados.
-            Esses dados são essenciais para análise de Pareto (80/20).
+            Registre mensalmente as métricas do parceiro: share de GMV e rebate, valores absolutos,
+            número de lojas, taxa de aprovação e número de pedidos. Esses dados são essenciais para análise de Pareto (80/20).
           </DialogDescription>
         </DialogHeader>
 
@@ -374,6 +395,81 @@ export function MonthlyMetricsDialog({
               />
             </div>
 
+            <div className="grid grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="numberOfStores"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número de Lojas *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="1"
+                        min="0"
+                        placeholder="Ex: 150"
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Lojas ativas usando este parceiro
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="approvalRate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Taxa de Aprovação (%) *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        placeholder="Ex: 85.5"
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      % de transações aprovadas no mês
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="numberOfOrders"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número de Pedidos *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="1"
+                        min="0"
+                        placeholder="Ex: 12500"
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Total de pedidos/transações no mês
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
               name="notes"
@@ -402,7 +498,7 @@ export function MonthlyMetricsDialog({
                         {MONTHS[metric.month - 1].label}/{metric.year}
                       </span>
                       <span>
-                        GMV: {metric.gmvShare.toFixed(1)}% | Rebate: {metric.rebateShare.toFixed(1)}%
+                        GMV: {metric.gmvShare.toFixed(1)}% | Rebate: {metric.rebateShare.toFixed(1)}% | Lojas: {metric.numberOfStores || 0}
                       </span>
                     </div>
                   ))}

@@ -25,11 +25,14 @@ export function ChecklistField({
   const [customInput, setCustomInput] = useState("");
   const [customItems, setCustomItems] = useState<string[]>([]);
 
+  // Ensure value is always an array
+  const safeValue = Array.isArray(value) ? value : [];
+
   const handleToggle = (option: string) => {
-    if (value.includes(option)) {
-      onChange(value.filter((v) => v !== option));
+    if (safeValue.includes(option)) {
+      onChange(safeValue.filter((v) => v !== option));
     } else {
-      onChange([...value, option]);
+      onChange([...safeValue, option]);
     }
   };
 
@@ -37,14 +40,14 @@ export function ChecklistField({
     if (customInput.trim() && !customItems.includes(customInput.trim())) {
       const newItem = customInput.trim();
       setCustomItems([...customItems, newItem]);
-      onChange([...value, newItem]);
+      onChange([...safeValue, newItem]);
       setCustomInput("");
     }
   };
 
   const removeCustomItem = (item: string) => {
     setCustomItems(customItems.filter((i) => i !== item));
-    onChange(value.filter((v) => v !== item));
+    onChange(safeValue.filter((v) => v !== item));
   };
 
   return (
@@ -55,7 +58,7 @@ export function ChecklistField({
           <div key={option} className="flex items-center space-x-2">
             <Checkbox
               id={`checklist-${option}`}
-              checked={value.includes(option)}
+              checked={safeValue.includes(option)}
               onCheckedChange={() => handleToggle(option)}
             />
             <label
@@ -71,7 +74,7 @@ export function ChecklistField({
           <div key={item} className="flex items-center space-x-2">
             <Checkbox
               id={`checklist-custom-${item}`}
-              checked={value.includes(item)}
+              checked={safeValue.includes(item)}
               onCheckedChange={() => handleToggle(item)}
             />
             <label

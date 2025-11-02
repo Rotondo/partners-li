@@ -145,7 +145,7 @@ export const PaymentPartnersTable = () => {
             )}
           </h2>
           <p className="text-muted-foreground">
-            Gerencie seus parceiros e soluções de pagamento (visão simplificada)
+            Gerencie seus parceiros e soluções de pagamento integradas
           </p>
         </div>
         <div className="flex gap-2">

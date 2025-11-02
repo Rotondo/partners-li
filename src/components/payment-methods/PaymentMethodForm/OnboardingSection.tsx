@@ -54,7 +54,7 @@ export function OnboardingSection({ form }: OnboardingSectionProps) {
             <ChecklistField
               label="Documentação Necessária"
               options={REQUIRED_DOCUMENTS}
-              value={field.value || []}
+              value={Array.isArray(field.value) ? field.value : []}
               onChange={field.onChange}
               allowCustom={true}
               customPlaceholder="Outro documento..."
@@ -73,7 +73,7 @@ export function OnboardingSection({ form }: OnboardingSectionProps) {
               <FormControl>
                 <input
                   type="checkbox"
-                  checked={field.value}
+                  checked={field.value || false}
                   onChange={field.onChange}
                   className="h-4 w-4"
                 />
@@ -91,7 +91,7 @@ export function OnboardingSection({ form }: OnboardingSectionProps) {
               <FormControl>
                 <input
                   type="checkbox"
-                  checked={field.value}
+                  checked={field.value || false}
                   onChange={field.onChange}
                   className="h-4 w-4"
                 />
@@ -110,7 +110,7 @@ export function OnboardingSection({ form }: OnboardingSectionProps) {
             <ChecklistField
               label="Credenciais de API"
               options={API_CREDENTIALS}
-              value={field.value || []}
+              value={Array.isArray(field.value) ? field.value : []}
               onChange={field.onChange}
               allowCustom={true}
               customPlaceholder="Outra credencial..."

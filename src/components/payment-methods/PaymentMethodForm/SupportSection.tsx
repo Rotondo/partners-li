@@ -25,7 +25,7 @@ export function SupportSection({ form }: SupportSectionProps) {
             <ChecklistField
               label="Canais de Suporte *"
               options={SUPPORT_CHANNELS}
-              value={field.value}
+              value={Array.isArray(field.value) ? field.value : []}
               onChange={field.onChange}
               allowCustom={true}
               customPlaceholder="Outro canal..."
