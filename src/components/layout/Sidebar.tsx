@@ -1,18 +1,13 @@
 import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings, LogOut, Kanban } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 
-interface SidebarProps {
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-}
-
 const navigation = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, hasSubmenu: false, route: "/" },
-  { id: "partners", name: "Parceiros", icon: Users, hasSubmenu: true },
+  { id: "partners", name: "Parceiros", icon: Users, hasSubmenu: true, route: "/partners" },
   { id: "pipeline", name: "Pipeline", icon: Kanban, hasSubmenu: false, route: "/pipeline" },
   { id: "health", name: "Health", icon: TrendingUp, hasSubmenu: false, route: "/health" },
   { id: "stores", name: "Lojas", icon: Store, hasSubmenu: false, route: "/stores" },
@@ -21,18 +16,26 @@ const navigation = [
 ];
 
 const partnersSubmenu = [
-  { id: "partners-logistics", name: "Logísticos", icon: Truck },
-  { id: "partners-payment", name: "Pagamento", icon: CreditCard },
-  { id: "partners-marketplace", name: "Marketplaces", icon: ShoppingBag },
+  { id: "partners-logistics", name: "Logísticos", icon: Truck, route: "/partners/logistics" },
+  { id: "partners-payment", name: "Pagamento", icon: CreditCard, route: "/partners/payment" },
+  { id: "partners-marketplace", name: "Marketplaces", icon: ShoppingBag, route: "/partners/marketplace" },
 ];
 
-export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
+export const Sidebar = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Auto-expand partners submenu when on a partners route
   const [showPartners, setShowPartners] = useState(
-    activeTab.startsWith('partners-')
+    location.pathname.startsWith('/partners')
   );
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/partners')) {
+      setShowPartners(true);
+    }
+  }, [location.pathname]);
 
   return (
     <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
@@ -44,13 +47,19 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navigation.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id || (item.id === 'partners' && activeTab.startsWith('partners-'));
-          
+          const isActive = location.pathname === item.route ||
+            (item.id === 'partners' && location.pathname.startsWith('/partners'));
+
           if (item.hasSubmenu) {
             return (
               <div key={item.id}>
                 <button
-                  onClick={() => setShowPartners(!showPartners)}
+                  onClick={() => {
+                    if (item.route) {
+                      navigate(item.route);
+                    }
+                    setShowPartners(!showPartners);
+                  }}
                   className={cn(
                     "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
                     isActive
@@ -64,17 +73,17 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
                   </div>
                   {showPartners ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </button>
-                
+
                 {showPartners && (
                   <div className="ml-4 mt-1 space-y-1 border-l-2 border-sidebar-border pl-2">
                     {partnersSubmenu.map((subItem) => {
                       const SubIcon = subItem.icon;
-                      const isSubActive = activeTab === subItem.id;
-                      
+                      const isSubActive = location.pathname === subItem.route;
+
                       return (
                         <button
                           key={subItem.id}
-                          onClick={() => onTabChange(subItem.id)}
+                          onClick={() => navigate(subItem.route)}
                           className={cn(
                             "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
                             isSubActive
@@ -92,20 +101,14 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
               </div>
             );
           }
-          
+
           return (
             <button
               key={item.id}
-              onClick={() => {
-                if (item.route) {
-                  navigate(item.route);
-                } else {
-                  onTabChange(item.id);
-                }
-              }}
+              onClick={() => navigate(item.route)}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                (isActive || (item.route && location.pathname === item.route))
+                isActive
                   ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
               )}

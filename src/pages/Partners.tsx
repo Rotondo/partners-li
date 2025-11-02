@@ -1,17 +1,17 @@
 import { Sidebar } from "@/components/layout/Sidebar";
-import { Dashboard } from "@/components/dashboard/Dashboard";
+import { PartnersOverview } from "@/components/partners/PartnersOverview";
 
-const Index = () => {
+const Partners = () => {
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
       <main className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-8">
-          <Dashboard />
+          <PartnersOverview />
         </div>
       </main>
     </div>
   );
 };
 
-export default Index;
+export default Partners;

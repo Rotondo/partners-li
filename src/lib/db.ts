@@ -162,7 +162,6 @@ export function importDatabase(jsonData: string): void {
   }
 }
 
-<<<<<<< HEAD
 // ==================== PAYMENT METHODS ====================
 
 export async function savePaymentMethod(paymentMethod: any): Promise<void> {
@@ -227,26 +226,6 @@ export async function deletePaymentMethod(id: string): Promise<void> {
     toast.error("Erro ao excluir método de pagamento");
     throw error;
   }
-}
-
-export async function clearDatabase(): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  // Delete all user's data
-  await supabase.from('partners').delete().eq('user_id', user.id);
-  await supabase.from('payment_methods').delete().eq('user_id', user.id);
-  await supabase.from('field_configs').delete().eq('user_id', user.id);
-  await supabase.from('partner_contacts').delete().eq('user_id', user.id);
-  await supabase.from('partner_activities').delete().eq('user_id', user.id);
-  await supabase.from('partner_health_metrics').delete().eq('user_id', user.id);
-  await supabase.from('partner_tasks').delete().eq('user_id', user.id);
-  await supabase.from('partner_documents').delete().eq('user_id', user.id);
-  
-  toast.success("Dados removidos com sucesso");
 }
 
 // ==================== PARTNER CONTACTS ====================
