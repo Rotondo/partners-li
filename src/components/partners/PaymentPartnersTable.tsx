@@ -25,41 +25,36 @@ export const PaymentPartnersTable = () => {
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { blurClass, isBlurActive } = useBlurSensitiveData();
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [detailViewOpen, setDetailViewOpen] = useState(false);
 
+  const loadPartnersData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const allPartners = await getAllPartners();
+      const paymentPartners = filterPartnersByCategory(allPartners, 'payment');
+      setPartners(paymentPartners as PaymentPartner[]);
+    } catch (error) {
+      console.error('Erro ao carregar parceiros:', error);
+      setError('Não foi possível carregar os parceiros de pagamento. Verifique sua conexão e tente novamente.');
+      toast.error("Erro ao carregar parceiros de pagamento");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setIsLoading(true);
-    getAllPartners()
-      .then(allPartners => {
-        // ✅ Use helper function for consistent category filtering
-        const paymentPartners = filterPartnersByCategory(allPartners, 'payment');
-        setPartners(paymentPartners as PaymentPartner[]);
-        setIsLoading(false);
-      })
-      .catch(error => {
-        console.error('Erro ao carregar parceiros:', error);
-        toast.error("Erro ao carregar parceiros de pagamento");
-        setIsLoading(false);
-      });
+    loadPartnersData();
   }, []);
 
   const filteredPartners = partners.filter((partner) =>
     partner.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const loadPartners = async () => {
-    try {
-      const allPartners = await getAllPartners();
-      // ✅ Use helper function for consistent category filtering
-      const paymentPartners = filterPartnersByCategory(allPartners, 'payment');
-      setPartners(paymentPartners as PaymentPartner[]);
-    } catch (error) {
-      console.error('Erro ao carregar parceiros:', error);
-      toast.error("Erro ao carregar parceiros de pagamento");
-    }
-  };
+  const loadPartners = loadPartnersData;
 
   const handleRowClick = (partner: PaymentPartner) => {
     setSelectedPartner(partner as Partner);
@@ -126,7 +121,13 @@ export const PaymentPartnersTable = () => {
         />
       </div>
 
-      {isLoading ? (
+      {error ? (
+        <ErrorState
+          title="Erro ao Carregar Parceiros"
+          message={error}
+          onRetry={loadPartnersData}
+        />
+      ) : isLoading ? (
         <div className="text-center py-12 border rounded-lg">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Carregando parceiros...</p>
