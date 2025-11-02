@@ -11,6 +11,7 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
   // 1. APP MAX
   {
     name: 'APP MAX',
+    category: 'payment',
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2024-01-15'),
@@ -48,7 +49,7 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
       pix: 1
     },
 
-    supportedMethods: ['credit', 'debit', 'pix'],
+    supportedMethods: ['credit', 'debit', 'pix', 'boleto'],
 
     takeRate: 2.99, // Taxa média para comparação
 
@@ -66,6 +67,7 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
   // 2. Pagar.me
   {
     name: 'Pagar.me',
+    category: 'payment',
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2023-08-20'),
@@ -121,6 +123,7 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
   // 3. PagBank (PagSeguro)
   {
     name: 'PagBank',
+    category: 'payment',
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2023-03-10'),
@@ -176,6 +179,7 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
   // 4. PagHiper
   {
     name: 'PagHiper',
+    category: 'payment',
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2024-02-01'),
@@ -218,6 +222,7 @@ export const paymentPartnersSeedData: Omit<PaymentPartner, 'id' | 'createdAt' | 
   // 5. PayPal
   {
     name: 'PayPal',
+    category: 'payment',
     categories: ['payment'],
     status: 'active',
     startDate: new Date('2022-11-05'),

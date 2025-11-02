@@ -31,18 +31,18 @@ export function PaymentPartnersComparison({ partners }: PaymentPartnersCompariso
     if (partners.length === 0) return null;
 
     const pixFees = partners
-      .map(p => ({ name: p.name, fee: p.payment?.fees.pix?.mdr || 999 }))
+      .map(p => ({ name: p.name, fee: p.fees?.pix?.mdr || 999 }))
       .filter(p => p.fee < 999);
 
     const creditFees = partners
-      .map(p => ({ name: p.name, fee: p.payment?.fees.creditCard?.vista?.mdr || 999 }))
+      .map(p => ({ name: p.name, fee: p.fees?.creditCard?.vista?.mdr || 999 }))
       .filter(p => p.fee < 999);
 
     const chargebackFees = partners
-      .map(p => ({ name: p.name, fee: p.payment?.fees.chargebackFee || 999 }))
+      .map(p => ({ name: p.name, fee: p.fees?.chargebackFee || 999 }))
       .filter(p => p.fee === 0);
 
-    const takeRates = partners.map(p => ({ name: p.name, rate: p.payment?.takeRate || 999 }));
+    const takeRates = partners.map(p => ({ name: p.name, rate: p.takeRate || 999 }));
 
     return {
       cheapestPix: pixFees.length > 0 ? pixFees.reduce((min, p) => p.fee < min.fee ? p : min) : null,
@@ -55,8 +55,8 @@ export function PaymentPartnersComparison({ partners }: PaymentPartnersCompariso
 
   const sortedPartners = useMemo(() => {
     return [...partners].sort((a, b) => {
-      const aPayment = a.payment;
-      const bPayment = b.payment;
+      const aPayment = a;
+      const bPayment = b;
 
       switch (sortBy) {
         case 'name':
@@ -238,7 +238,7 @@ export function PaymentPartnersComparison({ partners }: PaymentPartnersCompariso
               </TableHeader>
               <TableBody>
                 {sortedPartners.map((partner) => {
-                  const payment = partner.payment;
+                  const payment = partner;
                   if (!payment) return null;
 
                   return (
@@ -303,7 +303,7 @@ export function PaymentPartnersComparison({ partners }: PaymentPartnersCompariso
         <CardContent>
           <div className="space-y-4">
             {sortedPartners.map((partner) => {
-              const payment = partner.payment;
+              const payment = partner;
               if (!payment || !payment.competitiveAdvantages) return null;
 
               return (

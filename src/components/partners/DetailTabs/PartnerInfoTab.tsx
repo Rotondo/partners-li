@@ -64,15 +64,15 @@ export const PartnerInfoTab = ({ partner }: PartnerInfoTabProps) => {
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">MDR Crédito</p>
-                <p className="font-medium">{partner.payment.fees.mdrCreditVista}%</p>
+                <p className="font-medium">{(partner as any).payment?.fees?.creditCard?.vista?.mdr || (partner as any).fees?.creditCard?.vista?.mdr || 0}%</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">MDR Débito</p>
-                <p className="font-medium">{partner.payment.fees.mdrDebit}%</p>
+                <p className="font-medium">{(partner as any).payment?.fees?.debitCard?.mdr || (partner as any).fees?.debitCard?.mdr || 0}%</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">MDR PIX</p>
-                <p className="font-medium">{partner.payment.fees.mdrPix}%</p>
+                <p className="font-medium">{(partner as any).payment?.fees?.pix?.mdr || (partner as any).fees?.pix?.mdr || 0}%</p>
               </div>
             </div>
 
