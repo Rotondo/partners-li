@@ -164,7 +164,7 @@ export const MarketplacePartnersTable = () => {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={newPartner.status}
-                  onValueChange={(value) => setNewPartner({ ...newPartner, status: value as any })}
+                  onValueChange={(value) => setNewPartner({ ...newPartner, status: value as "active" | "inactive" | "pending" | "paused" })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -205,7 +205,7 @@ export const MarketplacePartnersTable = () => {
                   <Label htmlFor="integrationType">Tipo de Integração</Label>
                   <Select
                     value={newPartner.integrationType}
-                    onValueChange={(value) => setNewPartner({ ...newPartner, integrationType: value as any })}
+                    onValueChange={(value) => setNewPartner({ ...newPartner, integrationType: value as "api" | "manual" })}
                   >
                     <SelectTrigger>
                       <SelectValue />

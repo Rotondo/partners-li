@@ -93,11 +93,11 @@ export const HealthDashboard = () => {
     }
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getSeverityColor = (severity: string): "default" | "secondary" | "destructive" | "outline" => {
     switch (severity) {
       case 'critical': return 'destructive';
       case 'high': return 'destructive';
-      case 'medium': return 'warning';
+      case 'medium': return 'outline';
       case 'low': return 'secondary';
       default: return 'secondary';
     }
@@ -194,7 +194,7 @@ export const HealthDashboard = () => {
               <div key={alert.id} className="flex items-start justify-between border-b pb-3 last:border-0">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant={getSeverityColor(alert.severity) as any}>
+                    <Badge variant={getSeverityColor(alert.severity)}>
                       {alert.severity}
                     </Badge>
                     <span className="font-medium">{alert.title}</span>

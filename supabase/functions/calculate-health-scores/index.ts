@@ -60,39 +60,62 @@ Deno.serve(async (req) => {
     const healthCalculations: HealthCalculation[] = [];
     const alerts = [];
 
-    for (const partner of partners || []) {
-      // Get activities for this partner
-      const { data: activities } = await supabase
-        .from('partner_activities')
-        .select('*')
-        .eq('partner_id', partner.id)
-        .order('created_at', { ascending: false });
+    // OPTIMIZATION: Fetch all activities and tasks for all partners at once (2 queries instead of N*2)
+    const partnerIds = (partners || []).map(p => p.id);
 
-      // Get tasks for this partner
-      const { data: tasks } = await supabase
-        .from('partner_tasks')
-        .select('*')
-        .eq('partner_id', partner.id);
+    const { data: allActivities } = await supabase
+      .from('partner_activities')
+      .select('*')
+      .in('partner_id', partnerIds)
+      .order('created_at', { ascending: false });
+
+    const { data: allTasks } = await supabase
+      .from('partner_tasks')
+      .select('*')
+      .in('partner_id', partnerIds);
+
+    // Group activities and tasks by partner_id for O(1) lookup
+    const activitiesByPartner = new Map<string, any[]>();
+    const tasksByPartner = new Map<string, any[]>();
+
+    (allActivities || []).forEach(activity => {
+      if (!activitiesByPartner.has(activity.partner_id)) {
+        activitiesByPartner.set(activity.partner_id, []);
+      }
+      activitiesByPartner.get(activity.partner_id)!.push(activity);
+    });
+
+    (allTasks || []).forEach(task => {
+      if (!tasksByPartner.has(task.partner_id)) {
+        tasksByPartner.set(task.partner_id, []);
+      }
+      tasksByPartner.get(task.partner_id)!.push(task);
+    });
+
+    for (const partner of partners || []) {
+      // Get activities and tasks for this partner from pre-fetched data
+      const activities = activitiesByPartner.get(partner.id) || [];
+      const tasks = tasksByPartner.get(partner.id) || [];
 
       // Calculate metrics
-      const completedActivities = activities?.filter(a => a.status === 'completed') || [];
-      const recentActivities = activities?.filter(a => 
+      const completedActivities = activities.filter(a => a.status === 'completed');
+      const recentActivities = activities.filter(a =>
         new Date(a.created_at) >= thirtyDaysAgo
-      ) || [];
+      );
       
-      const lastActivity = activities && activities.length > 0 ? activities[0] : null;
+      const lastActivity = activities.length > 0 ? activities[0] : null;
       const lastActivityDate = lastActivity ? new Date(lastActivity.created_at) : null;
       const daysSinceContact = lastActivityDate 
         ? Math.floor((now.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24))
         : 999;
 
-      const meetingsThisMonth = recentActivities.filter(a => 
-        a.activity_type === 'meeting' || a.activity_type === 'video_call'
+      const meetingsThisMonth = recentActivities.filter(a =>
+        a.activity_type === 'meeting' || a.activity_type === 'call' || a.activity_type === 'video_call'
       ).length;
 
-      const openIssues = tasks?.filter(t => 
+      const openIssues = tasks.filter(t =>
         t.status !== 'done' && t.priority === 'high'
-      ).length || 0;
+      ).length;
 
       // Calculate scores (0-100)
       const performanceScore = Math.min(100, Math.max(0, 

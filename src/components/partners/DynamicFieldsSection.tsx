@@ -14,12 +14,11 @@ export function DynamicFieldsSection({ partnerType, category, values, onChange }
   const [categoryFields, setCategoryFields] = useState<FieldConfig[]>([]);
 
   useEffect(() => {
-    getFieldConfigsByPartnerType(partnerType).then(configs => {
-      const filtered = configs
-        .filter(field => field.category === category)
-        .sort((a, b) => a.order - b.order);
-      setCategoryFields(filtered);
-    });
+    const configs = getFieldConfigsByPartnerType(partnerType);
+    const filtered = configs
+      .filter(field => field.category === category)
+      .sort((a, b) => a.order - b.order);
+    setCategoryFields(filtered);
   }, [partnerType, category]);
 
   if (categoryFields.length === 0) {

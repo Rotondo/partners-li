@@ -9,19 +9,12 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { DynamicField } from "../DynamicField";
-import { getFieldConfigsByPartnerType } from "@/lib/db";
-import { useState } from "react";
 
 interface IdentificationSectionProps {
   form: UseFormReturn<PartnerFormData>;
 }
 
 export function IdentificationSection({ form }: IdentificationSectionProps) {
-  const [customFields, setCustomFields] = useState<Record<string, any>>({});
-  const identificationFields = getFieldConfigsByPartnerType('payment')
-    .filter(f => f.category === 'identification' && f.id !== 'name')
-    .sort((a, b) => a.order - b.order);
 
   return (
     <div className="space-y-4">
@@ -46,16 +39,6 @@ export function IdentificationSection({ form }: IdentificationSectionProps) {
           </FormItem>
         )}
       />
-
-      {/* Campos dinâmicos de identificação (URL, etc) */}
-      {identificationFields.map((field) => (
-        <DynamicField
-          key={field.id}
-          field={field}
-          value={customFields[field.id] || ''}
-          onChange={(value) => setCustomFields({ ...customFields, [field.id]: value })}
-        />
-      ))}
 
       <FormField
         control={form.control}

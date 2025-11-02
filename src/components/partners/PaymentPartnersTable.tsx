@@ -32,7 +32,9 @@ import { Label } from "@/components/ui/label";
 import { AddPartnerDialog } from "./AddPartnerDialog";
 import { useBlurSensitiveData } from "@/hooks/use-blur-sensitive";
 import { useColumnVisibility } from "@/hooks/use-column-visibility";
-import { getAllPartners, savePartner, deletePartner } from "@/lib/db";
+import { getAllPartners, savePartner, deletePartner, filterPartnersByCategory } from "@/lib/db";
+import { toast } from "sonner";
+import { ErrorState } from "@/components/ui/error-alert";
 
 const DEFAULT_COLUMNS = [
   { id: 'name', label: 'Parceiro', visible: true, order: 1 },
@@ -48,31 +50,48 @@ export const PaymentPartnersTable = () => {
   const [partners, setPartners] = useState<PaymentPartner[]>([]);
   const [search, setSearch] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [editingPartner, setEditingPartner] = useState<PaymentPartner | null>(null);
   const [deletingPartner, setDeletingPartner] = useState<PaymentPartner | null>(null);
   const { blurClass, isBlurActive } = useBlurSensitiveData();
   
   const { columns, visibleColumns, toggleColumn, resetColumns } = useColumnVisibility('payment', DEFAULT_COLUMNS);
 
-  // Carregar parceiros do localStorage ao montar
+  const loadPartnersData = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const allPartners = await getAllPartners();
+      const paymentPartners = filterPartnersByCategory(allPartners, 'payment');
+      setPartners(paymentPartners as PaymentPartner[]);
+    } catch (error) {
+      console.error('Erro ao carregar parceiros:', error);
+      setError('Não foi possível carregar os parceiros de pagamento. Verifique sua conexão e tente novamente.');
+      toast.error("Erro ao carregar parceiros de pagamento");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const allPartners = getAllPartners();
-    const paymentPartners = allPartners.filter(
-      (p): p is PaymentPartner => 'fees' in p
-    );
-    setPartners(paymentPartners);
+    loadPartnersData();
   }, []);
 
   const filteredPartners = partners.filter((partner) =>
     partner.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleAddPartner = (partner: PaymentPartner) => {
-    // Salvar no banco de dados
-    savePartner(partner);
-    // Atualizar o estado
-    setPartners([...partners, partner]);
-    setEditingPartner(null);
+  const handleAddPartner = async (partner: PaymentPartner) => {
+    try {
+      await savePartner(partner);
+      await loadPartnersData();
+      toast.success("Parceiro adicionado com sucesso!");
+      setEditingPartner(null);
+    } catch (error) {
+      console.error('Erro ao salvar parceiro:', error);
+      toast.error("Erro ao salvar parceiro");
+    }
   };
 
   const handleEditPartner = (partner: PaymentPartner) => {
@@ -80,10 +99,16 @@ export const PaymentPartnersTable = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDeletePartner = (partner: PaymentPartner) => {
-    deletePartner(partner.id);
-    setPartners(partners.filter(p => p.id !== partner.id));
-    setDeletingPartner(null);
+  const handleDeletePartner = async (partner: PaymentPartner) => {
+    try {
+      await deletePartner(partner.id);
+      await loadPartnersData();
+      toast.success("Parceiro excluído com sucesso!");
+      setDeletingPartner(null);
+    } catch (error) {
+      console.error('Erro ao excluir parceiro:', error);
+      toast.error("Erro ao excluir parceiro");
+    }
   };
 
   const handleDialogClose = () => {
@@ -200,7 +225,18 @@ export const PaymentPartnersTable = () => {
         />
       </div>
 
-      {filteredPartners.length === 0 ? (
+      {error ? (
+        <ErrorState
+          title="Erro ao Carregar Parceiros"
+          message={error}
+          onRetry={loadPartnersData}
+        />
+      ) : isLoading ? (
+        <div className="text-center py-12 border rounded-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Carregando parceiros...</p>
+        </div>
+      ) : filteredPartners.length === 0 ? (
         <div className="text-center py-12 border rounded-lg">
           <CreditCard className="mx-auto h-12 w-12 text-muted-foreground" />
           <h3 className="mt-4 text-lg font-semibold">Nenhum parceiro de pagamento</h3>
@@ -216,6 +252,7 @@ export const PaymentPartnersTable = () => {
                 {visibleColumns.map((column) => (
                   <TableHead key={column.id}>{column.label}</TableHead>
                 ))}
+                <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -271,7 +308,6 @@ export const PaymentPartnersTable = () => {
                         return null;
                     }
                   })}
-                  {/* Coluna de ações */}
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button

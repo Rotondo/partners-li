@@ -15,9 +15,9 @@ const navigation = [
   { id: "partners", name: "Parceiros", icon: Users, hasSubmenu: true },
   { id: "pipeline", name: "Pipeline", icon: Kanban, hasSubmenu: false, route: "/pipeline" },
   { id: "health", name: "Health", icon: TrendingUp, hasSubmenu: false, route: "/health" },
-  { id: "stores", name: "Lojas", icon: Store, hasSubmenu: false },
-  { id: "reports", name: "Relatórios", icon: FileText, hasSubmenu: false },
-  { id: "admin", name: "Admin", icon: Settings, hasSubmenu: false },
+  { id: "stores", name: "Lojas", icon: Store, hasSubmenu: false, route: "/stores" },
+  { id: "reports", name: "Relatórios", icon: FileText, hasSubmenu: false, route: "/reports" },
+  { id: "admin", name: "Admin", icon: Settings, hasSubmenu: false, route: "/admin" },
 ];
 
 const partnersSubmenu = [

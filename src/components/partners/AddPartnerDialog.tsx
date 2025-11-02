@@ -152,6 +152,9 @@ export function AddPartnerDialog({
         },
       } : undefined,
       notes: data.notes,
+      // ✅ Save custom and contact fields from DynamicFieldsSection
+      customFields: Object.keys(customFields).length > 0 ? customFields : undefined,
+      contactFields: Object.keys(contactFields).length > 0 ? contactFields : undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

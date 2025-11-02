@@ -10,6 +10,8 @@ export interface SharedPartnerData {
   status: PartnerStatus;
   startDate: Date;
   notes?: string;
+  customFields?: Record<string, any>; // Campos personalizados configuráveis
+  contactFields?: Record<string, any>; // Campos de contato personalizados
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,22 +26,58 @@ export interface LogisticPartnerData {
   integrationType: 'api' | 'manual'; // tipo de integração
 }
 
-// Dados específicos de Pagamento
+// Estrutura granular de taxas por método de pagamento
+export interface PaymentMethodFees {
+  mdr?: number; // Taxa percentual (MDR)
+  fixedFee?: number; // Taxa fixa por transação (ex: R$ 0,60)
+  description?: string; // Descrição adicional
+}
+
+// Dados específicos de Pagamento (ESTRUTURA EXPANDIDA)
 export interface PaymentPartnerData {
   category: 'payment';
+
+  // Taxas detalhadas por método
   fees: {
-    mdrCreditVista: number;
-    mdrDebit: number;
-    mdrPix: number;
-    anticipationRate: number;
-    chargebackFee: number;
+    // Crédito
+    creditCard?: {
+      vista?: PaymentMethodFees; // À vista
+      installments2to6?: PaymentMethodFees; // 2-6 parcelas
+      installments7to12?: PaymentMethodFees; // 7-12 parcelas
+      national?: PaymentMethodFees; // Nacional (para gateways internacionais)
+      international?: PaymentMethodFees; // Internacional
+    };
+
+    // Débito
+    debitCard?: PaymentMethodFees;
+
+    // Pix
+    pix?: PaymentMethodFees;
+
+    // Boleto
+    boleto?: PaymentMethodFees;
+
+    // Outras taxas
+    anticipationRate?: number; // Taxa de antecipação (% ao mês)
+    chargebackFee?: number; // Taxa de chargeback (valor fixo)
   };
+
+  // Prazos de liquidação (dias)
   settlement: {
-    credit: number;
-    debit: number;
-    pix: number;
+    credit?: number; // Crédito
+    debit?: number; // Débito
+    pix?: number; // Pix
+    boleto?: number; // Boleto (após compensação)
+    boletoCompensation?: number; // Dias para compensar boleto
   };
+
+  // Métodos suportados
+  supportedMethods: ('credit' | 'debit' | 'pix' | 'boleto' | 'international')[];
+
+  // Taxa média combinada (para comparação rápida)
   takeRate: number;
+
+  // Performance histórica (opcional)
   performance?: {
     month1: {
       approval: number;
@@ -57,6 +95,12 @@ export interface PaymentPartnerData {
       transactions: number;
     };
   };
+
+  // Diferenciais competitivos
+  competitiveAdvantages?: string[];
+
+  // Observações importantes
+  notes?: string;
 }
 
 // Dados específicos de Marketplace

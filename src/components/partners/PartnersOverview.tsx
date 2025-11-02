@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Truck, CreditCard, ShoppingBag, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAllPartners } from "@/lib/db";
+import { getAllPartners, filterPartnersByCategory } from "@/lib/db";
 
 export const PartnersOverview = () => {
   const [counts, setCounts] = useState({
@@ -14,16 +14,11 @@ export const PartnersOverview = () => {
   useEffect(() => {
     getAllPartners()
       .then(partners => {
-        const logistic = partners.filter(p => 
-          p.categories.includes('logistic') || (p as any).category === 'logistic'
-        ).length;
-        const payment = partners.filter(p => 
-          p.categories.includes('payment') || (p as any).category === 'payment'
-        ).length;
-        const marketplace = partners.filter(p => 
-          p.categories.includes('marketplace') || (p as any).category === 'marketplace'
-        ).length;
-        
+        // ✅ Use helper function for consistent category filtering
+        const logistic = filterPartnersByCategory(partners, 'logistic').length;
+        const payment = filterPartnersByCategory(partners, 'payment').length;
+        const marketplace = filterPartnersByCategory(partners, 'marketplace').length;
+
         setCounts({ logistic, payment, marketplace });
         setIsLoading(false);
       })
