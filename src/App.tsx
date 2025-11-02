@@ -33,20 +33,19 @@ const App = () => {
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <BlurToggle />
               <Routes>
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-                <Route path="/partners" element={<ProtectedRoute><Partners /></ProtectedRoute>} />
-                <Route path="/partners/logistics" element={<ProtectedRoute><PartnersLogistics /></ProtectedRoute>} />
-                <Route path="/partners/payment" element={<ProtectedRoute><PartnersPayment /></ProtectedRoute>} />
-                <Route path="/partners/marketplace" element={<ProtectedRoute><PartnersMarketplace /></ProtectedRoute>} />
-                <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
-                <Route path="/health" element={<ProtectedRoute><Health /></ProtectedRoute>} />
-                <Route path="/stores" element={<ProtectedRoute><Stores /></ProtectedRoute>} />
-                <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-                <Route path="/strategic" element={<ProtectedRoute><Strategic /></ProtectedRoute>} />
-                <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+                <Route path="/" element={<ProtectedRoute><><BlurToggle /><Index /></></ProtectedRoute>} />
+                <Route path="/partners" element={<ProtectedRoute><><BlurToggle /><Partners /></></ProtectedRoute>} />
+                <Route path="/partners/logistics" element={<ProtectedRoute><><BlurToggle /><PartnersLogistics /></></ProtectedRoute>} />
+                <Route path="/partners/payment" element={<ProtectedRoute><><BlurToggle /><PartnersPayment /></></ProtectedRoute>} />
+                <Route path="/partners/marketplace" element={<ProtectedRoute><><BlurToggle /><PartnersMarketplace /></></ProtectedRoute>} />
+                <Route path="/pipeline" element={<ProtectedRoute><><BlurToggle /><Pipeline /></></ProtectedRoute>} />
+                <Route path="/health" element={<ProtectedRoute><><BlurToggle /><Health /></></ProtectedRoute>} />
+                <Route path="/stores" element={<ProtectedRoute><><BlurToggle /><Stores /></></ProtectedRoute>} />
+                <Route path="/reports" element={<ProtectedRoute><><BlurToggle /><Reports /></></ProtectedRoute>} />
+                <Route path="/strategic" element={<ProtectedRoute><><BlurToggle /><Strategic /></></ProtectedRoute>} />
+                <Route path="/admin" element={<ProtectedRoute><><BlurToggle /><Admin /></></ProtectedRoute>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

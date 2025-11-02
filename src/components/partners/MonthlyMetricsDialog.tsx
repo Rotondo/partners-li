@@ -138,9 +138,6 @@ export function MonthlyMetricsDialog({
         rebateShare: data.rebateShare,
         gmvAmount: data.gmvAmount,
         rebateAmount: data.rebateAmount,
-        numberOfStores: data.numberOfStores,
-        approvalRate: data.approvalRate,
-        numberOfOrders: data.numberOfOrders,
         notes: data.notes,
       };
 
