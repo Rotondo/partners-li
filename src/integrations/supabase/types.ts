@@ -14,6 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      contract_signers: {
+        Row: {
+          contract_id: string
+          created_at: string
+          id: string
+          role: string | null
+          signed_at: string | null
+          signer_email: string | null
+          signer_name: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          id?: string
+          role?: string | null
+          signed_at?: string | null
+          signer_email?: string | null
+          signer_name: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          id?: string
+          role?: string | null
+          signed_at?: string | null
+          signer_email?: string | null
+          signer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_signers_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_versions: {
+        Row: {
+          contract_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          storage_path: string
+          version_number: number
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          storage_path: string
+          version_number: number
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          storage_path?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_versions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          auto_renew: boolean | null
+          contract_value: number | null
+          created_at: string
+          currency: string | null
+          end_date: string | null
+          id: string
+          partner_id: string
+          start_date: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_renew?: boolean | null
+          contract_value?: number | null
+          created_at?: string
+          currency?: string | null
+          end_date?: string | null
+          id?: string
+          partner_id: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_renew?: boolean | null
+          contract_value?: number | null
+          created_at?: string
+          currency?: string | null
+          end_date?: string | null
+          id?: string
+          partner_id?: string
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       field_configs: {
         Row: {
           config: Json
@@ -660,6 +786,13 @@ export type Database = {
       activity_status: "scheduled" | "completed" | "cancelled" | "pending"
       activity_type: "meeting" | "call" | "email" | "task" | "note"
       app_role: "admin" | "editor" | "viewer"
+      contract_status:
+        | "draft"
+        | "under_review"
+        | "awaiting_signature"
+        | "active"
+        | "expired"
+        | "cancelled"
       health_status: "excellent" | "good" | "warning" | "critical"
       task_priority: "low" | "medium" | "high" | "urgent"
       task_status: "todo" | "in_progress" | "done" | "cancelled"
@@ -793,6 +926,14 @@ export const Constants = {
       activity_status: ["scheduled", "completed", "cancelled", "pending"],
       activity_type: ["meeting", "call", "email", "task", "note"],
       app_role: ["admin", "editor", "viewer"],
+      contract_status: [
+        "draft",
+        "under_review",
+        "awaiting_signature",
+        "active",
+        "expired",
+        "cancelled",
+      ],
       health_status: ["excellent", "good", "warning", "critical"],
       task_priority: ["low", "medium", "high", "urgent"],
       task_status: ["todo", "in_progress", "done", "cancelled"],
