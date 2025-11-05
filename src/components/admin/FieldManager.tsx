@@ -11,7 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { saveFieldConfigs, getFieldConfigs } from "@/lib/db";
+import { saveFieldConfigs as saveToLocalStorage, getFieldConfigs as getFromLocalStorage } from "@/lib/db";
+import { loadFieldConfigs, saveFieldConfigs as saveToSupabase } from "@/lib/field-configs";
 
 const PARTNER_TYPES = [
   { value: 'logistic', label: 'Logístico', icon: '🚚' },
@@ -23,12 +24,20 @@ export function FieldManager() {
   const [fieldConfigs, setFieldConfigs] = useState<FieldConfig[]>(DEFAULT_FIELD_CONFIGS);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load field configs from database on mount
+  // Load field configs from Supabase on mount
   useEffect(() => {
     const loadConfigs = async () => {
       try {
-        const configs = getFieldConfigs();
-        setFieldConfigs(configs);
+        const supabaseConfigs = await loadFieldConfigs();
+        
+        // If Supabase has configs, use them
+        if (supabaseConfigs && Array.isArray(supabaseConfigs.fields)) {
+          setFieldConfigs(supabaseConfigs.fields);
+        } else {
+          // Otherwise, try localStorage as fallback
+          const localConfigs = getFromLocalStorage();
+          setFieldConfigs(localConfigs);
+        }
         setIsLoading(false);
       } catch (error) {
         console.error('Error loading field configs:', error);
@@ -75,11 +84,18 @@ export function FieldManager() {
 
   const handleSave = async () => {
     try {
-      await saveFieldConfigs(fieldConfigs);
-      toast({
-        title: "Configurações salvas",
-        description: "As configurações de campos foram salvas com sucesso.",
-      });
+      // Save to Supabase
+      const supabaseSuccess = await saveToSupabase({ fields: fieldConfigs });
+      
+      // Also save to localStorage as backup
+      await saveToLocalStorage(fieldConfigs);
+      
+      if (supabaseSuccess) {
+        toast({
+          title: "Configurações salvas",
+          description: "As configurações de campos foram salvas com sucesso.",
+        });
+      }
     } catch (error) {
       toast({ 
         title: "Erro ao salvar",
@@ -92,7 +108,8 @@ export function FieldManager() {
   const handleReset = async () => {
     if (confirm("Tem certeza que deseja resetar todas as configurações para o padrão?")) {
       try {
-        await saveFieldConfigs(DEFAULT_FIELD_CONFIGS);
+        await saveToSupabase({ fields: DEFAULT_FIELD_CONFIGS });
+        await saveToLocalStorage(DEFAULT_FIELD_CONFIGS);
         setFieldConfigs(DEFAULT_FIELD_CONFIGS);
         toast({
           title: "Configurações resetadas",

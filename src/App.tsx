@@ -21,10 +21,16 @@ import Strategic from "./pages/Strategic";
 import Admin from "./pages/Admin";
 import { GoogleCallback } from "./pages/GoogleCallback";
 import NotFound from "./pages/NotFound";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { ensureStorageBucketExists } from "./lib/storage";
 
 const App = () => {
   const [queryClient] = useState(() => new QueryClient());
+
+  // Initialize storage bucket on app load
+  useEffect(() => {
+    ensureStorageBucketExists();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
