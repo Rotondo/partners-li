@@ -20,6 +20,7 @@ import { PerformanceTab } from "./DetailTabs/PerformanceTab";
 import { HealthTab } from "./DetailTabs/HealthTab";
 import { DocumentsTab } from "./DetailTabs/DocumentsTab";
 import { CustomFieldsTab } from "./DetailTabs/CustomFieldsTab";
+import { LegalTab } from "./DetailTabs/LegalTab";
 import { AddActivityDialog } from "./AddActivityDialog";
 
 interface PartnerDetailViewProps {
@@ -98,7 +99,7 @@ export const PartnerDetailView = ({
 
           <div className="mt-6">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-4">
+              <TabsList className="grid w-full grid-cols-5 lg:grid-cols-9 mb-4">
                 <TabsTrigger value="info">Info</TabsTrigger>
                 <TabsTrigger value="contacts">Contatos</TabsTrigger>
                 <TabsTrigger value="timeline">Timeline</TabsTrigger>
@@ -106,6 +107,7 @@ export const PartnerDetailView = ({
                 <TabsTrigger value="performance">Performance</TabsTrigger>
                 <TabsTrigger value="health">Saúde</TabsTrigger>
                 <TabsTrigger value="documents">Docs</TabsTrigger>
+                <TabsTrigger value="legal">Jurídico</TabsTrigger>
                 <TabsTrigger value="custom">Campos</TabsTrigger>
               </TabsList>
 
@@ -135,6 +137,10 @@ export const PartnerDetailView = ({
 
               <TabsContent value="documents" className="space-y-4">
                 <DocumentsTab partnerId={partner.id} onUpdate={onUpdate} />
+              </TabsContent>
+
+              <TabsContent value="legal" className="space-y-4">
+                <LegalTab partnerId={partner.id} />
               </TabsContent>
 
               <TabsContent value="custom" className="space-y-4">

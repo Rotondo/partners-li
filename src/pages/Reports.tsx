@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { FileText, Download, Filter, Calendar, TrendingUp, Users, DollarSign, Package } from "lucide-react";
+import { FinancialReport } from "@/components/reports/FinancialReport";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 export default function Reports() {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedReport, setSelectedReport] = useState<string | null>(null);
 
   const reportTypes = [
     {
@@ -42,10 +44,10 @@ export default function Reports() {
     {
       id: "financial",
       title: "Relatório Financeiro",
-      description: "Análise de receitas, custos e margens por parceiro",
+      description: "Análise de GMV e Rebate por parceiro com médias",
       icon: DollarSign,
       category: "financial",
-      status: "development",
+      status: "available",
     },
     {
       id: "logistics",
@@ -144,8 +146,22 @@ export default function Reports() {
             </CardContent>
           </Card>
 
-          {/* Reports Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+          {/* Show selected report or grid */}
+          {selectedReport === 'financial' ? (
+            <div className="space-y-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedReport(null)}
+                className="mb-4"
+              >
+                ← Voltar para Relatórios
+              </Button>
+              <FinancialReport />
+            </div>
+          ) : (
+            <>
+              {/* Reports Grid */}
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
             {filteredReports.map((report) => {
               const Icon = report.icon;
               const isAvailable = report.status === "available";
@@ -156,6 +172,7 @@ export default function Reports() {
                   className={`relative transition-all ${
                     isAvailable ? "hover:shadow-md cursor-pointer" : "opacity-60"
                   }`}
+                  onClick={() => isAvailable && setSelectedReport(report.id)}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -175,6 +192,10 @@ export default function Reports() {
                       className="w-full"
                       variant={isAvailable ? "default" : "outline"}
                       disabled={!isAvailable}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isAvailable) setSelectedReport(report.id);
+                      }}
                     >
                       <Download className="mr-2 h-4 w-4" />
                       {isAvailable ? "Gerar Relatório" : "Em Desenvolvimento"}
@@ -183,9 +204,10 @@ export default function Reports() {
                 </Card>
               );
             })}
-          </div>
+              </div>
 
           {/* Export Formats */}
+
           <Card>
             <CardHeader>
               <CardTitle>Formatos de Exportação</CardTitle>
@@ -234,6 +256,8 @@ export default function Reports() {
               </div>
             </CardContent>
           </Card>
+            </>
+          )}
         </div>
       </main>
     </div>
