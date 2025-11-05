@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileMenuButton } from "@/components/layout/MobileMenuButton";
 import { FileText, Download, Filter, Calendar, TrendingUp, Users, DollarSign, Package } from "lucide-react";
 import { FinancialReport } from "@/components/reports/FinancialReport";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export default function Reports() {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const reportTypes = [
     {
@@ -81,9 +83,13 @@ export default function Reports() {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar />
+      <MobileMenuButton 
+        onClick={() => setMobileMenuOpen(true)} 
+        isOpen={mobileMenuOpen} 
+      />
+      <Sidebar mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pl-0 md:pl-0">
         <div className="container mx-auto p-8">
           {/* Header */}
           <div className="mb-8">

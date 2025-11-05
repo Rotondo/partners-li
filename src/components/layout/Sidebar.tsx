@@ -1,9 +1,10 @@
-import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings, LogOut, Kanban, Target } from "lucide-react";
+import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings, LogOut, Kanban, Target, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Novidades24hPanel } from "./Novidades24hPanel";
 
 const navigation = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, hasSubmenu: false, route: "/" },
@@ -22,7 +23,12 @@ const partnersSubmenu = [
   { id: "partners-marketplace", name: "Marketplaces", icon: ShoppingBag, route: "/partners/marketplace" },
 ];
 
-export const Sidebar = () => {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const Sidebar = ({ mobileOpen, onClose }: SidebarProps = {}) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,8 +44,27 @@ export const Sidebar = () => {
     }
   }, [location.pathname]);
 
-  return (
-    <aside className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
+  // Handle escape key to close mobile drawer
+  useEffect(() => {
+    if (!mobileOpen) return;
+    
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose?.();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen, onClose]);
+
+  const SidebarContent = () => (
+    <>
       <div className="p-6 border-b border-sidebar-border">
         <h1 className="text-xl font-bold text-sidebar-foreground">Gestão de Parceiros</h1>
         <p className="text-sm text-sidebar-foreground/70 mt-1">Plataforma de Gestão</p>
@@ -58,6 +83,7 @@ export const Sidebar = () => {
                   onClick={() => {
                     if (item.route) {
                       navigate(item.route);
+                      onClose?.();
                     }
                     setShowPartners(!showPartners);
                   }}
@@ -84,7 +110,10 @@ export const Sidebar = () => {
                       return (
                         <button
                           key={subItem.id}
-                          onClick={() => navigate(subItem.route)}
+                          onClick={() => {
+                            navigate(subItem.route);
+                            onClose?.();
+                          }}
                           className={cn(
                             "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
                             isSubActive
@@ -106,7 +135,10 @@ export const Sidebar = () => {
           return (
             <button
               key={item.id}
-              onClick={() => navigate(item.route)}
+              onClick={() => {
+                navigate(item.route);
+                onClose?.();
+              }}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
                 isActive
@@ -121,6 +153,8 @@ export const Sidebar = () => {
         })}
       </nav>
 
+      <Novidades24hPanel />
+
       <div className="p-4 border-t border-sidebar-border">
         <div className="mb-3 text-xs text-sidebar-foreground/50">
           {user?.email}
@@ -134,6 +168,48 @@ export const Sidebar = () => {
           Sair
         </Button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar */}
+      <aside 
+        id="app-sidebar"
+        className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:border-r md:border-sidebar-border md:h-screen md:sticky md:top-0 bg-sidebar"
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Drawer */}
+      {mobileOpen && (
+        <div 
+          className="fixed inset-0 z-50 md:hidden" 
+          role="dialog" 
+          aria-modal="true"
+          aria-labelledby="mobile-sidebar-title"
+        >
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
+            onClick={onClose}
+            aria-hidden="true"
+          />
+          
+          {/* Drawer Panel */}
+          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-sidebar shadow-xl border-r border-sidebar-border flex flex-col animate-in slide-in-from-left duration-200">
+            <button
+              className="absolute right-2 top-2 p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+              aria-label="Fechar menu"
+              onClick={onClose}
+            >
+              <X className="h-5 w-5" />
+            </button>
+            
+            <SidebarContent />
+          </div>
+        </div>
+      )}
+    </>
   );
 };

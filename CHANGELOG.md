@@ -1,5 +1,15 @@
 # Changelog
 
+## Últimas 24 horas (2025-11-05)
+
+- **feat(legal)**: Sistema completo de contratos com versões e signatários
+- **feat(financial)**: Métricas mensais e relatório financeiro com export CSV
+- **feat(storage)**: Upload de documentos integrado com Storage bucket privado
+- **feat(admin)**: Configurações de campos persistidas no Supabase (multiusuário)
+- **feat(ui)**: Sidebar móvel recolhível com drawer/overlay e painel de novidades
+
+---
+
 ## Sprint 6 - Jurídico, Financeiro, Configs e Upload (2025-11-05)
 
 ### 🎯 Features
