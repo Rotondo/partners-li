@@ -1,26 +1,52 @@
-import { LayoutDashboard, Users, Truck, CreditCard, ShoppingBag, Store, TrendingUp, FileText, ChevronDown, ChevronRight, Settings, LogOut, Kanban, Target, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import {
+  Users,
+  BarChart3,
+  List,
+  Activity,
+  Store,
+  LayoutDashboard,
+  Settings,
+  ChevronDown,
+  LogOut,
+  Scale,
+  ChevronsLeft,
+  ChevronsRight,
+  TrendingUp,
+  DollarSign,
+  Truck,
+  CreditCard,
+  ShoppingBag,
+  Kanban,
+  Target,
+} from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Novidades24hPanel } from "./Novidades24hPanel";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const navigation = [
-  { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, hasSubmenu: false, route: "/" },
-  { id: "partners", name: "Parceiros", icon: Users, hasSubmenu: true, route: "/partners" },
-  { id: "pipeline", name: "Pipeline", icon: Kanban, hasSubmenu: false, route: "/pipeline" },
-  { id: "health", name: "Health", icon: TrendingUp, hasSubmenu: false, route: "/health" },
-  { id: "strategic", name: "Estratégico", icon: Target, hasSubmenu: false, route: "/strategic" },
-  { id: "stores", name: "Lojas", icon: Store, hasSubmenu: false, route: "/stores" },
-  { id: "reports", name: "Relatórios", icon: FileText, hasSubmenu: false, route: "/reports" },
-  { id: "admin", name: "Admin", icon: Settings, hasSubmenu: false, route: "/admin" },
+  { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, href: "/", hasSubmenu: false },
+  { id: "partners", name: "Parceiros", icon: Users, href: "/partners", hasSubmenu: true },
+  { id: "pipeline", name: "Pipeline", icon: Kanban, href: "/pipeline", hasSubmenu: false },
+  { id: "health", name: "Health", icon: Target, href: "/health", hasSubmenu: false },
+  { id: "strategic", name: "Estratégico", icon: BarChart3, href: "/strategic", hasSubmenu: false },
+  { id: "stores", name: "Lojas", icon: Store, href: "/stores", hasSubmenu: false },
+  { id: "reports", name: "Relatórios", icon: TrendingUp, href: "/reports", hasSubmenu: true },
+  { id: "legal", name: "Jurídico", icon: Scale, href: "/legal", hasSubmenu: false },
+  { id: "admin", name: "Admin", icon: Settings, href: "/admin", hasSubmenu: false },
 ];
 
 const partnersSubmenu = [
-  { id: "partners-logistics", name: "Logísticos", icon: Truck, route: "/partners/logistics" },
-  { id: "partners-payment", name: "Pagamento", icon: CreditCard, route: "/partners/payment" },
-  { id: "partners-marketplace", name: "Marketplaces", icon: ShoppingBag, route: "/partners/marketplace" },
+  { name: "Logísticos", href: "/partners/logistics", icon: Truck },
+  { name: "Pagamento", href: "/partners/payment", icon: CreditCard },
+  { name: "Marketplaces", href: "/partners/marketplace", icon: ShoppingBag },
+];
+
+const reportsSubmenu = [
+  { name: "Visão Geral", href: "/reports" },
+  { name: "Financeiro", href: "/reports#financial" },
 ];
 
 interface SidebarProps {
@@ -28,21 +54,30 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-export const Sidebar = ({ mobileOpen, onClose }: SidebarProps = {}) => {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
+export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const { user, signOut } = useAuth();
+  const [showPartners, setShowPartners] = useState(false);
+  const [showReports, setShowReports] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    return localStorage.getItem('sidebar-collapsed') === 'true';
+  });
 
-  // Auto-expand partners submenu when on a partners route
-  const [showPartners, setShowPartners] = useState(
-    location.pathname.startsWith('/partners')
-  );
-
+  // Automatically expand submenus when on relevant routes
   useEffect(() => {
-    if (location.pathname.startsWith('/partners')) {
+    if (location.pathname.startsWith("/partners")) {
       setShowPartners(true);
     }
+    if (location.pathname.startsWith("/reports")) {
+      setShowReports(true);
+    }
   }, [location.pathname]);
+
+  const toggleCollapsed = () => {
+    const newState = !collapsed;
+    setCollapsed(newState);
+    localStorage.setItem('sidebar-collapsed', String(newState));
+  };
 
   // Handle escape key to close mobile drawer
   useEffect(() => {
@@ -63,153 +98,193 @@ export const Sidebar = ({ mobileOpen, onClose }: SidebarProps = {}) => {
     };
   }, [mobileOpen, onClose]);
 
-  const SidebarContent = () => (
-    <>
-      <div className="p-6 border-b border-sidebar-border">
-        <h1 className="text-xl font-bold text-sidebar-foreground">Gestão de Parceiros</h1>
-        <p className="text-sm text-sidebar-foreground/70 mt-1">Plataforma de Gestão</p>
+  const SidebarContent = ({ isDrawer = false }: { isDrawer?: boolean }) => (
+    <div className="flex flex-col h-full">
+      <div className={cn("border-b flex items-center justify-between", collapsed && !isDrawer ? "p-2" : "p-6")}>
+        {(!collapsed || isDrawer) && (
+          <div className="flex-1">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              Partner Manager
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">PRM/CRM</p>
+          </div>
+        )}
+        {!isDrawer && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleCollapsed}
+            className={cn("shrink-0", collapsed ? "mx-auto" : "")}
+            aria-label={collapsed ? "Expandir menu" : "Recolher menu"}
+          >
+            {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
+          </Button>
+        )}
       </div>
-      
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navigation.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.route ||
-            (item.id === 'partners' && location.pathname.startsWith('/partners'));
 
-          if (item.hasSubmenu) {
-            return (
-              <div key={item.id}>
-                <button
-                  onClick={() => {
-                    if (item.route) {
-                      navigate(item.route);
-                      onClose?.();
-                    }
-                    setShowPartners(!showPartners);
-                  }}
-                  className={cn(
-                    "w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                    isActive
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </div>
-                  {showPartners ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                </button>
+      <nav className="flex-1 overflow-y-auto p-4">
+        <TooltipProvider>
+          <ul className="space-y-2">
+            {navigation.map((item) => {
+              const isActive = location.pathname === item.href;
+              const Icon = item.icon;
 
-                {showPartners && (
-                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-sidebar-border pl-2">
-                    {partnersSubmenu.map((subItem) => {
-                      const SubIcon = subItem.icon;
-                      const isSubActive = location.pathname === subItem.route;
-
-                      return (
-                        <button
-                          key={subItem.id}
-                          onClick={() => {
-                            navigate(subItem.route);
-                            onClose?.();
-                          }}
+              return (
+                <li key={item.id}>
+                  {item.hasSubmenu ? (
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => {
+                              if (item.id === 'partners') setShowPartners(!showPartners);
+                              if (item.id === 'reports') setShowReports(!showReports);
+                            }}
+                            className={cn(
+                              "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                              "hover:bg-accent hover:text-accent-foreground",
+                              isActive && "bg-accent text-accent-foreground",
+                              collapsed && !isDrawer && "justify-center"
+                            )}
+                          >
+                            <Icon className="h-5 w-5 shrink-0" />
+                            {(!collapsed || isDrawer) && (
+                              <>
+                                <span className="flex-1 text-left">{item.name}</span>
+                                <ChevronDown
+                                  className={cn(
+                                    "h-4 w-4 transition-transform shrink-0",
+                                    (item.id === 'partners' && showPartners) && "rotate-180",
+                                    (item.id === 'reports' && showReports) && "rotate-180"
+                                  )}
+                                />
+                              </>
+                            )}
+                          </button>
+                        </TooltipTrigger>
+                        {collapsed && !isDrawer && <TooltipContent side="right">{item.name}</TooltipContent>}
+                      </Tooltip>
+                      {item.id === 'partners' && showPartners && (!collapsed || isDrawer) && (
+                        <ul className="ml-8 mt-2 space-y-1">
+                          {partnersSubmenu.map((subitem) => {
+                            const SubIcon = subitem.icon;
+                            return (
+                              <li key={subitem.href}>
+                                <Link
+                                  to={subitem.href}
+                                  className={cn(
+                                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
+                                    "hover:bg-accent hover:text-accent-foreground",
+                                    location.pathname === subitem.href &&
+                                      "bg-accent text-accent-foreground font-medium"
+                                  )}
+                                >
+                                  <SubIcon className="h-4 w-4" />
+                                  {subitem.name}
+                                </Link>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                      {item.id === 'reports' && showReports && (!collapsed || isDrawer) && (
+                        <ul className="ml-8 mt-2 space-y-1">
+                          {reportsSubmenu.map((subitem) => (
+                            <li key={subitem.href}>
+                              <Link
+                                to={subitem.href}
+                                className={cn(
+                                  "block px-3 py-2 rounded-lg text-sm transition-colors",
+                                  "hover:bg-accent hover:text-accent-foreground",
+                                  location.pathname === subitem.href &&
+                                    "bg-accent text-accent-foreground font-medium"
+                                )}
+                              >
+                                {subitem.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </>
+                  ) : (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          to={item.href}
                           className={cn(
-                            "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                            isSubActive
-                              ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                              : "text-sidebar-foreground/50 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                            "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                            "hover:bg-accent hover:text-accent-foreground",
+                            isActive && "bg-accent text-accent-foreground",
+                            collapsed && !isDrawer && "justify-center"
                           )}
                         >
-                          <SubIcon className="h-4 w-4" />
-                          <span>{subItem.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          }
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => {
-                navigate(item.route);
-                onClose?.();
-              }}
-              className={cn(
-                "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all",
-                isActive
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-              )}
-            >
-              <Icon className="h-5 w-5" />
-              <span>{item.name}</span>
-            </button>
-          );
-        })}
+                          <Icon className="h-5 w-5 shrink-0" />
+                          {(!collapsed || isDrawer) && <span>{item.name}</span>}
+                        </Link>
+                      </TooltipTrigger>
+                      {collapsed && !isDrawer && <TooltipContent side="right">{item.name}</TooltipContent>}
+                    </Tooltip>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </TooltipProvider>
       </nav>
 
-      <Novidades24hPanel />
-
-      <div className="p-4 border-t border-sidebar-border">
-        <div className="mb-3 text-xs text-sidebar-foreground/50">
-          {user?.email}
-        </div>
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-2"
-          onClick={signOut}
-        >
-          <LogOut className="h-4 w-4" />
-          Sair
-        </Button>
+      <div className="border-t p-4">
+        {(!collapsed || isDrawer) && (
+          <div className="text-sm text-muted-foreground mb-2 truncate">
+            {user?.email}
+          </div>
+        )}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn("w-full gap-2", collapsed && !isDrawer ? "justify-center px-2" : "justify-start")}
+              onClick={signOut}
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              {(!collapsed || isDrawer) && "Sair"}
+            </Button>
+          </TooltipTrigger>
+          {collapsed && !isDrawer && <TooltipContent side="right">Sair</TooltipContent>}
+        </Tooltip>
       </div>
-    </>
+    </div>
   );
 
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside 
+      <aside
         id="app-sidebar"
-        className="hidden md:flex md:flex-col md:w-64 md:shrink-0 md:border-r md:border-sidebar-border md:h-screen md:sticky md:top-0 bg-sidebar"
+        className={cn(
+          "hidden md:flex md:flex-col md:shrink-0 md:border-r md:h-screen md:sticky md:top-0 bg-sidebar transition-all duration-200",
+          collapsed ? "md:w-16" : "md:w-64"
+        )}
       >
         <SidebarContent />
       </aside>
 
       {/* Mobile Drawer */}
       {mobileOpen && (
-        <div 
-          className="fixed inset-0 z-50 md:hidden" 
-          role="dialog" 
-          aria-modal="true"
-          aria-labelledby="mobile-sidebar-title"
-        >
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm" 
-            onClick={onClose}
-            aria-hidden="true"
-          />
-          
-          {/* Drawer Panel */}
-          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-sidebar shadow-xl border-r border-sidebar-border flex flex-col animate-in slide-in-from-left duration-200">
+        <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
+          <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+          <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-sidebar shadow-xl border-r animate-in slide-in-from-left duration-200">
             <button
-              className="absolute right-2 top-2 p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/70 hover:text-sidebar-foreground transition-colors"
+              className="absolute right-2 top-2 h-8 w-8 rounded-md hover:bg-accent"
               aria-label="Fechar menu"
               onClick={onClose}
             >
-              <X className="h-5 w-5" />
+              ✕
             </button>
-            
-            <SidebarContent />
+            <SidebarContent isDrawer={true} />
           </div>
         </div>
       )}
     </>
   );
-};
+}
