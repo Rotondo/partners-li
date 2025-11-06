@@ -142,8 +142,8 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                             }}
                             className={cn(
                               "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                              "hover:bg-accent hover:text-accent-foreground",
-                              isActive && "bg-accent text-accent-foreground",
+                              "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                              isActive && "bg-sidebar-primary text-sidebar-primary-foreground",
                               collapsed && !isDrawer && "justify-center"
                             )}
                           >
@@ -174,9 +174,9 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                                   to={subitem.href}
                                   className={cn(
                                     "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
-                                    "hover:bg-accent hover:text-accent-foreground",
+                                    "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                                     location.pathname === subitem.href &&
-                                      "bg-accent text-accent-foreground font-medium"
+                                      "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
                                   )}
                                 >
                                   <SubIcon className="h-4 w-4" />
@@ -195,9 +195,9 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                                 to={subitem.href}
                                 className={cn(
                                   "block px-3 py-2 rounded-lg text-sm transition-colors",
-                                  "hover:bg-accent hover:text-accent-foreground",
+                                  "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                                   location.pathname === subitem.href &&
-                                    "bg-accent text-accent-foreground font-medium"
+                                    "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
                                 )}
                               >
                                 {subitem.name}
@@ -214,8 +214,8 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                           to={item.href}
                           className={cn(
                             "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                            "hover:bg-accent hover:text-accent-foreground",
-                            isActive && "bg-accent text-accent-foreground",
+                            "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                            isActive && "bg-sidebar-primary text-sidebar-primary-foreground",
                             collapsed && !isDrawer && "justify-center"
                           )}
                         >
@@ -275,7 +275,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
           <div className="absolute inset-0 bg-black/40" onClick={onClose} />
           <div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] bg-sidebar shadow-xl border-r animate-in slide-in-from-left duration-200">
             <button
-              className="absolute right-2 top-2 h-8 w-8 rounded-md hover:bg-accent"
+              className="absolute right-2 top-2 h-8 w-8 rounded-md hover:bg-sidebar-accent text-sidebar-foreground"
               aria-label="Fechar menu"
               onClick={onClose}
             >

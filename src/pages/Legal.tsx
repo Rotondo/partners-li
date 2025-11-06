@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileMenuButton } from "@/components/layout/MobileMenuButton";
+import { BlurToggle } from "@/components/layout/BlurToggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -119,11 +120,12 @@ export default function Legal() {
 
   return (
     <div className="flex min-h-screen w-full bg-background">
+      <MobileMenuButton onClick={() => setMobileOpen(true)} isOpen={mobileOpen} />
       <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
       
       <main className="flex-1 md:pl-0">
         <div className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 md:hidden">
-          <MobileMenuButton onClick={() => setMobileOpen(true)} isOpen={mobileOpen} />
+          <BlurToggle />
           <h1 className="text-lg font-semibold">Jurídico</h1>
         </div>
 
