@@ -235,9 +235,40 @@ Calcula automaticamente os health scores de todos os parceiros:
 ## 🎨 Design System
 
 - **Cores:** Sistema de tokens HSL configurado em `index.css`
+  - Tokens semânticos `--sidebar-*` para navegação
+  - Contraste WCAG AA em light/dark mode
 - **Componentes:** shadcn/ui com customizações
 - **Responsividade:** Mobile-first com Tailwind
+  - Sidebar: Desktop fixa (w-64), Mobile drawer com overlay
+  - Breakpoint: `md` (768px)
 - **Dark Mode:** Suportado via next-themes
+
+## 📱 UI/UX - Navegação
+
+### Sidebar
+- **Desktop (≥ md):**
+  - Fixa à esquerda (sticky, h-screen)
+  - Largura 256px (w-64) ou 64px quando colapsada
+  - Botão de collapse (ChevronsLeft/Right)
+  - Estado persistido no localStorage
+
+- **Mobile (< md):**
+  - Oculta por padrão
+  - Botão hamburger fixo (top-4, left-4)
+  - Abre como drawer overlay (z-50)
+  - Fecha com: Esc, clique fora, botão X
+  - Bloqueia scroll do body quando aberta
+
+### Painel de Novidades (24h)
+- Localização: Dentro da Sidebar (acima do rodapé)
+- Fonte: Parse de `CHANGELOG.md` → seção "Últimas 24 horas"
+- Exibe: Máx. 5 itens com badges de tipo (feat/fix/chore/docs)
+- Link: "Ver histórico completo" abre `/CHANGELOG.md`
+- Visibilidade: Apenas quando sidebar não está colapsada
+
+### Submenu Relatórios
+- **Visão Geral** → `/reports`
+- **Financeiro** → `/reports?tab=financial` (acesso direto)
 
 ## 🔐 Autenticação
 

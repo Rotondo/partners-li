@@ -1,12 +1,81 @@
 # Changelog
 
-## Últimas 24 horas (2025-11-05)
+## Últimas 24 horas (2025-11-07)
+
+- **feat(ui)**: Sidebar com drawer/overlay mobile e painel de novidades 24h
+- **feat(ui)**: Botão hamburger mobile para abertura do menu lateral
+- **feat(ui)**: Sistema de cores semânticas para sidebar (melhor contraste)
+- **feat(navigation)**: Submenu Relatórios com acesso direto ao Financeiro
+- **feat(legal)**: Página Legal dedicada integrada à navegação
+
+---
+
+## Sprint 6 - UI/UX Mobile + Novidades (2025-11-07)
+
+### 🎯 Features
+
+#### Sidebar Mobile Recolhível
+- **feat(ui)**: Drawer com overlay para mobile (< md breakpoint)
+  - Botão hamburger fixo no topo esquerdo
+  - Overlay semi-transparente (bg-black/40)
+  - Painel deslizante (w-72, max-w-[85vw])
+  - Animação slide-in-from-left
+  - Fecha com Esc, clique fora ou botão X
+  - Bloqueia scroll do body quando aberto
+  - Acessibilidade: role="dialog", aria-modal, aria-controls
+
+#### Painel de Novidades (24h)
+- **feat(ui)**: Componente `Novidades24hPanel` na Sidebar
+  - Parser de CHANGELOG.md para extrair últimas 24h
+  - Exibe max. 5 itens com badges de tipo (feat/fix/chore)
+  - Link para histórico completo
+  - Aparece apenas quando sidebar não está colapsada
+  - Lib: `src/lib/changelog-parser.ts` com utils de parse
+
+#### Navegação Melhorada
+- **feat(navigation)**: Submenu Relatórios expandido
+  - "Visão Geral" → `/reports`
+  - "Financeiro" → `/reports?tab=financial`
+- **feat(navigation)**: Página Legal (`/legal`) adicionada ao menu principal
+
+#### Sistema de Cores Sidebar
+- **feat(ui)**: Tokens semânticos `--sidebar-*` em index.css
+  - Light mode: fundo branco, texto escuro, azul para ativo
+  - Dark mode: azul escuro suave, texto claro
+  - Contraste WCAG AA em todos os estados
+  - Remove verde agressivo dos estados ativos
+
+### 📚 Libs Criadas
+- `src/lib/changelog-parser.ts` - Parser e formatação de CHANGELOG.md
+
+### 🎨 Componentes UI
+- `src/components/layout/Novidades24hPanel.tsx` - Painel de novidades 24h
+- `src/components/layout/MobileMenuButton.tsx` - Botão hamburger mobile
+
+### 🔧 Atualizações
+- `Sidebar.tsx`: Drawer mobile, painel novidades, cores semânticas, estado collapse persistido
+- `Reports.tsx`: Integrado MobileMenuButton
+- `Partners.tsx`: Integrado MobileMenuButton  
+- `Legal.tsx`: Estrutura ajustada para mobile
+- `index.css`: Variáveis `--sidebar-*` para light/dark mode
+
+### ✅ Testes Realizados
+- ✅ Mobile: botão hamburger abre drawer com overlay
+- ✅ Fecha com Esc, clique fora e botão X
+- ✅ Desktop: sidebar fixa sem regressões
+- ✅ Painel de novidades renderiza itens do CHANGELOG
+- ✅ Cores com contraste adequado (sem verde agressivo)
+- ✅ Submenu Relatórios funcional
+- ✅ Responsividade mantida em todas as páginas
+
+---
+
+## Histórico Anterior (2025-11-05)
 
 - **feat(legal)**: Sistema completo de contratos com versões e signatários
 - **feat(financial)**: Métricas mensais e relatório financeiro com export CSV
 - **feat(storage)**: Upload de documentos integrado com Storage bucket privado
 - **feat(admin)**: Configurações de campos persistidas no Supabase (multiusuário)
-- **feat(ui)**: Sidebar móvel recolhível com drawer/overlay e painel de novidades
 
 ---
 

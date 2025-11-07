@@ -25,6 +25,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Novidades24hPanel } from "./Novidades24hPanel";
 
 const navigation = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, href: "/", hasSubmenu: false },
@@ -46,7 +47,7 @@ const partnersSubmenu = [
 
 const reportsSubmenu = [
   { name: "Visão Geral", href: "/reports" },
-  { name: "Financeiro", href: "/reports#financial" },
+  { name: "Financeiro", href: "/reports?tab=financial" },
 ];
 
 interface SidebarProps {
@@ -122,7 +123,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-4">
+      <nav className="flex-1 overflow-y-auto p-4 space-y-4">
         <TooltipProvider>
           <ul className="space-y-2">
             {navigation.map((item) => {
@@ -231,6 +232,9 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
             })}
           </ul>
         </TooltipProvider>
+
+        {/* Painel de Novidades - apenas quando não está colapsado */}
+        {(!collapsed || isDrawer) && <Novidades24hPanel />}
       </nav>
 
       <div className="border-t p-4">
