@@ -570,6 +570,7 @@ export type Database = {
           fit_by_tier: Json | null
           id: string
           is_important: boolean | null
+          logo_url: string | null
           name: string
           pareto_focus: string | null
           priority_rank: number | null
@@ -585,6 +586,7 @@ export type Database = {
           fit_by_tier?: Json | null
           id?: string
           is_important?: boolean | null
+          logo_url?: string | null
           name: string
           pareto_focus?: string | null
           priority_rank?: number | null
@@ -600,6 +602,7 @@ export type Database = {
           fit_by_tier?: Json | null
           id?: string
           is_important?: boolean | null
+          logo_url?: string | null
           name?: string
           pareto_focus?: string | null
           priority_rank?: number | null

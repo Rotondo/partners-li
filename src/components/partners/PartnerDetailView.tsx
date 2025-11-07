@@ -10,8 +10,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Plus } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus, Building2 } from "lucide-react";
+import { PartnerLogoUploader } from "./PartnerLogoUploader";
 import { PartnerInfoTab } from "./DetailTabs/PartnerInfoTab";
 import { ContactsTab } from "./DetailTabs/ContactsTab";
 import { TimelineTab } from "./DetailTabs/TimelineTab";
@@ -71,9 +72,12 @@ export const PartnerDetailView = ({
         <SheetContent side="right" className="w-full sm:max-w-3xl overflow-y-auto">
           <SheetHeader className="space-y-4">
             <div className="flex items-start gap-4">
-              <Avatar className="h-16 w-16">
-                <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-                  {getInitials(partner.name)}
+              <Avatar className="h-16 w-16 rounded-lg">
+                {partner.logoUrl ? (
+                  <AvatarImage src={partner.logoUrl} alt={partner.name} className="object-contain" />
+                ) : null}
+                <AvatarFallback className="text-lg bg-primary text-primary-foreground rounded-lg">
+                  {partner.logoUrl ? <Building2 className="w-8 h-8" /> : getInitials(partner.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 space-y-1">
@@ -112,6 +116,15 @@ export const PartnerDetailView = ({
               </TabsList>
 
               <TabsContent value="info" className="space-y-4">
+                <div className="mb-6 pb-6 border-b">
+                  <PartnerLogoUploader 
+                    partnerId={partner.id}
+                    currentLogoUrl={partner.logoUrl}
+                    onLogoUpdated={(url) => {
+                      if (onUpdate) onUpdate();
+                    }}
+                  />
+                </div>
                 <PartnerInfoTab partner={partner} />
               </TabsContent>
 

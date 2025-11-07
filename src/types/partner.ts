@@ -26,6 +26,7 @@ export interface SharedPartnerData {
   status: PartnerStatus;
   startDate: Date;
   notes?: string;
+  logoUrl?: string; // URL do logo do parceiro
   customFields?: Record<string, any>; // Campos personalizados configuráveis
   contactFields?: Record<string, any>; // Campos de contato personalizados
   // Priorização e análise Pareto
