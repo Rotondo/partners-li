@@ -99,6 +99,15 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
     };
   }, [mobileOpen, onClose]);
 
+  // Helper para verificar se um link está ativo (suporta query params)
+  const isLinkActive = (href: string) => {
+    if (href.includes('?')) {
+      const [path, query] = href.split('?');
+      return location.pathname === path && location.search.includes(query);
+    }
+    return location.pathname === href;
+  };
+
   const SidebarContent = ({ isDrawer = false }: { isDrawer?: boolean }) => (
     <div className="flex flex-col h-full">
       <div className={cn("border-b flex items-center justify-between", collapsed && !isDrawer ? "p-2" : "p-6")}>
@@ -176,7 +185,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                                   className={cn(
                                     "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
                                     "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                                    location.pathname === subitem.href &&
+                                    isLinkActive(subitem.href) &&
                                       "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
                                   )}
                                 >
@@ -197,7 +206,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
                                 className={cn(
                                   "block px-3 py-2 rounded-lg text-sm transition-colors",
                                   "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                                  location.pathname === subitem.href &&
+                                  isLinkActive(subitem.href) &&
                                     "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
                                 )}
                               >

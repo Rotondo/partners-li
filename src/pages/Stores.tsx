@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileMenuButton } from "@/components/layout/MobileMenuButton";
 import { Store, Plus, Search, MapPin, Globe, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ import { Store as StoreType, STORE_STATUSES, STORE_TYPES } from "@/types/store";
 import { toast } from "sonner";
 
 export default function Stores() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [stores, setStores] = useState<StoreType[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -76,9 +78,13 @@ export default function Stores() {
 
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar />
+      <MobileMenuButton 
+        onClick={() => setMobileMenuOpen(true)} 
+        isOpen={mobileMenuOpen} 
+      />
+      <Sidebar mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto pl-0 md:pl-0">
         <div className="container mx-auto p-8">
           {/* Header */}
           <div className="mb-8">

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileMenuButton } from "@/components/layout/MobileMenuButton";
 import { StrategicDashboard } from "@/components/strategic/StrategicDashboard";
 import { Target } from "lucide-react";
 
@@ -8,10 +10,16 @@ const mockStores = [];
 const mockStoreMetrics = [];
 
 const Strategic = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="flex h-screen bg-background">
-      <Sidebar />
-      <main className="flex-1 overflow-y-auto">
+      <MobileMenuButton 
+        onClick={() => setMobileMenuOpen(true)} 
+        isOpen={mobileMenuOpen} 
+      />
+      <Sidebar mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <main className="flex-1 overflow-y-auto pl-0 md:pl-0">
         <div className="container mx-auto p-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">

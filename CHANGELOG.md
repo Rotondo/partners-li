@@ -1,5 +1,13 @@
 # Changelog
 
+## Últimas 24 horas (2025-11-08)
+
+- **fix(sidebar)**: Sidebar agora acessível em todas as páginas via botão hamburger mobile
+- **fix(sidebar)**: Correção do highlight de links com query params (ex: `/reports?tab=financial`)
+- **feat(ui)**: Feedback visual melhorado - botão hamburger some quando menu está aberto
+
+---
+
 ## Últimas 24 horas (2025-11-07)
 
 - **feat(ui)**: Sidebar com drawer/overlay mobile e painel de novidades 24h

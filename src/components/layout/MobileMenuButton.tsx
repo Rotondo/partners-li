@@ -1,5 +1,6 @@
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface MobileMenuButtonProps {
   onClick: () => void;
@@ -11,13 +12,20 @@ export function MobileMenuButton({ onClick, isOpen }: MobileMenuButtonProps) {
     <Button
       variant="ghost"
       size="icon"
-      className="md:hidden fixed top-4 left-4 z-40"
+      className={cn(
+        "md:hidden fixed top-4 left-4 z-40 transition-opacity",
+        isOpen && "opacity-0 pointer-events-none"
+      )}
       onClick={onClick}
       aria-controls="app-sidebar"
       aria-expanded={isOpen}
-      aria-label="Abrir menu"
+      aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
     >
-      <Menu className="h-6 w-6" />
+      {isOpen ? (
+        <X className="h-6 w-6" />
+      ) : (
+        <Menu className="h-6 w-6" />
+      )}
     </Button>
   );
 }
