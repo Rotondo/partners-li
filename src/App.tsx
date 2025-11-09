@@ -20,6 +20,7 @@ import Reports from "./pages/Reports";
 import Strategic from "./pages/Strategic";
 import Admin from "./pages/Admin";
 import Legal from "./pages/Legal";
+import Expectations from "./pages/Expectations";
 import { GoogleCallback } from "./pages/GoogleCallback";
 import NotFound from "./pages/NotFound";
 import { useState, useEffect } from "react";
@@ -49,6 +50,7 @@ const App = () => {
                 <Route path="/partners/payment" element={<ProtectedRoute><><BlurToggle /><PartnersPayment /></></ProtectedRoute>} />
                 <Route path="/partners/marketplace" element={<ProtectedRoute><><BlurToggle /><PartnersMarketplace /></></ProtectedRoute>} />
                 <Route path="/pipeline" element={<ProtectedRoute><><BlurToggle /><Pipeline /></></ProtectedRoute>} />
+                <Route path="/expectations" element={<ProtectedRoute><><BlurToggle /><Expectations /></></ProtectedRoute>} />
                 <Route path="/health" element={<ProtectedRoute><><BlurToggle /><Health /></></ProtectedRoute>} />
                 <Route path="/stores" element={<ProtectedRoute><><BlurToggle /><Stores /></></ProtectedRoute>} />
                 <Route path="/reports" element={<ProtectedRoute><><BlurToggle /><Reports /></></ProtectedRoute>} />

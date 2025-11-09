@@ -1,5 +1,20 @@
 # Changelog
 
+## Últimas 24 horas (2025-11-09)
+
+- **feat(expectations)**: Módulo completo "Plano de Expectativas" para gerenciar marcos estratégicos
+  - Tabelas: expectation_milestones, milestone_updates, milestone_checkboxes
+  - Página principal com visualização por categoria (Geral, Marketplace, Logística, Pagamento)
+  - Sistema de checklist para subtarefas de cada marco
+  - Feed de atualizações de progresso com timestamps
+  - Cálculo automático de progresso baseado em checkboxes concluídos
+  - Seed automático com os marcos iniciais do plano (12 marcos pré-configurados)
+  - RLS policies completas para segurança dos dados
+  - Dialog de detalhes com tabs (Informações, Checklist, Atualizações)
+  - Alteração de status com atualização automática de progresso e data de conclusão
+
+---
+
 ## Últimas 24 horas (2025-11-08)
 
 - **fix(sidebar)**: Sidebar agora acessível em todas as páginas via botão hamburger mobile

@@ -21,6 +21,7 @@ import {
   ShoppingBag,
   Kanban,
   Target,
+  ClipboardCheck,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const navigation = [
   { id: "dashboard", name: "Dashboard", icon: LayoutDashboard, href: "/", hasSubmenu: false },
   { id: "partners", name: "Parceiros", icon: Users, href: "/partners", hasSubmenu: true },
   { id: "pipeline", name: "Pipeline", icon: Kanban, href: "/pipeline", hasSubmenu: false },
+  { id: "expectations", name: "Plano de Expectativas", icon: ClipboardCheck, href: "/expectations", hasSubmenu: false },
   { id: "health", name: "Health", icon: Target, href: "/health", hasSubmenu: false },
   { id: "strategic", name: "Estratégico", icon: BarChart3, href: "/strategic", hasSubmenu: false },
   { id: "stores", name: "Lojas", icon: Store, href: "/stores", hasSubmenu: false },
