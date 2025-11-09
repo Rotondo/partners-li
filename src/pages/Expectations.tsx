@@ -64,9 +64,9 @@ export default function Expectations() {
           .eq("user_id", user.id)
           .order("deadline_days", { ascending: true });
 
-        setMilestones(seededData || []);
+        setMilestones((seededData || []) as ExpectationMilestone[]);
       } else {
-        setMilestones(data);
+        setMilestones(data as ExpectationMilestone[]);
       }
     } catch (error) {
       console.error("Error loading milestones:", error);

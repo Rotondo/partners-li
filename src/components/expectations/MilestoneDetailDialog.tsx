@@ -86,7 +86,7 @@ export function MilestoneDetailDialog({
       return;
     }
 
-    setUpdates(data || []);
+    setUpdates((data || []) as MilestoneUpdate[]);
   };
 
   const toggleCheckbox = async (checkbox: MilestoneCheckbox) => {

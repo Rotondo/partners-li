@@ -140,6 +140,51 @@ export type Database = {
           },
         ]
       }
+      expectation_milestones: {
+        Row: {
+          category: string
+          completed_at: string | null
+          created_at: string | null
+          deadline_days: number
+          id: string
+          opportunities_risks: string | null
+          priority: string | null
+          progress_percentage: number | null
+          status: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          category: string
+          completed_at?: string | null
+          created_at?: string | null
+          deadline_days: number
+          id?: string
+          opportunities_risks?: string | null
+          priority?: string | null
+          progress_percentage?: number | null
+          status?: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string
+          completed_at?: string | null
+          created_at?: string | null
+          deadline_days?: number
+          id?: string
+          opportunities_risks?: string | null
+          priority?: string | null
+          progress_percentage?: number | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       field_configs: {
         Row: {
           config: Json
@@ -163,6 +208,88 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      milestone_checkboxes: {
+        Row: {
+          checked_at: string | null
+          checked_by: string | null
+          created_at: string | null
+          id: string
+          is_checked: boolean | null
+          label: string
+          milestone_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          checked_at?: string | null
+          checked_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_checked?: boolean | null
+          label: string
+          milestone_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          checked_at?: string | null
+          checked_by?: string | null
+          created_at?: string | null
+          id?: string
+          is_checked?: boolean | null
+          label?: string
+          milestone_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_checkboxes_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "expectation_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestone_updates: {
+        Row: {
+          attachments: Json | null
+          content: string
+          created_at: string | null
+          data_points: Json | null
+          id: string
+          milestone_id: string
+          update_type: string
+          user_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          created_at?: string | null
+          data_points?: Json | null
+          id?: string
+          milestone_id: string
+          update_type: string
+          user_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          created_at?: string | null
+          data_points?: Json | null
+          id?: string
+          milestone_id?: string
+          update_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestone_updates_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "expectation_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partner_activities: {
         Row: {
