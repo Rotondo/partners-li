@@ -1,6 +1,5 @@
-import { Partner, LogisticPartnerData, PaymentPartnerData, MarketplacePartnerData } from "@/types/partner";
+import { Partner } from "@/types/partner";
 import { FieldConfig, DEFAULT_FIELD_CONFIGS } from "@/types/field-config";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   PartnerContact,
@@ -18,6 +17,20 @@ import {
   PartnerMonthlyMetric,
   NewPartnerMonthlyMetric,
 } from "@/types/partner-metrics";
+import {
+  ldbGetAll,
+  ldbSetAll,
+  ldbFind,
+  ldbFindOne,
+  ldbInsert,
+  ldbUpsert,
+  ldbDelete,
+  ldbDeleteWhere,
+  ldbGetJson,
+  ldbSetJson,
+} from "./local-db";
+
+const LOCAL_USER_ID = 'local';
 
 const DB_KEYS = {
   PARTNERS: 'partners',
@@ -25,100 +38,56 @@ const DB_KEYS = {
   BLUR_ACTIVE: 'blurActive',
 } as const;
 
-// ==================== PARTNERS ====================
+// ==================== HELPERS ====================
 
-/**
- * Helper: Check if a partner belongs to a specific category
- * Supports both new format (categories array) and legacy format (category string)
- * @param partner - Partner to check
- * @param category - Category to check for
- * @returns true if partner has this category
- */
 export function partnerHasCategory(partner: Partner, category: 'logistic' | 'payment' | 'marketplace'): boolean {
-  // Check new format (categories array)
   if (partner.categories && Array.isArray(partner.categories)) {
     return partner.categories.includes(category);
   }
-
-  // Check legacy format (category string) - for backward compatibility
   const legacyCategory = (partner as any).category;
   if (legacyCategory) {
     return legacyCategory === category;
   }
-
   return false;
 }
 
-/**
- * Helper: Filter partners by category
- * @param partners - Array of partners
- * @param category - Category to filter by
- * @returns Filtered array of partners
- */
 export function filterPartnersByCategory(partners: Partner[], category: 'logistic' | 'payment' | 'marketplace'): Partner[] {
   return partners.filter(p => partnerHasCategory(p, category));
 }
 
+// ==================== PARTNERS ====================
+
 export async function savePartner(partner: Partner): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  // Determine primary category from categories array
-  const primaryCategory = partner.categories[0] || 'logistic';
-
-  // Ensure customFields and contactFields are preserved in the data
-  const partnerData = {
-    ...partner,
-    customFields: partner.customFields || {},
-    contactFields: partner.contactFields || {},
+  const now = new Date().toISOString();
+  const all = ldbGetAll<any>('partners');
+  const idx = all.findIndex((r: any) => r.id === partner.id);
+  const record = {
+    id: partner.id,
+    user_id: LOCAL_USER_ID,
+    name: partner.name,
+    type: partner.categories?.[0] || 'logistic',
+    data: { ...partner, customFields: partner.customFields || {}, contactFields: partner.contactFields || {} },
+    is_important: partner.isImportant || false,
+    priority_rank: partner.priorityRank || null,
+    pareto_focus: partner.paretoFocus || null,
+    created_at: idx >= 0 ? all[idx].created_at : now,
+    updated_at: now,
   };
-
-        const { error } = await supabase
-          .from('partners')
-          .upsert({
-            id: partner.id,
-            user_id: user.id,
-            name: partner.name,
-            type: primaryCategory,
-            data: partnerData as any,
-            is_important: partner.isImportant || false,
-            priority_rank: partner.priorityRank || null,
-            pareto_focus: partner.paretoFocus || null,
-          }, { onConflict: 'id' });
-
-  if (error) {
-    toast.error("Erro ao salvar parceiro");
-    throw error;
+  if (idx >= 0) {
+    all[idx] = record;
+  } else {
+    all.unshift(record);
   }
+  ldbSetAll('partners', all);
 }
 
 export async function getAllPartners(): Promise<Partner[]> {
-  // ✅ Get current user for filtering
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const { data, error } = await supabase
-    .from('partners')
-    .select('*')
-    .eq('user_id', user.id) // ✅ Security: Filter by user_id (defense in depth)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    toast.error("Erro ao carregar parceiros");
-    throw error;
-  }
-
-  return (data || []).map(row => {
-    const partner = row.data as any as Partner;
-    // Include priority fields from database
+  const all = ldbGetAll<any>('partners');
+  return all.map((row: any) => {
+    const partner = { ...row.data } as Partner;
     if (row.is_important !== undefined) partner.isImportant = row.is_important;
-    if (row.priority_rank !== null && row.priority_rank !== undefined) partner.priorityRank = row.priority_rank;
-    if (row.pareto_focus) partner.paretoFocus = row.pareto_focus as 'gmv' | 'rebate';
+    if (row.priority_rank != null) partner.priorityRank = row.priority_rank;
+    if (row.pareto_focus) partner.paretoFocus = row.pareto_focus;
     return partner;
   });
 }
@@ -126,6 +95,22 @@ export async function getAllPartners(): Promise<Partner[]> {
 export async function getPartnerById(id: string): Promise<Partner | undefined> {
   const partners = await getAllPartners();
   return partners.find(p => p.id === id);
+}
+
+export async function deletePartner(id: string): Promise<void> {
+  ldbDelete('partners', id);
+}
+
+export async function clearDatabase(): Promise<void> {
+  ldbSetAll('partners', []);
+  ldbSetAll('payment_methods', []);
+  ldbSetAll('partner_contacts', []);
+  ldbSetAll('partner_activities', []);
+  ldbSetAll('partner_health_metrics', []);
+  ldbSetAll('partner_tasks', []);
+  ldbSetAll('partner_documents', []);
+  ldbSetAll('partner_monthly_metrics', []);
+  toast.success("Dados removidos com sucesso");
 }
 
 // ==================== FIELD CONFIGS ====================
@@ -139,14 +124,12 @@ export function getFieldConfigs(): FieldConfig[] {
   if (data) {
     return JSON.parse(data);
   }
-  // Se não há dados salvos, retornar os defaults
   return DEFAULT_FIELD_CONFIGS;
 }
 
 export function getFieldConfigsByPartnerType(type: 'logistic' | 'payment' | 'marketplace'): FieldConfig[] {
   const configs = getFieldConfigs();
   return configs.filter(f => {
-    // Retorna se o campo é específico desse tipo OU se está nos partnerTypes
     const isMainType = f.partnerType === type;
     const isInPartnerTypes = f.partnerTypes?.includes(type);
     return (isMainType || isInPartnerTypes) && f.enabled;
@@ -157,7 +140,7 @@ export function getFieldConfigsByPartnerType(type: 'logistic' | 'payment' | 'mar
 
 export function exportDatabase(): string {
   const data = {
-    partners: getAllPartners(),
+    partners: ldbGetAll('partners'),
     fieldConfigs: getFieldConfigs(),
     exportedAt: new Date().toISOString(),
     version: '1.0',
@@ -168,7 +151,7 @@ export function exportDatabase(): string {
 export function importDatabase(jsonData: string): void {
   try {
     const data = JSON.parse(jsonData);
-    if (data.partners) localStorage.setItem(DB_KEYS.PARTNERS, JSON.stringify(data.partners));
+    if (data.partners) ldbSetAll('partners', data.partners);
     if (data.fieldConfigs) localStorage.setItem(DB_KEYS.FIELD_CONFIGS, JSON.stringify(data.fieldConfigs));
   } catch (error) {
     console.error('Erro ao importar banco de dados:', error);
@@ -179,107 +162,57 @@ export function importDatabase(jsonData: string): void {
 // ==================== PAYMENT METHODS ====================
 
 export async function savePaymentMethod(paymentMethod: any): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
+  const now = new Date().toISOString();
+  const all = ldbGetAll<any>('payment_methods');
+  const idx = all.findIndex((r: any) => r.id === paymentMethod.id);
+  const record = {
+    id: paymentMethod.id || crypto.randomUUID(),
+    user_id: LOCAL_USER_ID,
+    data: paymentMethod,
+    created_at: idx >= 0 ? all[idx].created_at : now,
+    updated_at: now,
+  };
+  if (idx >= 0) {
+    all[idx] = record;
+  } else {
+    all.unshift(record);
   }
-
-  const { error } = await supabase
-    .from('payment_methods')
-    .upsert({
-      id: paymentMethod.id,
-      user_id: user.id,
-      data: paymentMethod as any,
-    }, { onConflict: 'id' });
-
-  if (error) {
-    toast.error("Erro ao salvar método de pagamento");
-    throw error;
-  }
+  ldbSetAll('payment_methods', all);
 }
 
 export async function getAllPaymentMethods(): Promise<any[]> {
-  const { data, error } = await supabase
-    .from('payment_methods')
-    .select('*')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    toast.error("Erro ao carregar métodos de pagamento");
-    throw error;
-  }
-
-  return (data || []).map(row => row.data as any);
+  return ldbGetAll<any>('payment_methods').map((row: any) => row.data);
 }
 
 export async function getPaymentMethodById(id: string): Promise<any | undefined> {
-  const { data, error } = await supabase
-    .from('payment_methods')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
-    if (error.code !== 'PGRST116') { // Not found is ok
-      toast.error("Erro ao carregar método de pagamento");
-    }
-    return undefined;
-  }
-
-  return data?.data as any;
+  const row = ldbFindOne<any>('payment_methods', (r: any) => r.id === id);
+  return row?.data;
 }
 
 export async function deletePaymentMethod(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('payment_methods')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    toast.error("Erro ao excluir método de pagamento");
-    throw error;
-  }
+  ldbDelete('payment_methods', id);
 }
-
 
 // ==================== PARTNER CONTACTS ====================
 
 export async function savePartnerContact(contact: NewPartnerContact & { id?: string }): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
+  const now = new Date().toISOString();
+  const id = contact.id || crypto.randomUUID();
+  const all = ldbGetAll<any>('partner_contacts');
+  const idx = all.findIndex((r: any) => r.id === id);
+  const record = { ...contact, id, user_id: LOCAL_USER_ID, created_at: idx >= 0 ? all[idx].created_at : now, updated_at: now };
+  if (idx >= 0) {
+    all[idx] = record;
+  } else {
+    all.unshift(record);
   }
-
-  const { error } = await supabase
-    .from('partner_contacts')
-    .upsert({
-      ...contact,
-      id: contact.id || crypto.randomUUID(),
-      user_id: user.id,
-    }, { onConflict: 'id' });
-
-  if (error) {
-    toast.error("Erro ao salvar contato");
-    throw error;
-  }
+  ldbSetAll('partner_contacts', all);
 }
 
 export async function getPartnerContacts(partnerId: string): Promise<PartnerContact[]> {
-  const { data, error } = await supabase
-    .from('partner_contacts')
-    .select('*')
-    .eq('partner_id', partnerId)
-    .order('is_primary', { ascending: false })
-    .order('created_at', { ascending: true });
-
-  if (error) {
-    toast.error("Erro ao carregar contatos");
-    throw error;
-  }
-
-  return (data || []).map(row => ({
+  const rows = ldbFind<any>('partner_contacts', (r: any) => r.partner_id === partnerId);
+  rows.sort((a: any, b: any) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0));
+  return rows.map((row: any) => ({
     ...row,
     created_at: new Date(row.created_at),
     updated_at: new Date(row.updated_at),
@@ -287,75 +220,47 @@ export async function getPartnerContacts(partnerId: string): Promise<PartnerCont
 }
 
 export async function deletePartnerContact(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('partner_contacts')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    toast.error("Erro ao excluir contato");
-    throw error;
-  }
+  ldbDelete('partner_contacts', id);
 }
 
 // ==================== PARTNER ACTIVITIES ====================
 
 export async function savePartnerActivity(activity: NewPartnerActivity & { id?: string }): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  const activityData: any = {
+  const now = new Date().toISOString();
+  const id = activity.id || crypto.randomUUID();
+  const all = ldbGetAll<any>('partner_activities');
+  const idx = all.findIndex((r: any) => r.id === id);
+  const record = {
     ...activity,
-    user_id: user.id,
-    participants: activity.participants as any,
+    id,
+    user_id: LOCAL_USER_ID,
+    participants: activity.participants || [],
+    scheduled_date: activity.scheduled_date instanceof Date ? activity.scheduled_date.toISOString() : activity.scheduled_date,
+    completed_date: activity.completed_date instanceof Date ? activity.completed_date.toISOString() : activity.completed_date,
+    created_at: idx >= 0 ? all[idx].created_at : now,
+    updated_at: now,
   };
-
-  if (activity.id) {
-    activityData.id = activity.id;
+  if (idx >= 0) {
+    all[idx] = record;
+  } else {
+    all.unshift(record);
   }
-
-  const { error } = await supabase
-    .from('partner_activities')
-    .upsert(activityData, { onConflict: 'id' });
-
-  if (error) {
-    toast.error("Erro ao salvar atividade");
-    throw error;
-  }
+  ldbSetAll('partner_activities', all);
 }
 
 export async function getPartnerActivities(partnerId?: string): Promise<PartnerActivity[]> {
-  // ✅ Get current user for filtering
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  let query = supabase
-    .from('partner_activities')
-    .select('*')
-    .eq('user_id', user.id) // ✅ Security: Filter by user_id (defense in depth)
-    .order('scheduled_date', { ascending: false, nullsFirst: false })
-    .order('created_at', { ascending: false });
-
+  let rows = ldbGetAll<any>('partner_activities');
   if (partnerId) {
-    query = query.eq('partner_id', partnerId);
+    rows = rows.filter((r: any) => r.partner_id === partnerId);
   }
-
-  const { data, error } = await query;
-
-  if (error) {
-    toast.error("Erro ao carregar atividades");
-    throw error;
-  }
-
-  return (data || []).map(row => ({
+  rows.sort((a: any, b: any) => {
+    const da = a.scheduled_date ? new Date(a.scheduled_date).getTime() : 0;
+    const db2 = b.scheduled_date ? new Date(b.scheduled_date).getTime() : 0;
+    return db2 - da;
+  });
+  return rows.map((row: any) => ({
     ...row,
-    participants: (row.participants as any) || [],
+    participants: row.participants || [],
     scheduled_date: row.scheduled_date ? new Date(row.scheduled_date) : undefined,
     completed_date: row.completed_date ? new Date(row.completed_date) : undefined,
     created_at: new Date(row.created_at),
@@ -364,82 +269,48 @@ export async function getPartnerActivities(partnerId?: string): Promise<PartnerA
 }
 
 export async function deletePartnerActivity(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('partner_activities')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    toast.error("Erro ao excluir atividade");
-    throw error;
-  }
+  ldbDelete('partner_activities', id);
 }
 
 // ==================== PARTNER HEALTH METRICS ====================
 
 export async function savePartnerHealthMetrics(metrics: NewPartnerHealthMetrics & { id?: string }): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  const metricsData: any = {
+  const now = new Date().toISOString();
+  const all = ldbGetAll<any>('partner_health_metrics');
+  const idx = all.findIndex((r: any) => r.partner_id === metrics.partner_id);
+  const record = {
     ...metrics,
-    user_id: user.id,
+    id: metrics.id || (idx >= 0 ? all[idx].id : crypto.randomUUID()),
+    user_id: LOCAL_USER_ID,
+    created_at: idx >= 0 ? all[idx].created_at : now,
+    updated_at: now,
   };
-
-  if (metrics.id) {
-    metricsData.id = metrics.id;
+  if (idx >= 0) {
+    all[idx] = record;
+  } else {
+    all.unshift(record);
   }
-
-  const { error } = await supabase
-    .from('partner_health_metrics')
-    .upsert(metricsData, { onConflict: 'partner_id' });
-
-  if (error) {
-    toast.error("Erro ao salvar métricas de saúde");
-    throw error;
-  }
+  ldbSetAll('partner_health_metrics', all);
 }
 
 export async function getPartnerHealthMetrics(partnerId: string): Promise<PartnerHealthMetrics | null> {
-  const { data, error } = await supabase
-    .from('partner_health_metrics')
-    .select('*')
-    .eq('partner_id', partnerId)
-    .maybeSingle();
-
-  if (error) {
-    toast.error("Erro ao carregar métricas de saúde");
-    throw error;
-  }
-
-  if (!data) return null;
-
+  const row = ldbFindOne<any>('partner_health_metrics', (r: any) => r.partner_id === partnerId);
+  if (!row) return null;
   return {
-    ...data,
-    last_activity_date: data.last_activity_date ? new Date(data.last_activity_date) : undefined,
-    calculated_at: new Date(data.calculated_at),
-    created_at: new Date(data.created_at),
+    ...row,
+    last_activity_date: row.last_activity_date ? new Date(row.last_activity_date) : undefined,
+    calculated_at: new Date(row.calculated_at || row.created_at),
+    created_at: new Date(row.created_at),
   };
 }
 
 export async function getAllPartnerHealthMetrics(): Promise<PartnerHealthMetrics[]> {
-  const { data, error } = await supabase
-    .from('partner_health_metrics')
-    .select('*')
-    .order('overall_score', { ascending: false, nullsFirst: false });
-
-  if (error) {
-    toast.error("Erro ao carregar métricas de saúde");
-    throw error;
-  }
-
-  return (data || []).map(row => ({
+  const rows = ldbGetAll<any>('partner_health_metrics');
+  rows.sort((a: any, b: any) => (b.overall_score || 0) - (a.overall_score || 0));
+  return rows.map((row: any) => ({
     ...row,
     last_activity_date: row.last_activity_date ? new Date(row.last_activity_date) : undefined,
-    calculated_at: new Date(row.calculated_at),
+    calculated_at: new Date(row.calculated_at || row.created_at),
     created_at: new Date(row.created_at),
   }));
 }
@@ -447,58 +318,38 @@ export async function getAllPartnerHealthMetrics(): Promise<PartnerHealthMetrics
 // ==================== PARTNER TASKS ====================
 
 export async function savePartnerTask(task: NewPartnerTask & { id?: string }): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  const taskData: any = {
+  const now = new Date().toISOString();
+  const id = task.id || crypto.randomUUID();
+  const all = ldbGetAll<any>('partner_tasks');
+  const idx = all.findIndex((r: any) => r.id === id);
+  const record = {
     ...task,
-    user_id: user.id,
+    id,
+    user_id: LOCAL_USER_ID,
+    due_date: task.due_date instanceof Date ? task.due_date.toISOString() : task.due_date,
+    completed_date: task.completed_date instanceof Date ? task.completed_date.toISOString() : task.completed_date,
+    created_at: idx >= 0 ? all[idx].created_at : now,
+    updated_at: now,
   };
-
-  if (task.id) {
-    taskData.id = task.id;
+  if (idx >= 0) {
+    all[idx] = record;
+  } else {
+    all.unshift(record);
   }
-
-  const { error } = await supabase
-    .from('partner_tasks')
-    .upsert(taskData, { onConflict: 'id' });
-
-  if (error) {
-    toast.error("Erro ao salvar tarefa");
-    throw error;
-  }
+  ldbSetAll('partner_tasks', all);
 }
 
 export async function getPartnerTasks(partnerId?: string): Promise<PartnerTask[]> {
-  // ✅ Get current user for filtering
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  let query = supabase
-    .from('partner_tasks')
-    .select('*')
-    .eq('user_id', user.id) // ✅ Security: Filter by user_id (defense in depth)
-    .order('due_date', { ascending: true, nullsFirst: false })
-    .order('priority', { ascending: false });
-
+  let rows = ldbGetAll<any>('partner_tasks');
   if (partnerId) {
-    query = query.eq('partner_id', partnerId);
+    rows = rows.filter((r: any) => r.partner_id === partnerId);
   }
-
-  const { data, error } = await query;
-
-  if (error) {
-    toast.error("Erro ao carregar tarefas");
-    throw error;
-  }
-
-  return (data || []).map(row => ({
+  rows.sort((a: any, b: any) => {
+    const da = a.due_date ? new Date(a.due_date).getTime() : Infinity;
+    const db2 = b.due_date ? new Date(b.due_date).getTime() : Infinity;
+    return da - db2;
+  });
+  return rows.map((row: any) => ({
     ...row,
     due_date: row.due_date ? new Date(row.due_date) : undefined,
     completed_date: row.completed_date ? new Date(row.completed_date) : undefined,
@@ -508,175 +359,77 @@ export async function getPartnerTasks(partnerId?: string): Promise<PartnerTask[]
 }
 
 export async function deletePartnerTask(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('partner_tasks')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    toast.error("Erro ao excluir tarefa");
-    throw error;
-  }
+  ldbDelete('partner_tasks', id);
 }
 
 // ==================== PARTNER DOCUMENTS ====================
 
 export async function savePartnerDocument(document: NewPartnerDocument & { id?: string }): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  const { error } = await supabase
-    .from('partner_documents')
-    .insert({
-      ...document,
-      id: document.id || crypto.randomUUID(),
-      user_id: user.id,
-    });
-
-  if (error) {
-    toast.error("Erro ao salvar documento");
-    throw error;
-  }
+  const now = new Date().toISOString();
+  const record = {
+    ...document,
+    id: document.id || crypto.randomUUID(),
+    user_id: LOCAL_USER_ID,
+    created_at: now,
+  };
+  const all = ldbGetAll<any>('partner_documents');
+  all.unshift(record);
+  ldbSetAll('partner_documents', all);
 }
 
 export async function getPartnerDocuments(partnerId: string): Promise<PartnerDocument[]> {
-  const { data, error } = await supabase
-    .from('partner_documents')
-    .select('*')
-    .eq('partner_id', partnerId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    toast.error("Erro ao carregar documentos");
-    throw error;
-  }
-
-  return (data || []).map(row => ({
+  const rows = ldbFind<any>('partner_documents', (r: any) => r.partner_id === partnerId);
+  return rows.map((row: any) => ({
     ...row,
     created_at: new Date(row.created_at),
   }));
 }
 
 export async function deletePartnerDocument(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('partner_documents')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    toast.error("Erro ao excluir documento");
-    throw error;
-  }
-}
-
-export async function deletePartner(id: string): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  const { error } = await supabase
-    .from('partners')
-    .delete()
-    .eq('id', id)
-    .eq('user_id', user.id); // ✅ Security: Ensure user can only delete their own partners
-
-  if (error) {
-    toast.error("Erro ao excluir parceiro");
-    throw error;
-  }
-}
-
-export async function clearDatabase(): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  // Delete all user's data
-  await supabase.from('partners').delete().eq('user_id', user.id);
-  await supabase.from('payment_methods').delete().eq('user_id', user.id);
-  await supabase.from('field_configs').delete().eq('user_id', user.id);
-  await supabase.from('partner_contacts').delete().eq('user_id', user.id);
-  await supabase.from('partner_activities').delete().eq('user_id', user.id);
-  await supabase.from('partner_health_metrics').delete().eq('user_id', user.id);
-  await supabase.from('partner_tasks').delete().eq('user_id', user.id);
-  await supabase.from('partner_documents').delete().eq('user_id', user.id);
-  
-  toast.success("Dados removidos com sucesso");
+  ldbDelete('partner_documents', id);
 }
 
 // ==================== PARTNER MONTHLY METRICS ====================
 
 export async function savePartnerMonthlyMetric(metric: NewPartnerMonthlyMetric & { id?: string }): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    toast.error("Usuário não autenticado");
-    throw new Error("User not authenticated");
-  }
-
-  const metricData: any = {
-    ...metric,
-    user_id: user.id,
+  const now = new Date().toISOString();
+  const all = ldbGetAll<any>('partner_monthly_metrics');
+  const idx = all.findIndex((r: any) =>
+    r.partner_id === metric.partnerId && r.year === metric.year && r.month === metric.month
+  );
+  const record = {
+    id: metric.id || (idx >= 0 ? all[idx].id : crypto.randomUUID()),
+    partner_id: metric.partnerId,
+    user_id: LOCAL_USER_ID,
+    year: metric.year,
+    month: metric.month,
+    gmv_share: metric.gmvShare,
+    rebate_share: metric.rebateShare,
+    gmv_amount: metric.gmvAmount,
+    rebate_amount: metric.rebateAmount,
+    notes: metric.notes,
+    created_at: idx >= 0 ? all[idx].created_at : now,
+    updated_at: now,
   };
-
-  if (metric.id) {
-    metricData.id = metric.id;
+  if (idx >= 0) {
+    all[idx] = record;
   } else {
-    metricData.id = crypto.randomUUID();
+    all.unshift(record);
   }
+  ldbSetAll('partner_monthly_metrics', all);
 
-  // Use upsert com constraint único
-  const { error } = await supabase
-    .from('partner_monthly_metrics')
-    .upsert({
-      ...metricData,
-      partner_id: metric.partnerId,
-    }, { 
-      onConflict: 'partner_id,user_id,year,month',
-      ignoreDuplicates: false 
-    });
-
-  if (error) {
-    toast.error("Erro ao salvar métrica mensal");
-    throw error;
-  }
-
-  // Auto-update partner priorities based on new metrics
   try {
     const { autoUpdateSinglePartnerPriority } = await import('./partner-priority-auto');
     await autoUpdateSinglePartnerPriority(metric.partnerId);
   } catch (err) {
-    // Don't fail if auto-update fails, just log it
     console.warn('Erro ao atualizar prioridades automaticamente:', err);
   }
 }
 
 export async function getPartnerMonthlyMetrics(partnerId: string): Promise<PartnerMonthlyMetric[]> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const { data, error } = await supabase
-    .from('partner_monthly_metrics')
-    .select('*')
-    .eq('partner_id', partnerId)
-    .eq('user_id', user.id)
-    .order('year', { ascending: false })
-    .order('month', { ascending: false });
-
-  if (error) {
-    toast.error("Erro ao carregar métricas mensais");
-    throw error;
-  }
-
-  return (data || []).map(row => ({
+  const rows = ldbFind<any>('partner_monthly_metrics', (r: any) => r.partner_id === partnerId);
+  rows.sort((a: any, b: any) => b.year !== a.year ? b.year - a.year : b.month - a.month);
+  return rows.map((row: any) => ({
     id: row.id,
     partnerId: row.partner_id,
     userId: row.user_id,
@@ -693,33 +446,11 @@ export async function getPartnerMonthlyMetrics(partnerId: string): Promise<Partn
 }
 
 export async function getAllPartnersMonthlyMetrics(year?: number, month?: number): Promise<PartnerMonthlyMetric[]> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  let query = supabase
-    .from('partner_monthly_metrics')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('year', { ascending: false })
-    .order('month', { ascending: false });
-
-  if (year) {
-    query = query.eq('year', year);
-  }
-  if (month) {
-    query = query.eq('month', month);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    toast.error("Erro ao carregar métricas mensais");
-    throw error;
-  }
-
-  return (data || []).map(row => ({
+  let rows = ldbGetAll<any>('partner_monthly_metrics');
+  if (year) rows = rows.filter((r: any) => r.year === year);
+  if (month) rows = rows.filter((r: any) => r.month === month);
+  rows.sort((a: any, b: any) => b.year !== a.year ? b.year - a.year : b.month - a.month);
+  return rows.map((row: any) => ({
     id: row.id,
     partnerId: row.partner_id,
     userId: row.user_id,
@@ -735,7 +466,11 @@ export async function getAllPartnersMonthlyMetrics(year?: number, month?: number
   }));
 }
 
-// ==================== CALENDAR SYNC ====================
+export async function deletePartnerMonthlyMetric(id: string): Promise<void> {
+  ldbDelete('partner_monthly_metrics', id);
+}
+
+// ==================== CALENDAR SYNC (stubbed for local mode) ====================
 
 export interface CalendarSyncConfig {
   id: string;
@@ -753,306 +488,39 @@ export interface CalendarSyncConfig {
   updated_at: Date;
 }
 
-export async function saveCalendarSyncConfig(config: {
-  calendar_url?: string;
-  enabled?: boolean;
-  sync_interval_minutes?: number;
-  google_access_token?: string;
-  google_refresh_token?: string;
-  google_token_expires_at?: Date | null;
-  google_calendar_id?: string;
-  connected_via_oauth?: boolean;
-}): Promise<CalendarSyncConfig> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const { data, error } = await supabase
-    .from('user_calendar_sync')
-    .upsert({
-      user_id: user.id,
-      calendar_url: config.calendar_url || null,
-      enabled: config.enabled ?? true,
-      sync_interval_minutes: config.sync_interval_minutes ?? 15,
-      google_access_token: config.google_access_token || null,
-      google_refresh_token: config.google_refresh_token || null,
-      google_token_expires_at: config.google_token_expires_at?.toISOString() || null,
-      google_calendar_id: config.google_calendar_id || 'primary',
-      connected_via_oauth: config.connected_via_oauth ?? false,
-    }, { onConflict: 'user_id' })
-    .select()
-    .single();
-
-  if (error) {
-    toast.error("Erro ao salvar configuração do calendário");
-    throw error;
-  }
-
-  return {
-    id: data.id,
-    user_id: data.user_id,
-    calendar_url: data.calendar_url || undefined,
-    enabled: data.enabled ?? true,
-    sync_interval_minutes: data.sync_interval_minutes ?? 15,
-    last_sync_at: data.last_sync_at ? new Date(data.last_sync_at) : null,
-    google_token_expires_at: data.google_token_expires_at ? new Date(data.google_token_expires_at) : undefined,
-    google_access_token: data.google_access_token || undefined,
-    google_refresh_token: data.google_refresh_token || undefined,
-    google_calendar_id: data.google_calendar_id || 'primary',
-    connected_via_oauth: data.connected_via_oauth ?? false,
-    created_at: new Date(data.created_at),
-    updated_at: new Date(data.updated_at),
+export async function saveCalendarSyncConfig(_config: Partial<CalendarSyncConfig>): Promise<CalendarSyncConfig> {
+  const now = new Date();
+  const existing = ldbGetJson<CalendarSyncConfig | null>('calendar_sync', null);
+  const record: CalendarSyncConfig = {
+    id: existing?.id || crypto.randomUUID(),
+    user_id: LOCAL_USER_ID,
+    calendar_url: null,
+    enabled: false,
+    sync_interval_minutes: 15,
+    last_sync_at: null,
+    google_access_token: null,
+    google_refresh_token: null,
+    google_token_expires_at: null,
+    google_calendar_id: 'primary',
+    connected_via_oauth: false,
+    ...existing,
+    ..._config,
+    created_at: existing?.created_at || now,
+    updated_at: now,
   };
+  ldbSetJson('calendar_sync', record);
+  return record;
 }
 
 export async function getCalendarSyncConfig(): Promise<CalendarSyncConfig | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const { data, error } = await supabase
-    .from('user_calendar_sync')
-    .select('*')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  if (error) {
-    throw error;
-  }
-
-  if (!data) return null;
-
-  return {
-    id: data.id,
-    user_id: data.user_id,
-    calendar_url: data.calendar_url || undefined,
-    enabled: data.enabled ?? true,
-    sync_interval_minutes: data.sync_interval_minutes ?? 15,
-    last_sync_at: data.last_sync_at ? new Date(data.last_sync_at) : null,
-    google_token_expires_at: data.google_token_expires_at ? new Date(data.google_token_expires_at) : undefined,
-    google_access_token: data.google_access_token || undefined,
-    google_refresh_token: data.google_refresh_token || undefined,
-    google_calendar_id: data.google_calendar_id || 'primary',
-    connected_via_oauth: data.connected_via_oauth ?? false,
-    created_at: new Date(data.created_at),
-    updated_at: new Date(data.updated_at),
-  };
+  return ldbGetJson<CalendarSyncConfig | null>('calendar_sync', null);
 }
 
 export async function deleteCalendarSyncConfig(): Promise<void> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const { error } = await supabase
-    .from('user_calendar_sync')
-    .delete()
-    .eq('user_id', user.id);
-
-  if (error) {
-    toast.error("Erro ao excluir configuração do calendário");
-    throw error;
-  }
-}
-
-/**
- * Busca ou cria um parceiro genérico para atividades do calendário
- */
-async function findOrCreateCalendarPartner(): Promise<Partner> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("User not authenticated");
-
-  // Buscar parceiro "Calendário" existente
-  const { data: existing } = await supabase
-    .from('partners')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('name', 'Calendário Google')
-    .maybeSingle();
-
-  if (existing) {
-    const partner = existing.data as any as Partner;
-    if (existing.is_important !== undefined) partner.isImportant = existing.is_important;
-    if (existing.priority_rank !== null && existing.priority_rank !== undefined) partner.priorityRank = existing.priority_rank;
-    if (existing.pareto_focus) partner.paretoFocus = existing.pareto_focus as 'gmv' | 'rebate';
-    return partner;
-  }
-
-  // Criar novo parceiro genérico com estrutura mínima
-  const newPartnerData = {
-    id: crypto.randomUUID(),
-    name: 'Calendário Google',
-    categories: [] as string[],
-    status: 'active' as const,
-    startDate: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  const { data: created, error} = await supabase
-    .from('partners')
-    .insert([{
-      name: newPartnerData.name,
-      type: 'other',
-      user_id: user.id,
-      data: newPartnerData as any,
-    }])
-    .select()
-    .single();
-
-  if (error || !created) {
-    throw new Error('Failed to create calendar partner');
-  }
-
-  const partner = created.data as any as Partner;
-  if (created.is_important !== undefined) partner.isImportant = created.is_important;
-  if (created.priority_rank !== null && created.priority_rank !== undefined) partner.priorityRank = created.priority_rank;
-  if (created.pareto_focus) partner.paretoFocus = created.pareto_focus as 'gmv' | 'rebate';
-  return partner;
+  localStorage.removeItem('prm_calendar_sync');
 }
 
 export async function syncCalendarNow(): Promise<{ imported: number; skipped: number }> {
-  const config = await getCalendarSyncConfig();
-  if (!config) {
-    throw new Error('Calendar sync not configured');
-  }
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  let activities: any[] = [];
-
-  try {
-    // Se conectado via OAuth, usar Google Calendar API
-    if (config.connected_via_oauth && config.google_access_token) {
-      console.log('Syncing via OAuth (Google Calendar API)');
-      
-      // Verificar se token expirou e renovar se necessário
-      let accessToken = config.google_access_token;
-      if (config.google_token_expires_at && new Date(config.google_token_expires_at) < new Date()) {
-        console.log('Token expirado, renovando...');
-        if (!config.google_refresh_token) {
-          throw new Error('Token expirado e refresh token não disponível. Por favor, reconecte.');
-        }
-        
-        const { refreshAccessToken } = await import('./google-calendar-oauth');
-        const newTokens = await refreshAccessToken(config.google_refresh_token);
-        accessToken = newTokens.access_token;
-        
-        // Atualizar token no banco
-        const expiresAt = new Date(Date.now() + newTokens.expires_in * 1000);
-        await supabase
-          .from('user_calendar_sync')
-          .update({
-            google_access_token: accessToken,
-            google_token_expires_at: expiresAt.toISOString(),
-          })
-          .eq('user_id', user.id);
-      }
-      
-      // Buscar eventos via Google Calendar API
-      const { fetchGoogleCalendarEvents, convertGoogleEventToActivity } = await import('./google-calendar-oauth');
-      const googleEvents = await fetchGoogleCalendarEvents(
-        accessToken,
-        config.google_calendar_id || 'primary'
-      );
-      
-      console.log('Fetched events from Google Calendar API:', googleEvents.length);
-      
-      // Converter eventos
-      activities = googleEvents
-        .map(event => convertGoogleEventToActivity(event, user.id))
-        .filter(Boolean);
-    } 
-    // Senão, usar iCal feed (fallback)
-    else if (config.calendar_url) {
-      console.log('Importing calendar from iCal URL:', config.calendar_url);
-      const { importFromICalFeed } = await import('./google-calendar-simple');
-      activities = await importFromICalFeed(config.calendar_url);
-    } else {
-      throw new Error('Nenhum método de sincronização configurado (OAuth ou iCal)');
-    }
-    
-    console.log('Imported activities count:', activities.length);
-
-    let imported = 0;
-    let skipped = 0;
-
-    // Verificar quais eventos já existem (por google_event_id)
-    const { data: existingActivitiesData, error: existingError } = await supabase
-      .from('partner_activities')
-      .select('google_event_id')
-      .eq('user_id', user.id)
-      .not('google_event_id', 'is', null);
-
-    if (existingError) {
-      console.error('Error checking existing activities:', existingError);
-    }
-
-    const existingIds = new Set(
-      (existingActivitiesData || []).map(a => a.google_event_id).filter(Boolean)
-    );
-    
-    console.log('Existing event IDs:', existingIds.size);
-
-    // Importar apenas novos eventos
-    for (const activity of activities) {
-      if (!activity.google_event_id) {
-        activity.google_event_id = `${activity.title}-${activity.scheduled_date?.getTime()}`;
-      }
-
-      // Pular se já existe
-      if (existingIds.has(activity.google_event_id)) {
-        skipped++;
-        continue;
-      }
-
-      // Preencher campos obrigatórios
-      (activity as any).user_id = user.id;
-      
-      // Se partner_id estiver vazio, tentar criar ou usar parceiro genérico "Calendário"
-      if (!activity.partner_id || activity.partner_id.trim() === '') {
-        // Buscar ou criar parceiro genérico para atividades do calendário
-        const calendarPartner = await findOrCreateCalendarPartner();
-        activity.partner_id = calendarPartner.id;
-      }
-
-      try {
-        await savePartnerActivity(activity as NewPartnerActivity & { id?: string });
-        imported++;
-      } catch (error) {
-        console.error('Error importing activity:', error);
-        skipped++;
-      }
-    }
-
-    // Atualizar last_sync_at
-    await supabase
-      .from('user_calendar_sync')
-      .update({ last_sync_at: new Date().toISOString() })
-      .eq('user_id', user.id);
-
-    return { imported, skipped };
-  } catch (error) {
-    console.error('Error syncing calendar:', error);
-    throw error;
-  }
+  toast.error("Sincronização de calendário não disponível no modo local");
+  return { imported: 0, skipped: 0 };
 }
-
-export async function deletePartnerMonthlyMetric(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('partner_monthly_metrics')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    toast.error("Erro ao excluir métrica mensal");
-    throw error;
-  }
-}
-

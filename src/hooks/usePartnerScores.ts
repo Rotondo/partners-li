@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { QuadrantScores } from "@/lib/quadrant-scores";
 import { toast } from "sonner";
+import { ldbGetAll, ldbSetAll } from "@/lib/local-db";
 
 const DEFAULT_SCORES: QuadrantScores = {
   segment_quality_score: 5,
@@ -20,16 +20,11 @@ export function usePartnerScores() {
     loadAllScores();
   }, []);
 
-  async function loadAllScores() {
+  function loadAllScores() {
     setLoading(true);
-    const { data, error } = await supabase.from("partner_quadrant_scores").select("*");
-    if (error) {
-      console.error("Error loading scores:", error);
-      setLoading(false);
-      return;
-    }
+    const rows = ldbGetAll<any>('quadrant_scores');
     const map: Record<string, QuadrantScores> = {};
-    for (const row of data) {
+    for (const row of rows) {
       map[row.partner_id] = {
         segment_quality_score: Number(row.segment_quality_score),
         market_presence_score: Number(row.market_presence_score),
@@ -50,28 +45,19 @@ export function usePartnerScores() {
 
   const saveScores = useCallback(
     async (partnerId: string, scores: QuadrantScores, notes?: string) => {
-      const { error } = await supabase
-        .from("partner_quadrant_scores")
-        .upsert(
-          {
-            partner_id: partnerId,
-            segment_quality_score: scores.segment_quality_score,
-            market_presence_score: scores.market_presence_score,
-            team_size_score: scores.team_size_score,
-            financial_health_score: scores.financial_health_score,
-            product_roadmap_score: scores.product_roadmap_score,
-            partnership_engagement_score: scores.partnership_engagement_score,
-            notes: notes || null,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "partner_id" }
-        );
-
-      if (error) {
-        toast.error("Erro ao salvar scores: " + error.message);
-        throw error;
-      }
-
+      const now = new Date().toISOString();
+      const all = ldbGetAll<any>('quadrant_scores');
+      const idx = all.findIndex((r: any) => r.partner_id === partnerId);
+      const record = {
+        id: idx >= 0 ? all[idx].id : crypto.randomUUID(),
+        partner_id: partnerId,
+        ...scores,
+        notes: notes || null,
+        updated_at: now,
+        created_at: idx >= 0 ? all[idx].created_at : now,
+      };
+      if (idx >= 0) { all[idx] = record; } else { all.unshift(record); }
+      ldbSetAll('quadrant_scores', all);
       setScoresMap((prev) => ({ ...prev, [partnerId]: scores }));
       toast.success("Scores salvos com sucesso");
     },
@@ -79,16 +65,8 @@ export function usePartnerScores() {
   );
 
   const deleteScores = useCallback(async (partnerId: string) => {
-    const { error } = await supabase
-      .from("partner_quadrant_scores")
-      .delete()
-      .eq("partner_id", partnerId);
-
-    if (error) {
-      toast.error("Erro ao excluir scores: " + error.message);
-      throw error;
-    }
-
+    const all = ldbGetAll<any>('quadrant_scores').filter((r: any) => r.partner_id !== partnerId);
+    ldbSetAll('quadrant_scores', all);
     setScoresMap((prev) => {
       const next = { ...prev };
       delete next[partnerId];
