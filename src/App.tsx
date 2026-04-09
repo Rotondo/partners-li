@@ -23,6 +23,9 @@ import Legal from "./pages/Legal";
 import Expectations from "./pages/Expectations";
 import { GoogleCallback } from "./pages/GoogleCallback";
 import NotFound from "./pages/NotFound";
+import EcosystemMap from "./pages/EcosystemMap";
+import StrategicQuadrant from "./pages/StrategicQuadrant";
+import PartnerProfile from "./pages/PartnerProfile";
 import { useState, useEffect } from "react";
 import { ensureStorageBucketExists } from "./lib/storage";
 
@@ -57,6 +60,9 @@ const App = () => {
                 <Route path="/strategic" element={<ProtectedRoute><><BlurToggle /><Strategic /></></ProtectedRoute>} />
                 <Route path="/legal" element={<ProtectedRoute><><BlurToggle /><Legal /></></ProtectedRoute>} />
                 <Route path="/admin" element={<ProtectedRoute><><BlurToggle /><Admin /></></ProtectedRoute>} />
+                <Route path="/ecosystem" element={<ProtectedRoute><><BlurToggle /><EcosystemMap /></></ProtectedRoute>} />
+                <Route path="/quadrant" element={<ProtectedRoute><><BlurToggle /><StrategicQuadrant /></></ProtectedRoute>} />
+                <Route path="/ecosystem/partners/:id" element={<ProtectedRoute><><BlurToggle /><PartnerProfile /></></ProtectedRoute>} />
                 <Route path="/auth/google/callback" element={<GoogleCallback />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />

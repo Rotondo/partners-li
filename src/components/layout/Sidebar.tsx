@@ -22,6 +22,8 @@ import {
   Kanban,
   Target,
   ClipboardCheck,
+  Network,
+  ScatterChart,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -35,6 +37,8 @@ const navigation = [
   { id: "expectations", name: "Plano de Expectativas", icon: ClipboardCheck, href: "/expectations", hasSubmenu: false },
   { id: "health", name: "Health", icon: Target, href: "/health", hasSubmenu: false },
   { id: "strategic", name: "Estratégico", icon: BarChart3, href: "/strategic", hasSubmenu: false },
+  { id: "ecosystem", name: "Ecossistema", icon: Network, href: "/ecosystem", hasSubmenu: false },
+  { id: "quadrant", name: "Quadrante", icon: ScatterChart, href: "/quadrant", hasSubmenu: false },
   { id: "stores", name: "Lojas", icon: Store, href: "/stores", hasSubmenu: false },
   { id: "reports", name: "Relatórios", icon: TrendingUp, href: "/reports", hasSubmenu: true },
   { id: "legal", name: "Jurídico", icon: Scale, href: "/legal", hasSubmenu: false },
